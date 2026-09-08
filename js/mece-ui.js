@@ -10,6 +10,8 @@ window.MeceUI = {
           <div class="space-y-2">
             <label class="block text-xs font-bold text-gray-600">API key de Anthropic (solo vive en este navegador)</label>
             <div class="flex gap-2"><input id="meceKey" type="password" class="flex-1 p-2 border rounded text-sm" placeholder="sk-ant-..." value="${MECE.getKey()}"><button onclick="MeceUI.saveKey()" class="px-3 bg-gray-200 rounded text-xs font-bold">Guardar</button></div>
+            <label class="block text-xs font-bold text-gray-600">Modelo</label>
+            <select id="meceModel" onchange="MECE.setModel(this.value)" class="w-full p-2 border rounded text-sm bg-white">${MECE.MODELOS.map(([id, l]) => `<option value="${id}" ${MECE.MODEL === id ? 'selected' : ''}>${l}</option>`).join('')}</select>
             <button id="meceGen" onclick="MeceUI.generar()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-lg"><i class="fas fa-robot mr-2"></i>Generar consolidación con IA</button>
             <div id="meceStatus" class="text-xs text-gray-500"></div>
           </div>

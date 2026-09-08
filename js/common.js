@@ -99,7 +99,9 @@ window.cuadrante = (esf, imp, max = 10) => {
    copiar el prompt, correrlo en claude.ai y pegar el JSON.
    ============================================================ */
 window.MECE = {
-  MODEL: 'claude-opus-5',
+  MODELOS: [['claude-opus-5', 'Opus 5 · máxima calidad (~$0,05 por consolidación)'], ['claude-sonnet-5', 'Sonnet 5 · equilibrio (~$0,02)'], ['claude-haiku-4-5', 'Haiku 4.5 · mínimo costo (~$0,01)']],
+  get MODEL() { return sessionStorage.getItem('foro_ia_model') || (window.FORO_CONFIG && FORO_CONFIG.IA_MODEL) || 'claude-sonnet-5'; },
+  setModel(m) { sessionStorage.setItem('foro_ia_model', m); },
   keyName: 'foro_anthropic_key',
   getKey() { return sessionStorage.getItem(this.keyName) || ''; },
   setKey(k) { sessionStorage.setItem(this.keyName, k.trim()); },
