@@ -8,7 +8,7 @@
   const qs = new URLSearchParams(location.search);
   const SES = qs.get('s') || CFG.SESION || 'impercap';
   const placeholder = !CFG.SUPABASE_URL || /TU-PROYECTO/.test(CFG.SUPABASE_URL) || !CFG.SUPABASE_ANON_KEY || /TU-ANON/.test(CFG.SUPABASE_ANON_KEY);
-  const MODE = (CFG.MODE === 'supabase' && !placeholder && window.supabase) ? 'supabase' : 'local';
+  const MODE = (CFG.MODE === 'supabase' && !placeholder && window.supabase && qs.get('demo') !== '1') ? 'supabase' : 'local'; // ?demo=1 fuerza el modo local para practicar
 
   const DB = { MODE, SES, clave: sessionStorage.getItem('foro_clave_' + SES) || '' };
   DB.setClave = (c) => { DB.clave = c; sessionStorage.setItem('foro_clave_' + SES, c); };
