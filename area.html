@@ -3,16 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foro de Ideación · Gestión de pilar</title>
-<link rel="icon" href="img/impercap_logo.png">
+<title>freaknerd_ · Foro de Ideación · Gestión de pilar</title>
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script><script src="js/db.js"></script><script src="js/common.js"></script><script src="js/mece-ui.js"></script>
 <style>.fade-in{animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}}</style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col">
-<nav data-nav class="bg-gray-800 text-white p-3 flex justify-between items-center shadow-md sticky top-0 z-50"></nav>
+<nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md sticky top-0 z-50 border-b border-emerald-500/30"></nav>
 <div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
 <main class="flex-1 p-4"><div id="app" class="max-w-6xl mx-auto"></div></main>
 <script>
@@ -31,7 +33,7 @@ function render() {
     app.innerHTML = `<div class="flex items-center justify-center mt-16"><div class="bg-white p-8 rounded-lg shadow-lg w-96 fade-in"><h2 class="text-2xl font-bold text-center mb-6">Acceso Líderes de Pilar</h2>
       <label class="block text-sm font-bold mb-2">Selecciona tu pilar</label><select id="lgPilar" class="w-full p-2 border rounded mb-4 bg-white">${snap.pilares.map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join('')}</select>
       <label class="block text-sm font-bold mb-2">Clave de acceso</label><input id="lgClave" type="password" class="w-full p-2 border rounded mb-6" onkeydown="if(event.key==='Enter')login()">
-      <button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Ingresar</button>
+      <button onclick="login()" class="w-full bg-fn text-emerald-400 font-bold py-2 rounded hover:bg-gray-800">Ingresar</button>
       ${DB.MODE === 'local' ? '<p class="text-[11px] text-gray-400 mt-3 text-center">Demo local: clave <b>lider</b> (o <b>admin</b>)</p>' : ''}</div></div>`; return;
   }
   const p = pilar(); if (!p) { pilarId = null; return render(); }

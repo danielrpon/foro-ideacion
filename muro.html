@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foro de Ideación · Muro</title>
-<link rel="icon" href="img/impercap_logo.png">
+<title>freaknerd_ · Foro de Ideación · Muro</title>
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -21,18 +23,18 @@
 </style>
 </head>
 <body class="bg-gray-200 font-sans text-gray-800 h-screen flex flex-col overflow-hidden">
-<nav data-nav class="bg-gray-800 text-white p-3 flex justify-between items-center shadow-md flex-shrink-0 z-50"></nav>
+<nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md flex-shrink-0 z-50 border-b border-emerald-500/30"></nav>
 <div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
-<div class="bg-gray-800 text-white py-2 px-6 flex items-center justify-between flex-shrink-0">
-  <h1 id="titulo" class="text-2xl font-bold uppercase tracking-widest"></h1>
-  <div class="flex items-center gap-6"><span id="conectados" class="text-sm text-gray-300"><i class="fas fa-users mr-1"></i>0 conectados</span><span id="tmr" class="font-mono text-3xl font-black text-yellow-400"></span></div>
+<div class="bg-fn text-white py-2 px-6 flex items-center justify-between flex-shrink-0">
+  <h1 id="titulo" class="text-2xl font-black uppercase tracking-widest fn-green"></h1>
+  <div class="flex items-center gap-6"><span id="conectados" class="text-sm text-gray-300"><i class="fas fa-users mr-1"></i>0 conectados</span><span id="tmr" class="font-mono text-3xl font-black text-emerald-400"></span></div>
 </div>
 <main id="app" class="flex-1 min-h-0 p-6 overflow-hidden"></main>
 <script>
 let snap = null, viewKey = '', chart = null;
 renderNav('muro');
 async function cargar() { snap = await DB.snapshot(); setNavEtapa(snap.sesion); render(); }
-setInterval(() => { if (snap) { const t = $('tmr'); const s = snap.sesion; t.textContent = (s.fin_etapa || ['ideacion', 'matriz'].includes(s.etapa)) ? timerText(s) : ''; t.className = 'font-mono text-3xl font-black ' + (timerVencido(s) ? 'text-red-500 animate-pulse' : 'text-yellow-400'); } }, 1000);
+setInterval(() => { if (snap) { const t = $('tmr'); const s = snap.sesion; t.textContent = (s.fin_etapa || ['ideacion', 'matriz'].includes(s.etapa)) ? timerText(s) : ''; t.className = 'font-mono text-3xl font-black ' + (timerVencido(s) ? 'text-red-500 animate-pulse' : 'text-emerald-400'); } }, 1000);
 
 const grupos = () => snap.ideas.filter(i => i.tipo === 'grupo').sort((a, b) => (a.pilar_orden - b.pilar_orden) || (a.id - b.id));
 const ideasOK = () => snap.ideas.filter(i => i.tipo === 'idea' && i.estado !== 'repetida');
@@ -50,7 +52,7 @@ function render() {
   if (key === viewKey) return; viewKey = key;
 
   if (et === 'bienvenida') {
-    app.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center fade-in"><img src="img/impercap_logo.png" class="w-56 mb-6" onerror="this.style.display='none'"><p class="font-mono uppercase tracking-[.3em] text-gray-500 mb-3">Caso de negocio nº 1</p><h2 class="text-6xl font-black">${esc(s.nombre)}</h2><p class="text-2xl text-gray-600 mt-6 max-w-3xl">${esc(s.config.caso || '')}</p><p class="mt-10 text-gray-400"><i class="fas fa-mug-hot mr-2"></i>Bienvenidos. En un momento arrancamos.</p></div>`; return;
+    app.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center fade-in"><p class="fn-mono text-sm uppercase tracking-[.3em] text-gray-500 mb-6">freaknerd<span class="fn-green">_</span> · foro de ideación</p><img src="img/impercap_logo.png" class="w-52 mb-6" onerror="this.style.display='none'"><p class="font-mono uppercase tracking-[.3em] text-gray-500 mb-3">Caso de negocio nº 1</p><h2 class="text-6xl font-black">${esc(s.nombre)}</h2><p class="text-2xl text-gray-600 mt-6 max-w-3xl">${esc(s.config.caso || '')}</p><p class="mt-10 text-gray-400"><i class="fas fa-mug-hot mr-2"></i>Bienvenidos. En un momento arrancamos.</p></div>`; return;
   }
   if (et === 'instrucciones') {
     app.innerHTML = `<div class="h-full grid grid-cols-2 gap-10 items-center"><div class="bg-white rounded-2xl shadow-xl p-10 flex flex-col items-center"><div id="qr"></div><p class="mt-4 font-mono text-lg text-gray-600 break-all text-center" id="qrUrl"></p></div>

@@ -3,16 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foro de Ideación · Admin</title>
-<link rel="icon" href="img/impercap_logo.png">
+<title>freaknerd_ · Foro de Ideación · Admin</title>
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script><script src="js/db.js"></script><script src="js/common.js"></script><script src="js/mece-ui.js"></script>
 <style>.fade-in{animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}} .tab{display:none}.tab.on{display:block}</style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col">
-<nav data-nav class="bg-gray-800 text-white p-3 flex justify-between items-center shadow-md sticky top-0 z-50"></nav>
+<nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md sticky top-0 z-50 border-b border-emerald-500/30"></nav>
 <div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
 <main class="flex-1 p-4"><div id="app" class="max-w-7xl mx-auto"></div></main>
 
@@ -43,7 +45,7 @@ function render() {
   const app = $('app'), s = snap.sesion;
   if (!DB.clave || sessionStorage.getItem('foro_rol_' + DB.SES) !== 'admin') {
     if ($('lgClave')) return; // no redibujar el login mientras se escribe
-    app.innerHTML = `<div class="flex items-center justify-center mt-16"><div class="bg-white p-8 rounded-lg shadow-lg w-96 fade-in"><h2 class="text-2xl font-bold text-center mb-6"><i class="fas fa-user-shield mr-2"></i>Acceso Administrador</h2><input id="lgClave" type="password" class="w-full p-2 border rounded mb-4" placeholder="Clave de administrador" onkeydown="if(event.key==='Enter')login()"><button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Ingresar</button>${DB.MODE === 'local' ? '<p class="text-[11px] text-gray-400 mt-3 text-center">Demo local: clave <b>admin</b></p>' : ''}</div></div>`; return;
+    app.innerHTML = `<div class="flex items-center justify-center mt-16"><div class="bg-white p-8 rounded-lg shadow-lg w-96 fade-in"><h2 class="text-2xl font-bold text-center mb-6"><i class="fas fa-user-shield mr-2"></i>Acceso Administrador</h2><input id="lgClave" type="password" class="w-full p-2 border rounded mb-4" placeholder="Clave de administrador" onkeydown="if(event.key==='Enter')login()"><button onclick="login()" class="w-full bg-fn text-emerald-400 font-bold py-2 rounded hover:bg-gray-800">Ingresar</button>${DB.MODE === 'local' ? '<p class="text-[11px] text-gray-400 mt-3 text-center">Demo local: clave <b>admin</b></p>' : ''}</div></div>`; return;
   }
   const gs = grupos(), ids = ideas(), np = Math.max(snap.conectados, 1);
   const kpi = { ideas: ids.length, rep: ids.filter(i => i.estado === 'repetida').length, nuevas: ids.filter(i => i.estado === 'nueva').length, agrup: ids.filter(i => i.estado === 'agrupada').length, grupos: gs.length, votos: gs.reduce((a, g) => a + g.votos, 0), evalTot: gs.reduce((a, g) => a + g.conteo_eval, 0), evalMax: gs.length * np };
@@ -51,11 +53,11 @@ function render() {
   if (!$('layout')) {
     app.innerHTML = `<div id="layout" class="fade-in">
       <div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h1 class="text-2xl font-black"><i class="fas fa-gauge-high mr-2"></i>Dashboard de control</h1><div class="text-xs text-gray-500">${esc(s.nombre)} · ${esc(s.facilitador || '')}</div></div>
-        <div class="flex flex-wrap gap-2 text-xs font-bold"><a href="${urlVista('muro.html')}" target="_blank" class="bg-purple-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-tv mr-1"></i>PROYECTAR (muro)</a><a href="${urlVista('index.html')}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-mobile-screen mr-1"></i>Participante</a><a href="${urlVista('area.html')}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-users-gear mr-1"></i>Gestión</a><a href="${urlVista('reporte.html')}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-file-lines mr-1"></i>Reporte</a><a href="manual.html" target="_blank" class="bg-gray-200 px-3 py-2 rounded-lg"><i class="fas fa-book mr-1"></i>Manual</a><button onclick="logout()" class="bg-gray-200 px-3 py-2 rounded-lg">Salir</button></div></div>
-      <div class="flex gap-1 mb-4 border-b flex-wrap">${[['control', 'fa-sliders', 'Control'], ['ia', 'fa-wand-magic-sparkles', 'IA · MECE'], ['matriz', 'fa-chart-line', 'Matriz'], ['ideas', 'fa-table-list', 'Ideas'], ['pilares', 'fa-columns', 'Pilares'], ['participantes', 'fa-users', 'Participantes'], ['config', 'fa-gear', 'Configuración']].map(([k, i, l]) => `<button onclick="setTab('${k}')" data-tab="${k}" class="px-4 py-2 text-sm font-bold border-b-2 ${tab === k ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500'}"><i class="fas ${i} mr-1"></i>${l}</button>`).join('')}</div>
+        <div class="flex flex-wrap gap-2 text-xs font-bold"><a href="${urlVista('muro.html')}" target="_blank" class="bg-fn text-emerald-400 px-4 py-2 rounded-lg"><i class="fas fa-tv mr-1"></i>PROYECTAR (muro)</a><a href="${urlVista('index.html')}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-mobile-screen mr-1"></i>Participante</a><a href="${urlVista('area.html')}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-users-gear mr-1"></i>Gestión</a><a href="${urlVista('reporte.html')}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-file-lines mr-1"></i>Reporte</a><a href="manual.html" target="_blank" class="bg-gray-200 px-3 py-2 rounded-lg"><i class="fas fa-book mr-1"></i>Manual</a><button onclick="logout()" class="bg-gray-200 px-3 py-2 rounded-lg">Salir</button></div></div>
+      <div class="flex gap-1 mb-4 border-b flex-wrap">${[['control', 'fa-sliders', 'Control'], ['ia', 'fa-wand-magic-sparkles', 'IA · MECE'], ['matriz', 'fa-chart-line', 'Matriz'], ['ideas', 'fa-table-list', 'Ideas'], ['pilares', 'fa-columns', 'Pilares'], ['participantes', 'fa-users', 'Participantes'], ['config', 'fa-gear', 'Configuración']].map(([k, i, l]) => `<button onclick="setTab('${k}')" data-tab="${k}" class="px-4 py-2 text-sm font-bold border-b-2 ${tab === k ? 'border-emerald-500 text-emerald-700' : 'border-transparent text-gray-500'}"><i class="fas ${i} mr-1"></i>${l}</button>`).join('')}</div>
       <div id="tab-control" class="tab"></div><div id="tab-ia" class="tab"></div><div id="tab-matriz" class="tab"></div><div id="tab-ideas" class="tab"></div><div id="tab-pilares" class="tab"></div><div id="tab-participantes" class="tab"></div><div id="tab-config" class="tab"></div></div>`;
   }
-  document.querySelectorAll('[data-tab]').forEach(b => b.className = 'px-4 py-2 text-sm font-bold border-b-2 ' + (b.dataset.tab === tab ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500'));
+  document.querySelectorAll('[data-tab]').forEach(b => b.className = 'px-4 py-2 text-sm font-bold border-b-2 ' + (b.dataset.tab === tab ? 'border-emerald-500 text-emerald-700' : 'border-transparent text-gray-500'));
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + tab));
 
   /* CONTROL */

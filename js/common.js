@@ -49,10 +49,10 @@ window.urlVista = (archivo) => baseUrl() + archivo + (DB.SES !== (FORO_CONFIG.SE
 window.renderNav = (vista, extra = '') => {
   const nav = document.querySelector('nav[data-nav]'); if (!nav) return;
   nav.innerHTML = `
-    <div class="font-bold text-lg flex items-center"><i class="fas fa-lightbulb text-yellow-400 mr-2"></i><span class="hidden sm:inline">${esc(FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span><span class="sm:hidden">Foro</span></div>
+    <div class="flex items-center gap-3"><span class="fn-mono font-bold text-base tracking-tight">freaknerd<span class="fn-green">_</span></span><span class="text-gray-600 hidden sm:inline">|</span><span class="font-bold text-sm hidden sm:inline text-gray-200">${esc(FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span></div>
     <div class="text-sm flex items-center gap-2">
       ${DB.MODE === 'local' ? '<span class="bg-amber-500 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
-      <span id="navEtapa" class="bg-blue-600 px-3 py-1 rounded-full text-xs font-bold uppercase">${esc(vista)}</span>
+      <span id="navEtapa" class="fn-mono bg-emerald-400 text-black px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">${esc(vista)}</span>
       ${extra}
       <button onclick="window.location.reload()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-xs" title="Recargar"><i class="fas fa-sync"></i></button>
     </div>`;
