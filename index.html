@@ -52,7 +52,7 @@ function render() {
   if (!yo) {
     if (viewKey !== 'reg') { viewKey = 'reg'; app.innerHTML = `
       <div class="bg-white rounded-xl shadow p-6 mt-4 fade-in">
-        <div class="text-center mb-4"><div class="fn-mono text-xs uppercase tracking-[.25em] text-gray-500">freaknerd<span class="text-emerald-600">_</span> · foro de ideación</div><img src="img/impercap_logo.png" class="w-20 mx-auto my-3 bg-fn rounded-2xl p-2" onerror="this.style.display='none'"><h1 class="text-2xl font-black">${esc(s.nombre)}</h1><p class="text-sm text-gray-500 mt-1">Caso de negocio nº 1 · regístrate para participar</p></div>
+        <div class="text-center mb-4"><div class="fn-mono text-xs uppercase tracking-[.25em] text-gray-500"><span class="normal-case">freaknerd<span class="text-emerald-600">_</span></span> · foro de ideación</div><img src="img/impercap_logo.png" class="w-20 mx-auto my-3 bg-fn rounded-2xl p-2" onerror="this.style.display='none'"><h1 class="text-2xl font-black">${esc(s.nombre)}</h1><p class="text-sm text-gray-500 mt-1">Caso de negocio nº 1 · regístrate para participar</p></div>
         <label class="block text-xs font-bold text-gray-600 mb-1">Tu nombre</label>
         <input id="regNombre" class="w-full p-3 border rounded-lg mb-3" placeholder="Nombre y apellido" autocomplete="name">
         <label class="block text-xs font-bold text-gray-600 mb-1">Tu perfil (para autosegmentarte)</label>
@@ -70,7 +70,7 @@ function render() {
   if (['bienvenida', 'instrucciones'].includes(et)) {
     if (!full) return;
     app.innerHTML = `<div class="bg-white rounded-xl shadow p-6 mt-2 fade-in">
-      <p class="text-xs font-mono text-emerald-700 uppercase tracking-widest">freaknerd_ · Bienvenido</p>
+      <p class="text-xs font-mono text-emerald-700 uppercase tracking-widest"><span class="normal-case">freaknerd_</span> · Bienvenido</p>
       <h1 class="text-2xl font-black mt-1">Hola, ${esc(yo.nombre.split(' ')[0])} 👋</h1>
       <p class="text-sm text-gray-600 mt-2">${esc(s.config.caso || '')}</p>
       <div class="mt-4 space-y-2">${snap.pilares.map(p => { const c = col(p.color); return `<div class="flex items-center gap-3 p-2 rounded-lg ${c.bg}"><i class="fas ${p.icono} ${c.text}"></i><span class="text-sm font-bold ${c.text}">${esc(p.nombre)}</span></div>`; }).join('')}</div>
