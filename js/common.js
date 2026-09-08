@@ -36,7 +36,7 @@ window.esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<
 window.fmtHora = (iso) => iso ? new Date(iso).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '';
 window.pct = (a, b) => b ? Math.round(100 * a / b) : 0;
 window.toast = (msg, tipo = 'ok') => {
-  let t = $('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-lg shadow-lg text-sm font-bold text-white transition-opacity opacity-0 pointer-events-none'; document.body.appendChild(t); }
+  let t = $('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl shadow-lg text-base font-bold text-white transition-opacity opacity-0 pointer-events-none whitespace-nowrap'; document.body.appendChild(t); }
   t.textContent = msg; t.className = t.className.replace(/bg-\S+/g, '') + (tipo === 'err' ? ' bg-red-600' : tipo === 'warn' ? ' bg-amber-500' : ' bg-emerald-600');
   t.classList.remove('opacity-0'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('opacity-0'), 2600);
 };
@@ -49,15 +49,15 @@ window.urlVista = (archivo) => baseUrl() + archivo + (DB.SES !== (FORO_CONFIG.SE
 window.renderNav = (vista, extra = '') => {
   const nav = document.querySelector('nav[data-nav]'); if (!nav) return;
   nav.innerHTML = `
-    <div class="flex items-center gap-3"><span class="fn-mono font-bold text-base tracking-tight">freaknerd<span class="fn-green">_</span></span><span class="text-gray-600 hidden sm:inline">|</span><span class="font-bold text-sm hidden sm:inline text-gray-200">${esc(FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span></div>
-    <div class="text-sm flex items-center gap-2">
-      ${DB.MODE === 'local' ? '<span class="bg-amber-500 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
-      <span id="navEtapa" class="fn-mono bg-emerald-400 text-black px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">${esc(vista)}</span>
+    <div class="flex items-center gap-3 shrink-0"><span class="fn-mono font-bold text-base tracking-tight">freaknerd<span class="fn-green">_</span></span><span class="text-gray-600 hidden sm:inline">|</span><span class="font-bold text-sm hidden sm:inline text-gray-200">${esc(FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span></div>
+    <div class="text-sm flex items-center gap-2 min-w-0">
+      ${DB.MODE === 'local' ? '<span class="bg-amber-500 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
+      <span id="navEtapa" class="fn-mono bg-emerald-400 text-black px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider truncate max-w-[58vw] sm:max-w-none">${esc(vista)}</span>
       ${extra}
-      <button onclick="window.location.reload()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-xs" title="Recargar"><i class="fas fa-sync"></i></button>
+      <button onclick="window.location.reload()" class="bg-gray-700 hover:bg-gray-600 px-2.5 py-1 rounded text-xs shrink-0" title="Recargar"><i class="fas fa-sync"></i></button>
     </div>`;
 };
-window.setNavEtapa = (sesion) => { const e = $('navEtapa'); if (e && sesion) e.textContent = stageInfo(sesion.etapa).n + ' · ' + stageInfo(sesion.etapa).label; };
+window.setNavEtapa = (sesion) => { const e = $('navEtapa'); if (e && sesion) { const st = stageInfo(sesion.etapa); const corto = { ideacion: 'Ideación', consolidacion: 'Consolidación', matriz: 'Calificación', cierre: 'Matriz final', instrucciones: 'Instrucciones', bienvenida: 'Bienvenida', pausa: 'Pausa', reporte: 'Reporte', votacion: 'Votación', resultados: 'Resultados' }[sesion.etapa]; e.textContent = st.n + ' · ' + (window.innerWidth < 640 && corto ? corto : st.label); } };
 
 /* Temporizador de etapa */
 window.timerText = (sesion) => {
