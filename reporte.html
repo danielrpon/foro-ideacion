@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foro de Ideación · Reporte final</title>
+<link rel="icon" href="img/impercap_logo.png">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script><script src="js/db.js"></script><script src="js/common.js"></script>
+<style>@media print{.noprint{display:none!important}body{background:#fff}.card{box-shadow:none!important;border:1px solid #ddd}} input.inl{border:0;border-bottom:1px dashed #bbb;background:transparent;width:100%;font-size:12px}</style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 min-h-screen">
+<nav data-nav class="noprint bg-gray-800 text-white p-3 flex justify-between items-center shadow-md"></nav>
+<div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
+<main class="p-6"><div id="app" class="max-w-6xl mx-auto"></div></main>
+<script>
+let snap = null, rendered = false;
+renderNav('reporte');
+async function cargar() { snap = await DB.snapshot(); setNavEtapa(snap.sesion); if (!rendered) { rendered = true; render(); } }
+function render() {
+  const s = snap.sesion, max = s.config.escala_max || 10, editable = !!DB.clave && sessionStorage.getItem('foro_rol_' + DB.SES);
+  const gs = snap.ideas.filter(i => i.tipo === 'grupo'); const ideas = snap.ideas.filter(i => i.tipo === 'idea');
+  const orden = { quick: 0, proyecto: 1, relleno: 2, descartar: 3 };
+  const lista = gs.slice().sort((a, b) => { const qa = a.conteo_eval ? orden[cuadrante(a.esfuerzo_prom, a.impacto_prom, max).key] : 9, qb = b.conteo_eval ? orden[cuadrante(b.esfuerzo_prom, b.impacto_prom, max).key] : 9; return (qa - qb) || (b.impacto_prom - a.impacto_prom) || (a.esfuerzo_prom - b.esfuerzo_prom); });
+  $('app').innerHTML = `<div class="card bg-white rounded-xl shadow p-8">
+    <div class="flex justify-between items-start border-b pb-4 mb-4"><div><h1 class="text-3xl font-black">Reporte consolidado final</h1><div class="text-sm text-gray-500 mt-1"><b>${esc(s.nombre)}</b> · Facilitador: ${esc(s.facilitador || '')} · ${new Date().toLocaleDateString('es-CO', { dateStyle: 'long' })}</div><div class="text-xs text-gray-400 mt-1">${ideas.length} ideas de ${snap.conectados}+ participantes · ${gs.length} ideas consolidadas · ${gs.reduce((a, g) => a + g.conteo_eval, 0)} calificaciones</div></div><div class="noprint flex gap-2"><button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded"><i class="fas fa-print mr-2"></i>Imprimir / PDF</button></div></div>
+    ${editable ? '<p class="noprint text-xs text-emerald-700 mb-2"><i class="fas fa-pen mr-1"></i>Puedes escribir responsable y tiempo directamente en la tabla (se guardan al salir del campo).</p>' : '<p class="noprint text-xs text-gray-400 mb-2">Para asignar responsables y tiempos, entra primero como administrador o líder.</p>'}
+    <div class="overflow-x-auto rounded-lg border"><table class="w-full text-sm"><thead class="text-xs uppercase bg-gray-800 text-white"><tr><th class="px-3 py-2 text-left">#</th><th class="px-3 py-2 text-left">Pilar</th><th class="px-3 py-2 text-left">Idea consolidada</th><th class="px-3 py-2 text-left">Ideas originales</th><th class="px-3 py-2 text-center">Imp.</th><th class="px-3 py-2 text-center">Esf.</th><th class="px-3 py-2 text-left">Cuadrante</th><th class="px-3 py-2 text-left" style="min-width:130px">Responsable</th><th class="px-3 py-2 text-left" style="min-width:100px">Tiempo</th></tr></thead><tbody>
+    ${lista.map(g => { const q = g.conteo_eval ? cuadrante(g.esfuerzo_prom, g.impacto_prom, max) : null; const hijas = ideas.filter(i => i.padre_id === g.id); return `<tr class="border-b align-top ${q && q.key === 'quick' ? 'bg-emerald-50' : ''}"><td class="px-3 py-3 font-mono text-xs">#${g.id}</td><td class="px-3 py-3 text-xs font-bold ${col(g.pilar_color).text}">${esc(g.pilar_nombre || '')}</td><td class="px-3 py-3"><b class="text-indigo-800">${esc(g.titulo || g.texto)}</b><div class="text-xs text-gray-600">${esc(g.descripcion_corta || '')}</div>${g.detalle ? `<div class="text-xs text-gray-500 mt-1">${esc(g.detalle)}</div>` : ''}</td><td class="px-3 py-3 text-xs text-gray-600"><ul class="list-disc pl-4">${hijas.map(h => `<li>${esc(h.texto)} <span class="text-gray-400">(${esc(h.participante_nombre || '')})</span></li>`).join('')}</ul></td><td class="px-3 py-3 text-center font-bold text-blue-600">${g.conteo_eval ? g.impacto_prom : '–'}</td><td class="px-3 py-3 text-center font-bold text-purple-600">${g.conteo_eval ? g.esfuerzo_prom : '–'}</td><td class="px-3 py-3 text-xs font-bold ${q ? 'text-' + q.color + '-700' : 'text-gray-400'}">${q ? q.label : 'sin calificar'}<div class="font-normal text-gray-400">${g.conteo_eval} calif. · ${g.votos} votos</div></td>
+      <td class="px-3 py-3">${editable ? `<input class="inl" value="${esc(g.responsable || '')}" onchange="meta(${g.id},'responsable',this.value)">` : esc(g.responsable || '')}</td><td class="px-3 py-3">${editable ? `<input class="inl" value="${esc(g.tiempo_ejecucion || '')}" onchange="meta(${g.id},'tiempo_ejecucion',this.value)">` : esc(g.tiempo_ejecucion || '')}</td></tr>`; }).join('') || '<tr><td colspan="9" class="p-6 text-center text-gray-400">Aún no hay ideas consolidadas.</td></tr>'}
+    </tbody></table></div>
+    <h2 class="text-xl font-black mt-8 mb-2">Anexo · todas las ideas del foro (${ideas.length})</h2>
+    ${snap.pilares.map(p => { const mias = ideas.filter(i => i.pilar_id === p.id); return `<h3 class="font-bold mt-4 ${col(p.color).text}">${esc(p.nombre)} (${mias.length})</h3><ol class="list-decimal pl-6 text-xs text-gray-700 mt-1 space-y-0.5">${mias.map(i => `<li class="${i.estado === 'repetida' ? 'line-through text-gray-400' : ''}">${esc(i.texto)} <span class="text-gray-400">· ${esc(i.participante_nombre || '')}${i.subfrente ? ' · ' + esc(i.subfrente) : ''}</span></li>`).join('')}</ol>`; }).join('')}
+    <div class="text-[10px] text-gray-400 mt-8 border-t pt-2 font-mono">freaknerd_ · Foro de ideación · generado ${new Date().toLocaleString('es-CO')}</div></div>`;
+}
+async function meta(id, campo, valor) { try { await DB.admin('editar_idea', { id, [campo]: valor }); toast('Guardado'); } catch (e) { toast(errMsg(e), 'err'); } }
+Poll.start(cargar, 15000);
+</script>
+</body>
+</html>

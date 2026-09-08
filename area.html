@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foro de Ideación · Gestión de pilar</title>
+<link rel="icon" href="img/impercap_logo.png">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script><script src="js/db.js"></script><script src="js/common.js"></script><script src="js/mece-ui.js"></script>
+<style>.fade-in{animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}}</style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col">
+<nav data-nav class="bg-gray-800 text-white p-3 flex justify-between items-center shadow-md sticky top-0 z-50"></nav>
+<div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
+<main class="flex-1 p-4"><div id="app" class="max-w-6xl mx-auto"></div></main>
+<script>
+let snap = null, pilarId = Number(sessionStorage.getItem('foro_pilar_' + DB.SES)) || null, rol = sessionStorage.getItem('foro_rol_' + DB.SES) || '', filtro = 'todas', sel = new Set(), editando = null, poll = null, meceMontado = false;
+renderNav('gestión');
+
+async function cargar() { snap = await DB.snapshot(); setNavEtapa(snap.sesion); render(); }
+function pilar() { return snap.pilares.find(p => p.id === pilarId); }
+function ideasPilar() { return snap.ideas.filter(i => i.tipo === 'idea' && i.pilar_id === pilarId); }
+function gruposPilar() { return snap.ideas.filter(i => i.tipo === 'grupo' && i.pilar_id === pilarId); }
+
+function render() {
+  const app = $('app');
+  if (!DB.clave || !rol || !pilarId) {
+    app.innerHTML = `<div class="flex items-center justify-center mt-16"><div class="bg-white p-8 rounded-lg shadow-lg w-96 fade-in"><h2 class="text-2xl font-bold text-center mb-6">Acceso Líderes de Pilar</h2>
+      <label class="block text-sm font-bold mb-2">Selecciona tu pilar</label><select id="lgPilar" class="w-full p-2 border rounded mb-4 bg-white">${snap.pilares.map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join('')}</select>
+      <label class="block text-sm font-bold mb-2">Clave de acceso</label><input id="lgClave" type="password" class="w-full p-2 border rounded mb-6" onkeydown="if(event.key==='Enter')login()">
+      <button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Ingresar</button>
+      ${DB.MODE === 'local' ? '<p class="text-[11px] text-gray-400 mt-3 text-center">Demo local: clave <b>lider</b> (o <b>admin</b>)</p>' : ''}</div></div>`; return;
+  }
+  const p = pilar(); if (!p) { pilarId = null; return render(); }
+  const c = col(p.color), ideas = ideasPilar(), grupos = gruposPilar();
+  const cnt = { todas: ideas.length, nueva: ideas.filter(i => i.estado === 'nueva').length, validada: ideas.filter(i => i.estado === 'validada').length, repetida: ideas.filter(i => i.estado === 'repetida').length, agrupada: ideas.filter(i => i.estado === 'agrupada').length };
+  const lista = ideas.filter(i => filtro === 'todas' || i.estado === filtro).slice().reverse();
+  if (!$('layout')) {
+    app.innerHTML = `<div id="layout" class="fade-in">
+      <div class="bg-white rounded-xl shadow p-4 border-t-8 ${c.border} mb-4 flex justify-between items-start gap-4"><div><div class="text-xs font-mono uppercase text-gray-500">Gestión del pilar · ${esc(rol)}</div><h1 class="text-2xl font-black ${c.text}"><i class="fas ${p.icono} mr-2"></i>${esc(p.nombre)}</h1><p class="text-sm text-gray-600 mt-1">${esc(p.enunciado || '')}</p></div>
+        <div class="text-right whitespace-nowrap"><div id="etq" class="text-xs font-bold text-gray-500"></div><button onclick="logout()" class="text-xs text-gray-400 underline mt-2">Cambiar pilar / salir</button></div></div>
+      <div class="grid lg:grid-cols-5 gap-4">
+        <div class="lg:col-span-3"><div id="filtros" class="flex gap-2 flex-wrap mb-3"></div><div id="lista" class="space-y-2"></div></div>
+        <div class="lg:col-span-2 space-y-4"><div id="formGrupo"></div><div id="grupos"></div></div>
+      </div>
+      <div id="mece" class="mt-6"></div></div>`;
+  }
+  $('etq').textContent = 'Etapa: ' + stageInfo(snap.sesion.etapa).label;
+  $('filtros').innerHTML = [['todas', 'Todas'], ['nueva', 'Nuevas'], ['validada', 'Validadas'], ['repetida', 'Repetidas'], ['agrupada', 'Agrupadas']].map(([k, l]) => `<button onclick="setFiltro('${k}')" class="px-3 py-1 rounded-full text-xs font-bold border ${filtro === k ? 'bg-gray-800 text-white' : 'bg-white'}">${l} <span class="opacity-60">${cnt[k]}</span></button>`).join('') + `<span class="ml-auto text-xs text-gray-500 self-center">${sel.size} seleccionadas</span>`;
+  $('lista').innerHTML = lista.length ? lista.map(i => {
+    const est = { nueva: 'bg-gray-100 text-gray-600', validada: 'bg-emerald-100 text-emerald-700', repetida: 'bg-red-100 text-red-700', agrupada: 'bg-purple-100 text-purple-700' }[i.estado] || '';
+    const g = i.padre_id ? grupos.find(x => x.id === i.padre_id) : null;
+    if (editando === i.id) return `<div class="bg-white rounded-lg shadow p-3 border-l-4 ${c.border}"><textarea id="ed${i.id}" rows="3" class="w-full p-2 border rounded text-sm">${esc(i.texto)}</textarea><div class="flex gap-2 mt-2"><button onclick="guardarEdicion(${i.id})" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">Guardar</button><button onclick="editando=null;render()" class="bg-gray-200 px-3 py-1 rounded text-xs">Cancelar</button></div></div>`;
+    return `<div class="bg-white rounded-lg shadow p-3 border-l-4 ${c.border} flex gap-3 ${i.estado === 'repetida' ? 'opacity-60' : ''}">
+      <input type="checkbox" ${sel.has(i.id) ? 'checked' : ''} onchange="toggleSel(${i.id})" class="mt-1 w-4 h-4" ${i.estado === 'repetida' ? 'disabled' : ''}>
+      <div class="flex-1 min-w-0"><div class="text-sm ${i.estado === 'repetida' ? 'line-through' : ''}">${esc(i.texto)}</div>
+        <div class="text-[10px] text-gray-400 mt-1 flex flex-wrap gap-2 items-center"><span class="px-1.5 py-0.5 rounded ${est} font-bold uppercase">${i.estado}</span>${i.subfrente ? `<span class="font-mono uppercase">${esc(i.subfrente)}</span>` : ''}<span>#${i.id} · ${esc(i.participante_nombre || '')} · ${fmtHora(i.created_at)}</span>${i.es_editado ? `<span class="text-amber-600" title="Original: ${esc(i.texto_original)}"><i class="fas fa-pencil"></i> editada</span>` : ''}${g ? `<span class="text-purple-700"><i class="fas fa-layer-group"></i> ${esc(g.titulo)}</span>` : ''}</div></div>
+      <div class="flex flex-col gap-1">${i.estado === 'nueva' ? `<button onclick="op('set_estado',{id:${i.id},estado:'validada'})" class="w-8 h-8 rounded-full bg-emerald-100 hover:bg-emerald-600 hover:text-white text-emerald-700" title="Validar"><i class="fas fa-check"></i></button>` : ''}
+        <button onclick="editando=${i.id};render()" class="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-600 hover:text-white text-blue-700" title="Editar (guarda el original)"><i class="fas fa-pencil"></i></button>
+        ${i.estado !== 'repetida' ? `<button onclick="op('set_estado',{id:${i.id},estado:'repetida'})" class="w-8 h-8 rounded-full bg-red-100 hover:bg-red-600 hover:text-white text-red-700" title="Marcar repetida"><i class="fas fa-clone"></i></button>` : ''}
+        ${i.estado !== 'nueva' ? `<button onclick="op('deshacer',{id:${i.id}})" class="w-8 h-8 rounded-full bg-amber-100 hover:bg-amber-500 hover:text-white text-amber-700" title="Deshacer / recuperar"><i class="fas fa-rotate-left"></i></button>` : ''}</div></div>`;
+  }).join('') : '<p class="text-sm text-gray-400 p-4">Sin ideas en este filtro.</p>';
+  if (!$('fgTitulo')) $('formGrupo').innerHTML = `<div class="bg-white rounded-xl shadow p-4 border-t-4 ${c.border}"><h3 class="font-black"><i class="fas fa-layer-group mr-1"></i>Crear idea consolidada</h3><p class="text-xs text-gray-500">Selecciona ideas de la lista (check) y dales un nombre.</p>
+      <input id="fgTitulo" class="w-full p-2 border rounded mt-3 text-sm font-bold" placeholder="Título (máx. 60): Ej. Abrir cobertura donde llueve" maxlength="80"><input id="fgCorta" class="w-full p-2 border rounded mt-2 text-sm" placeholder="Descripción corta para el muro (máx. 160)" maxlength="160"><textarea id="fgDetalle" rows="3" class="w-full p-2 border rounded mt-2 text-sm" placeholder="Detalle: integra los matices de las ideas seleccionadas"></textarea>
+      <button onclick="crearGrupo()" class="mt-2 w-full ${c.solid} text-white font-bold py-2 rounded"><i class="fas fa-plus mr-1"></i>Crear con <span id="fgN">0</span> ideas</button></div>`;
+  $('fgN').textContent = sel.size;
+  $('grupos').innerHTML = `<h3 class="font-black text-sm uppercase text-gray-500 mb-2">Ideas consolidadas del pilar (${grupos.length})</h3>` + (grupos.length ? grupos.map(g => { const hijas = ideas.filter(i => i.padre_id === g.id); return `<div class="bg-white rounded-xl shadow p-3 mb-2 border-l-4 ${c.border}"><div class="flex justify-between gap-2"><div class="min-w-0"><div class="font-bold">${esc(g.titulo || g.texto)}</div><div class="text-xs text-gray-600">${esc(g.descripcion_corta || '')}</div>${g.detalle ? `<div class="text-[11px] text-gray-400 mt-1">${esc(g.detalle)}</div>` : ''}<div class="text-[10px] font-mono text-gray-400 mt-1">${esc(g.origen || '')} · ${g.votos} votos · ${g.conteo_eval} evaluaciones</div></div>
+      <div class="flex flex-col gap-1"><button onclick="editarGrupo(${g.id})" class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white" title="Editar"><i class="fas fa-pencil"></i></button><button onclick="asignarSel(${g.id})" class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white" title="Agregar ideas seleccionadas"><i class="fas fa-plus"></i></button><button onclick="if(confirm('¿Disolver el grupo? Las ideas vuelven a validadas.'))op('disolver_grupo',{id:${g.id}})" class="w-8 h-8 rounded-full bg-red-100 text-red-700 hover:bg-red-600 hover:text-white" title="Disolver"><i class="fas fa-trash"></i></button></div></div>
+      <ul class="mt-2 space-y-1">${hijas.map(h => `<li class="text-xs text-gray-700 flex gap-2 items-start"><button onclick="op('asignar_grupo',{id:${h.id},padre_id:null})" class="text-gray-300 hover:text-red-600" title="Quitar del grupo"><i class="fas fa-xmark"></i></button><span>${esc(h.texto)}</span></li>`).join('')}</ul></div>`; }).join('') : '<p class="text-xs text-gray-400">Aún no hay grupos. Créalos a mano o con la IA (abajo).</p>');
+  if (!meceMontado) { meceMontado = true; MeceUI.mount($('mece'), { getSnap: () => snap, pilarId, onApplied: cargar }); }
+}
+async function login() {
+  const clave = $('lgClave').value, pid = Number($('lgPilar').value);
+  try { const r = await DB.admin('login', {}, clave); DB.setClave(clave); rol = r.rol; sessionStorage.setItem('foro_rol_' + DB.SES, rol); pilarId = pid; sessionStorage.setItem('foro_pilar_' + DB.SES, pid); toast('Bienvenido, ' + rol); render(); } catch (e) { toast(errMsg(e), 'err'); }
+}
+function logout() { sessionStorage.removeItem('foro_pilar_' + DB.SES); pilarId = null; meceMontado = false; $('app').innerHTML = ''; render(); }
+function setFiltro(f) { filtro = f; render(); }
+function toggleSel(id) { sel.has(id) ? sel.delete(id) : sel.add(id); render(); }
+async function op(o, p) { try { await DB.admin(o, p); await cargar(); } catch (e) { toast(errMsg(e), 'err'); } }
+async function guardarEdicion(id) { const t = $('ed' + id).value.trim(); if (!t) return; editando = null; await op('editar_idea', { id, texto: t }); }
+async function crearGrupo() { const titulo = $('fgTitulo').value.trim(); if (!titulo) return toast('Ponle título', 'warn'); if (!sel.size && !confirm('¿Crear el grupo sin ideas seleccionadas?')) return; await op('crear_grupo', { pilar_id: pilarId, titulo, descripcion_corta: $('fgCorta').value.trim(), detalle: $('fgDetalle').value.trim(), ideas: [...sel] }); $('fgTitulo').value = ''; $('fgCorta').value = ''; $('fgDetalle').value = ''; sel.clear(); render(); }
+async function asignarSel(gid) { if (!sel.size) return toast('Selecciona ideas primero', 'warn'); for (const id of sel) await DB.admin('asignar_grupo', { id, padre_id: gid }); sel.clear(); await cargar(); }
+async function editarGrupo(gid) { const g = snap.ideas.find(i => i.id === gid); const titulo = prompt('Título', g.titulo || ''); if (titulo === null) return; const descripcion_corta = prompt('Descripción corta (máx. 160)', g.descripcion_corta || ''); if (descripcion_corta === null) return; const detalle = prompt('Detalle', g.detalle || ''); if (detalle === null) return; await op('editar_idea', { id: gid, titulo, texto: titulo, descripcion_corta, detalle }); }
+Poll.start(cargar, 4000);
+</script>
+</body>
+</html>
