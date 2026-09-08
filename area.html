@@ -27,6 +27,7 @@ function gruposPilar() { return snap.ideas.filter(i => i.tipo === 'grupo' && i.p
 function render() {
   const app = $('app');
   if (!DB.clave || !rol || !pilarId) {
+    if ($('lgClave')) return; // no redibujar el login mientras se escribe
     app.innerHTML = `<div class="flex items-center justify-center mt-16"><div class="bg-white p-8 rounded-lg shadow-lg w-96 fade-in"><h2 class="text-2xl font-bold text-center mb-6">Acceso Líderes de Pilar</h2>
       <label class="block text-sm font-bold mb-2">Selecciona tu pilar</label><select id="lgPilar" class="w-full p-2 border rounded mb-4 bg-white">${snap.pilares.map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join('')}</select>
       <label class="block text-sm font-bold mb-2">Clave de acceso</label><input id="lgClave" type="password" class="w-full p-2 border rounded mb-6" onkeydown="if(event.key==='Enter')login()">

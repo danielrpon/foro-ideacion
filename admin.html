@@ -42,6 +42,7 @@ function semaforo(p) { return p >= 80 ? 'text-emerald-600' : p >= 40 ? 'text-amb
 function render() {
   const app = $('app'), s = snap.sesion;
   if (!DB.clave || sessionStorage.getItem('foro_rol_' + DB.SES) !== 'admin') {
+    if ($('lgClave')) return; // no redibujar el login mientras se escribe
     app.innerHTML = `<div class="flex items-center justify-center mt-16"><div class="bg-white p-8 rounded-lg shadow-lg w-96 fade-in"><h2 class="text-2xl font-bold text-center mb-6"><i class="fas fa-user-shield mr-2"></i>Acceso Administrador</h2><input id="lgClave" type="password" class="w-full p-2 border rounded mb-4" placeholder="Clave de administrador" onkeydown="if(event.key==='Enter')login()"><button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Ingresar</button>${DB.MODE === 'local' ? '<p class="text-[11px] text-gray-400 mt-3 text-center">Demo local: clave <b>admin</b></p>' : ''}</div></div>`; return;
   }
   const gs = grupos(), ids = ideas(), np = Math.max(snap.conectados, 1);
