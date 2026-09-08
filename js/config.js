@@ -11,8 +11,8 @@
 // ============================================================
 window.FORO_CONFIG = {
   MODE: 'supabase',
-  SUPABASE_URL: 'https://TU-PROYECTO.supabase.co',
-  SUPABASE_ANON_KEY: 'TU-ANON-KEY',
+  SUPABASE_URL: 'https://zccrvdytrmrloahnbajl.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjY3J2ZHl0cm1ybG9haG5iYWpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NDA2NzQsImV4cCI6MjEwNDQxNjY3NH0.blfohUbSXniU_WMHzGAsek9DA_7ZsGNgxsoDJeC7hDg',
   SESION: 'impercap',          // id de la sesión (slug); se puede cambiar con ?s=otra
   POLL_MS: 3000,               // refresco de pantallas
   APP_NAME: 'Foro de Ideación'
