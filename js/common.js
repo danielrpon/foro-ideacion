@@ -100,11 +100,12 @@ window.cuadrante = (esf, imp, max = 10) => {
    ============================================================ */
 window.MECE = {
   MODELOS: [['claude-opus-5', 'Opus 5 · máxima calidad (~$0,05 por consolidación)'], ['claude-sonnet-5', 'Sonnet 5 · equilibrio (~$0,02)'], ['claude-haiku-4-5', 'Haiku 4.5 · mínimo costo (~$0,01)']],
-  get MODEL() { return sessionStorage.getItem('foro_ia_model') || (window.FORO_CONFIG && FORO_CONFIG.IA_MODEL) || 'claude-sonnet-5'; },
-  setModel(m) { sessionStorage.setItem('foro_ia_model', m); },
+  get MODEL() { return localStorage.getItem('foro_ia_model') || (window.FORO_CONFIG && FORO_CONFIG.IA_MODEL) || 'claude-sonnet-5'; },
+  setModel(m) { localStorage.setItem('foro_ia_model', m); },
   keyName: 'foro_anthropic_key',
-  getKey() { return sessionStorage.getItem(this.keyName) || ''; },
-  setKey(k) { sessionStorage.setItem(this.keyName, k.trim()); },
+  getKey() { return localStorage.getItem(this.keyName) || sessionStorage.getItem(this.keyName) || ''; },
+  setKey(k) { localStorage.setItem(this.keyName, k.trim()); },
+  clearKey() { localStorage.removeItem(this.keyName); sessionStorage.removeItem(this.keyName); },
   buildPrompt({ sesion, pilares, ideas }) {
     const cfg = (sesion && sesion.config) || {};
     const lineas = [];
