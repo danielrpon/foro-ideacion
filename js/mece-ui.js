@@ -10,6 +10,8 @@ window.MeceUI = {
           <div class="space-y-2">
             <label class="block text-xs font-bold text-gray-600">API key de Anthropic (queda guardada solo en este navegador) <button onclick="MeceUI.olvidarKey()" class="ml-2 text-[10px] text-red-600 underline font-normal">olvidar</button></label>
             <div class="flex gap-2"><input id="meceKey" type="password" class="flex-1 p-2 border rounded text-sm" placeholder="sk-ant-..." value="${MECE.getKey()}"><button onclick="MeceUI.saveKey()" class="px-3 bg-gray-200 rounded text-xs font-bold">Guardar</button></div>
+            <label class="block text-xs font-bold text-gray-600">Workspace ID <span class="font-normal text-gray-400">(solo si la clave NO está asociada a un espacio de trabajo; Consola › Espacios de trabajo › Default)</span></label>
+            <input id="meceWs" class="w-full p-2 border rounded text-sm" placeholder="wrkspc_..." value="${MECE.getWs()}" onchange="MECE.setWs(this.value)">
             <label class="block text-xs font-bold text-gray-600">Modelo</label>
             <select id="meceModel" onchange="MECE.setModel(this.value)" class="w-full p-2 border rounded text-sm bg-white">${MECE.MODELOS.map(([id, l]) => `<option value="${id}" ${MECE.MODEL === id ? 'selected' : ''}>${l}</option>`).join('')}</select>
             <button id="meceGen" onclick="MeceUI.generar()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-lg"><i class="fas fa-robot mr-2"></i>Generar consolidación con IA</button>
@@ -24,8 +26,8 @@ window.MeceUI = {
         <div id="mecePreview" class="mt-4"></div>
       </div>`;
   },
-  saveKey() { MECE.setKey($('meceKey').value); toast('API key guardada en este navegador'); },
-  olvidarKey() { MECE.clearKey(); $('meceKey').value = ''; toast('API key borrada de este navegador'); },
+  saveKey() { MECE.setKey($('meceKey').value); if ($('meceWs')) MECE.setWs($('meceWs').value); toast('API key guardada en este navegador'); },
+  olvidarKey() { MECE.clearKey(); $('meceKey').value = ''; if ($('meceWs')) $('meceWs').value = ''; toast('API key borrada de este navegador'); },
   datos() {
     const snap = this.opts.getSnap();
     const pilares = this.opts.pilarId ? snap.pilares.filter(p => p.id === this.opts.pilarId) : snap.pilares;

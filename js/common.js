@@ -105,7 +105,9 @@ window.MECE = {
   keyName: 'foro_anthropic_key',
   getKey() { return localStorage.getItem(this.keyName) || sessionStorage.getItem(this.keyName) || ''; },
   setKey(k) { localStorage.setItem(this.keyName, k.trim()); },
-  clearKey() { localStorage.removeItem(this.keyName); sessionStorage.removeItem(this.keyName); },
+  clearKey() { localStorage.removeItem(this.keyName); sessionStorage.removeItem(this.keyName); localStorage.removeItem('foro_anthropic_ws'); },
+  getWs() { return localStorage.getItem('foro_anthropic_ws') || ''; },
+  setWs(w) { localStorage.setItem('foro_anthropic_ws', w.trim()); },
   buildPrompt({ sesion, pilares, ideas }) {
     const cfg = (sesion && sesion.config) || {};
     const lineas = [];
@@ -143,7 +145,7 @@ window.MECE = {
   async call(prompt, apiKey) {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      headers: Object.assign({ 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }, this.getWs() ? { 'anthropic-workspace-id': this.getWs() } : {}),
       body: JSON.stringify({ model: this.MODEL, max_tokens: 16000, messages: [{ role: 'user', content: prompt }] })
     });
     const data = await res.json();
