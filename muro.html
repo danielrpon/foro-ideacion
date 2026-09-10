@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260910i">
+<meta name="app-version" content="20260910j">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Muro</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -13,7 +13,7 @@
 <script src="vendor/chart.umd.min.js"></script>
 <script src="vendor/qrcode.min.js"></script>
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260910i"></script><script src="js/db.js?v=20260910i"></script><script src="js/common.js?v=20260910i"></script>
+<script src="js/config.js?v=20260910j"></script><script src="js/db.js?v=20260910j"></script><script src="js/common.js?v=20260910j"></script>
 <style>
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:18px 18px}
   .postit{transition:transform .2s}.postit:hover{transform:scale(1.03);z-index:5}
@@ -49,8 +49,11 @@ function instr(titulo, pasos, icono = 'fa-circle-info') {
   return `<div class="h-full flex items-center justify-center fade-in"><div class="bg-white rounded-2xl shadow-xl p-12 max-w-4xl w-full"><div class="flex items-center gap-4 mb-6"><i class="fas ${icono} text-5xl text-blue-500"></i><h2 class="text-4xl font-black">${titulo}</h2></div><ol class="space-y-3 text-2xl list-decimal pl-8">${pasos.map(p => `<li>${p}</li>`).join('')}</ol></div></div>`;
 }
 
+/* Portada a sangre: en bienvenida toda la pantalla es oscura (sin franja gris ni tarjeta flotante) */
+function modoPortada(on) { document.body.classList.toggle('bg-fn', on); document.body.classList.toggle('bg-gray-200', !on); const a = $('app'); a.classList.toggle('p-6', !on); a.classList.toggle('p-0', on); }
 function render() {
   const s = snap.sesion, et = s.etapa, app = $('app'), gs = grupos();
+  modoPortada(et === 'bienvenida');
   $('titulo').textContent = stageInfo(et).label;
   $('conectados').innerHTML = `<i class="fas fa-users mr-1"></i>${snap.conectados} conectados`;
   const c2 = $('cnt2'); if (c2) c2.textContent = snap.conectados;
@@ -58,11 +61,11 @@ function render() {
   if (key === viewKey) return; viewKey = key;
 
   if (et === 'bienvenida') {
-    app.innerHTML = `<div class="h-full bg-fn dotgrid rounded-2xl flex flex-col items-center justify-center text-center fade-in px-16 py-10">
+    app.innerHTML = `<div class="h-full bg-fn dotgrid flex flex-col items-center justify-center text-center fade-in px-16 py-8">
       <div class="text-7xl font-black text-white tracking-tight leading-none">freaknerd<span class="fn-green">_</span></div>
       <p class="fn-mono text-base uppercase tracking-[.35em] text-emerald-400 mt-4">Foro de ideación</p>
-      <img src="img/impercap_logo_solid.png" class="w-56 mt-10" onerror="this.style.display='none';$('muroEmpresa').classList.remove('hidden')"><h2 id="muroEmpresa" class="hidden text-5xl font-black text-white mt-10">${esc(s.empresa || s.nombre)}</h2>
-      <p class="text-xl text-gray-300 mt-8 max-w-4xl leading-relaxed">${esc(s.config.caso || '')}</p>
+      <img src="img/impercap_logo_solid.png" class="w-52 mt-12" onerror="this.style.display='none';$('muroEmpresa').classList.remove('hidden')"><h2 id="muroEmpresa" class="hidden text-5xl font-black text-white mt-12">${esc(s.empresa || s.nombre)}</h2>
+      <p class="text-lg text-gray-300 mt-10 max-w-4xl leading-relaxed">${esc(s.config.caso || '')}</p>
       <p class="mt-10 fn-mono text-sm text-gray-500"><i class="fas fa-mug-hot mr-2"></i>Bienvenidos · en un momento arrancamos</p></div>`; return;
   }
   if (et === 'instrucciones') {
