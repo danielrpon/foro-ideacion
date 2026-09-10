@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260910g">
+<meta name="app-version" content="20260910h">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Admin</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260910g"></script><script src="js/db.js?v=20260910g"></script><script src="js/common.js?v=20260910g"></script><script src="js/mece-ui.js?v=20260910g"></script><script src="js/demo-data.js?v=20260910g"></script>
+<script src="js/config.js?v=20260910h"></script><script src="js/db.js?v=20260910h"></script><script src="js/common.js?v=20260910h"></script><script src="js/mece-ui.js?v=20260910h"></script><script src="js/demo-data.js?v=20260910h"></script>
 <style>.fade-in{animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}} .tab{display:none}.tab.on{display:block}</style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col">
@@ -120,7 +120,7 @@ async function cargarDemo() {
   try { const r = await DEMO.cargar(snap, (t) => { const x = $('btnDemo'); if (x) x.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i>' + t; }); toast('Demo cargado: ' + r.participantes + ' participantes, ' + r.ideas + ' ideas'); await cargar(); }
   catch (e) { toast(errMsg(e), 'err'); await cargar(); }
 }
-async function cambiarEtapa(k) { const x = stageInfo(k); const min = x.timer ? Number(snap.sesion.config[x.timer] || 0) : 0; await op('cambiar_etapa', { etapa: k, minutos: min }, 'Etapa: ' + x.label); }
+async function cambiarEtapa(k) { const x = stageInfo(k); const min = x.timer ? Number(snap.sesion.config[x.timer] || 0) : 0; if (k === 'matriz' && snap.sesion.modo_matriz !== 'todas') { await DB.admin('proyectar', { idea_id: null }); await DB.admin('modo_matriz', { modo: 'todas' }); } await op('cambiar_etapa', { etapa: k, minutos: min }, 'Etapa: ' + x.label); }
 async function guardarPilar(id) { await op('upsert_pilar', { id, nombre: $('pn' + id).value, orden: Number($('po' + id).value), color: $('pc' + id).value, icono: $('pi' + id).value, enunciado: $('pe' + id).value, subfrentes: $('ps' + id).value.split('|').map(s => s.trim()).filter(Boolean) }, 'Pilar guardado'); }
 async function nuevoPilar() { const nombre = $('npNombre').value.trim(); if (!nombre) return toast('Nombre', 'warn'); await op('upsert_pilar', { nombre, enunciado: $('npEnun').value, color: $('npColor').value, orden: snap.pilares.length + 1, subfrentes: $('npSub').value.split('|').map(s => s.trim()).filter(Boolean) }, 'Pilar creado'); }
 async function guardarConfig() { await op('config', { nombre: $('cfNombre').value, empresa: $('cfEmpresa').value, facilitador: $('cfFac').value, config: { caso: $('cfCaso').value, restricciones: $('cfRestr').value.split('\n').map(s => s.trim()).filter(Boolean), votos_por_pilar: Number($('cfVotos').value), escala_max: Number($('cfEscala').value), max_calificaciones: Number($('cfMaxCal').value), minutos_ideacion: Number($('cfMinI').value), minutos_matriz: Number($('cfMinM').value) } }, 'Configuración guardada'); }
