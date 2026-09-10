@@ -31,6 +31,9 @@ window.COLORS = {
 window.col = (c) => COLORS[c] || COLORS.gray;
 
 /* Escala de calificación (1..N). Una sola fuente de verdad: config.escala_max, por defecto 5 */
+/* Tope de calificaciones por participante en la matriz (config.max_calificaciones, por defecto 8),
+   nunca mayor que el número de ideas a calificar */
+window.maxCalif = (sesion, nIdeas) => { const n = Number(sesion && sesion.config && sesion.config.max_calificaciones); const m = (n >= 1 && n <= 100) ? n : 8; return nIdeas ? Math.min(m, nIdeas) : m; };
 window.escalaMax = (sesion) => { const n = Number(sesion && sesion.config && sesion.config.escala_max); return (n >= 2 && n <= 10) ? n : 5; };
 
 /* Ideas que se califican en la matriz: las consolidadas (grupos) MÁS las ideas validadas que
@@ -48,7 +51,7 @@ window.toast = (msg, tipo = 'ok') => {
   t.textContent = msg; t.className = t.className.replace(/bg-\S+/g, '') + (tipo === 'err' ? ' bg-red-600' : tipo === 'warn' ? ' bg-amber-500' : ' bg-emerald-600');
   t.classList.remove('opacity-0'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('opacity-0'), 2600);
 };
-window.errMsg = (e) => { const m = String(e && e.message || e); if (/LIMITE_VOTOS/.test(m)) return 'Ya usaste tus votos en este pilar.'; if (/ETAPA_CERRADA/.test(m)) return 'Esta etapa ya se cerró.'; if (/CLAVE_INVALIDA/.test(m)) return 'Clave incorrecta.'; if (/SOLO_ADMIN/.test(m)) return 'Solo el administrador puede hacer esto.'; if (/duplicate|unique/i.test(m)) return 'Ya lo habías hecho.'; return m; };
+window.errMsg = (e) => { const m = String(e && e.message || e); if (/LIMITE_VOTOS/.test(m)) return 'Ya usaste tus votos en este pilar.'; if (/LIMITE_CALIFICACIONES/.test(m)) return 'Ya usaste todas tus calificaciones: quita una para calificar otra idea.'; if (/ETAPA_CERRADA/.test(m)) return 'Esta etapa ya se cerró.'; if (/CLAVE_INVALIDA/.test(m)) return 'Clave incorrecta.'; if (/SOLO_ADMIN/.test(m)) return 'Solo el administrador puede hacer esto.'; if (/duplicate|unique/i.test(m)) return 'Ya lo habías hecho.'; return m; };
 window.vibrar = (ms = 120) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
 window.baseUrl = () => location.origin + location.pathname.replace(/[^/]*$/, '');
 window.urlVista = (archivo) => baseUrl() + archivo + (DB.SES !== (FORO_CONFIG.SESION || 'impercap') ? '?s=' + encodeURIComponent(DB.SES) : '');

@@ -31,6 +31,7 @@
     DB.crearIdeas = async (arr) => ok(await sb.from('ideas').insert(arr.map(d => ({ sesion_id: SES, ...d, tipo: 'idea', estado: 'nueva' }))).select());
     DB.votar = async (idea_id, pid) => ok(await sb.from('votos').insert({ sesion_id: SES, idea_id, participante_id: pid }));
     DB.quitarVoto = async (idea_id, pid) => ok(await sb.from('votos').delete().eq('idea_id', idea_id).eq('participante_id', pid));
+    DB.quitarEvaluacion = async (idea_id, pid) => ok(await sb.from('evaluaciones').delete().eq('idea_id', idea_id).eq('participante_id', pid));
     DB.evaluar = async (idea_id, pid, esfuerzo, impacto) => ok(await sb.from('evaluaciones').upsert({ sesion_id: SES, idea_id, participante_id: pid, esfuerzo, impacto }, { onConflict: 'idea_id,participante_id' }));
     DB.admin = async (op, payload = {}, clave) => ok(await sb.rpc('admin_op', { p_sesion: SES, p_clave: clave || DB.clave, p_op: op, p_payload: payload }));
   }
@@ -44,7 +45,7 @@
     const seed = () => ({
       seq: 5,
       sesion: { id: SES, nombre: 'Foro de ideación · Impercap', empresa: 'Impercap', facilitador: 'Daniel Restrepo', etapa: 'bienvenida', etapa_ts: nowIso(), fin_etapa: null, proyectada_id: null, modo_matriz: 'todas', clave_admin: 'admin', clave_lider: 'lider', created_at: nowIso(),
-        config: { votos_por_pilar: 3, minutos_ideacion: 10, minutos_matriz: 8, escala_max: 5,
+        config: { votos_por_pilar: 3, minutos_ideacion: 10, minutos_matriz: 8, escala_max: 5, max_calificaciones: 8,
           caso: 'Impercap (Impermeables Vélez y Forero SAS) lleva más de 10 años fabricando impermeables para moto en plástico reciclado en Medellín. En 2025 vendió $2.734M (+50%) y enero–abril de 2026 iba +32%. Con El Niño, de mayo a agosto la venta cayó 40%: $153M/mes frente a ~$250M que necesita para cubrir sus costos, con 40 personas en nómina y la caja para pocos meses. El reto del foro: ideas que den ventas y aire financiero en los próximos 3 a 6 meses, desde Mercadeo y Ventas, Financiero, Estructura y Cultura, Operaciones y Otros.',
           restricciones: ['Caja limitada: no hay flujo para indemnizar ni para contratar sin retorno rápido', 'Un vendedor tarda ~3 meses en volverse rentable', 'El clima vuelve a favor ~febrero: el corto plazo es sobrevivir y llegar al punto de equilibrio', 'Puede haber activos vendibles o una línea de crédito: preguntar antes de asumir'] } },
       pilares: [
@@ -85,7 +86,8 @@
     DB.crearIdea = async (d) => { const s = load(); if (s.sesion.etapa !== 'ideacion') throw new Error('ETAPA_CERRADA'); const i = { id: nextId(s), sesion_id: SES, tipo: 'idea', estado: 'nueva', padre_id: null, texto_original: null, es_editado: false, origen: 'participante', titulo: null, descripcion_corta: null, detalle: null, responsable: null, tiempo_ejecucion: null, created_at: nowIso(), updated_at: nowIso(), ...d }; s.ideas.push(i); save(s); return delay(i); };
     DB.votar = async (idea_id, pid) => { const s = load(); if (s.sesion.etapa !== 'votacion') throw new Error('ETAPA_CERRADA'); const idea = s.ideas.find(i => i.id === idea_id); const max = s.sesion.config.votos_por_pilar || 3; const n = s.votos.filter(v => v.participante_id === pid && (s.ideas.find(i => i.id === v.idea_id) || {}).pilar_id === idea.pilar_id).length; if (n >= max) throw new Error('LIMITE_VOTOS'); if (s.votos.some(v => v.idea_id === idea_id && v.participante_id === pid)) throw new Error('duplicate'); s.votos.push({ id: nextId(s), sesion_id: SES, idea_id, participante_id: pid, created_at: nowIso() }); save(s); return delay(true); };
     DB.quitarVoto = async (idea_id, pid) => { const s = load(); s.votos = s.votos.filter(v => !(v.idea_id === idea_id && v.participante_id === pid)); save(s); return delay(true); };
-    DB.evaluar = async (idea_id, pid, esfuerzo, impacto) => { const s = load(); if (s.sesion.etapa !== 'matriz') throw new Error('ETAPA_CERRADA'); let e = s.evaluaciones.find(e => e.idea_id === idea_id && e.participante_id === pid); if (e) { e.esfuerzo = esfuerzo; e.impacto = impacto; e.updated_at = nowIso(); } else s.evaluaciones.push({ id: nextId(s), sesion_id: SES, idea_id, participante_id: pid, esfuerzo, impacto, created_at: nowIso(), updated_at: nowIso() }); save(s); return delay(true); };
+    DB.evaluar = async (idea_id, pid, esfuerzo, impacto) => { const s = load(); if (s.sesion.etapa !== 'matriz') throw new Error('ETAPA_CERRADA'); let e = s.evaluaciones.find(e => e.idea_id === idea_id && e.participante_id === pid); if (e) { e.esfuerzo = esfuerzo; e.impacto = impacto; e.updated_at = nowIso(); } else { const lim = Number(s.sesion.config.max_calificaciones) || 8; if (s.evaluaciones.filter(x => x.participante_id === pid).length >= lim) throw new Error('LIMITE_CALIFICACIONES'); s.evaluaciones.push({ id: nextId(s), sesion_id: SES, idea_id, participante_id: pid, esfuerzo, impacto, created_at: nowIso(), updated_at: nowIso() }); } save(s); return delay(true); };
+    DB.quitarEvaluacion = async (idea_id, pid) => { const s = load(); if (s.sesion.etapa !== 'matriz') throw new Error('ETAPA_CERRADA'); s.evaluaciones = s.evaluaciones.filter(e => !(e.idea_id === idea_id && e.participante_id === pid)); save(s); return delay(true); };
 
     DB.admin = async (op, payload = {}, clave) => {
       const s = load(); clave = clave || DB.clave;

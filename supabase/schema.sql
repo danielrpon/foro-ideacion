@@ -134,6 +134,21 @@ end $$;
 drop trigger if exists votos_limite_trg on votos;
 create trigger votos_limite_trg before insert on votos for each row execute function votos_limite();
 
+-- Tope de calificaciones por participante en la matriz (config.max_calificaciones, por defecto 8).
+-- Un upsert sobre una calificación existente no cuenta (es una actualización).
+create or replace function evaluaciones_limite() returns trigger language plpgsql as $$
+declare v_max int; v_n int; v_etapa text;
+begin
+  if exists (select 1 from evaluaciones e where e.idea_id = new.idea_id and e.participante_id = new.participante_id) then return new; end if;
+  select coalesce((config->>'max_calificaciones')::int,8), etapa into v_max, v_etapa from sesiones where id = new.sesion_id;
+  if v_etapa <> 'matriz' then raise exception 'ETAPA_CERRADA'; end if;
+  select count(*) into v_n from evaluaciones e where e.participante_id = new.participante_id and e.sesion_id = new.sesion_id;
+  if v_n >= v_max then raise exception 'LIMITE_CALIFICACIONES'; end if;
+  return new;
+end $$;
+drop trigger if exists evaluaciones_limite_trg on evaluaciones;
+create trigger evaluaciones_limite_trg before insert on evaluaciones for each row execute function evaluaciones_limite();
+
 -- ---------- RLS ----------
 alter table sesiones      enable row level security;
 alter table pilares       enable row level security;
@@ -165,6 +180,7 @@ drop policy if exists p_vot_ins on votos;        create policy p_vot_ins on voto
 drop policy if exists p_vot_del on votos;        create policy p_vot_del on votos for delete using (exists (select 1 from sesiones s where s.id = sesion_id and s.etapa = 'votacion'));
 drop policy if exists p_eva_ins on evaluaciones; create policy p_eva_ins on evaluaciones for insert with check (exists (select 1 from sesiones s where s.id = sesion_id and s.etapa = 'matriz'));
 drop policy if exists p_eva_upd on evaluaciones; create policy p_eva_upd on evaluaciones for update using (true) with check (exists (select 1 from sesiones s where s.id = sesion_id and s.etapa = 'matriz'));
+drop policy if exists p_eva_del on evaluaciones; create policy p_eva_del on evaluaciones for delete using (exists (select 1 from sesiones s where s.id = sesion_id and s.etapa = 'matriz'));
 
 -- ---------- RPC de administración (admin / líder) ----------
 create or replace function admin_op(p_sesion text, p_clave text, p_op text, p_payload jsonb default '{}'::jsonb)
