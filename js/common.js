@@ -60,7 +60,7 @@ window.toast = (msg, tipo = 'ok') => {
   t.textContent = msg; t.className = t.className.replace(/bg-\S+/g, '') + (tipo === 'err' ? ' bg-red-600' : tipo === 'warn' ? ' bg-amber-500' : ' bg-emerald-600');
   t.classList.remove('opacity-0'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('opacity-0'), 2600);
 };
-window.errMsg = (e) => { const m = String(e && e.message || e); if (/LIMITE_VOTOS/.test(m)) return 'Ya usaste tus votos en este pilar.'; if (/LIMITE_CALIFICACIONES/.test(m)) return 'Ya usaste todas tus calificaciones: quita una para calificar otra idea.'; if (/ETAPA_CERRADA/.test(m)) return 'Esta etapa ya se cerró.'; if (/CLAVE_INVALIDA/.test(m)) return 'Clave incorrecta.'; if (/SOLO_ADMIN/.test(m)) return 'Solo el administrador puede hacer esto.'; if (/duplicate|unique/i.test(m)) return 'Ya lo habías hecho.'; return m; };
+window.errMsg = (e) => { const m = String(e && e.message || e); if (/row-level security|violates/i.test(m)) return 'Esta etapa ya se cerró: el moderador pasó a la siguiente.'; if (/Failed to fetch|NetworkError|Load failed|network|timeout/i.test(m)) return 'Sin conexión. Revisa el Wi‑Fi o los datos y reintenta.'; if (/LIMITE_VOTOS/.test(m)) return 'Ya usaste tus votos en este pilar.'; if (/LIMITE_CALIFICACIONES/.test(m)) return 'Ya usaste todas tus calificaciones: quita una para calificar otra idea.'; if (/ETAPA_CERRADA/.test(m)) return 'Esta etapa ya se cerró.'; if (/CLAVE_INVALIDA/.test(m)) return 'Clave incorrecta.'; if (/SOLO_ADMIN/.test(m)) return 'Solo el administrador puede hacer esto.'; if (/duplicate|unique/i.test(m)) return 'Ya lo habías hecho.'; return m; };
 window.vibrar = (ms = 120) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
 window.baseUrl = () => location.origin + location.pathname.replace(/[^/]*$/, '');
 window.urlVista = (archivo) => baseUrl() + archivo + (DB.SES !== (FORO_CONFIG.SESION || 'impercap') ? '?s=' + encodeURIComponent(DB.SES) : '');
@@ -192,7 +192,7 @@ window.MECE = {
     const usados = new Set(); const grupos = [];
     obj.grupos.forEach(g => {
       const ids = [...new Set((g.ideas || []).map(Number))].filter(id => { const i = ideas.find(x => x.id === id); if (!i || usados.has(id)) return false; usados.add(id); return true; });
-      const pilar_id = Number(g.pilar_id) || (ids.length ? (ideas.find(x => x.id === ids[0]) || {}).pilar_id : null);
+      const pilar_id = (ids.length ? (ideas.find(x => x.id === ids[0]) || {}).pilar_id : null) || (pilares.some(p => p.id === Number(g.pilar_id)) ? Number(g.pilar_id) : null);
       grupos.push({ pilar_id, titulo: String(g.titulo || '').slice(0, 80), descripcion_corta: String(g.descripcion_corta || '').slice(0, 160), detalle: String(g.detalle || ''), ideas: ids, origen: 'ia' });
     });
     pilares.forEach(p => {

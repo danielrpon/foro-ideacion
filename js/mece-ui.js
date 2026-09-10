@@ -80,6 +80,6 @@ window.MeceUI = {
   async aplicar(reemplazar) {
     if (!this.preview) return; const pid = this.opts.pilarId || (this.scope ? Number(this.scope) : null);
     if (reemplazar && !confirm('¿Reemplazar los grupos existentes ' + (pid ? 'de este pilar' : 'de todos los pilares') + ' por esta consolidación? Las ideas originales no se pierden.')) return;
-    try { await DB.admin('importar_consolidacion', { grupos: this.preview.grupos, reemplazar, pilar_id: pid }); toast('Consolidación aplicada ✓'); this.preview = null; $('mecePreview').innerHTML = ''; this.opts.onApplied && this.opts.onApplied(); } catch (e) { toast(errMsg(e), 'err'); }
+    try { await DB.admin('importar_consolidacion', { grupos: this.preview.grupos.filter(g => g.ideas.length), reemplazar, pilar_id: pid }); toast('Consolidación aplicada ✓'); this.preview = null; $('mecePreview').innerHTML = ''; this.opts.onApplied && this.opts.onApplied(); } catch (e) { toast(errMsg(e), 'err'); }
   }
 };

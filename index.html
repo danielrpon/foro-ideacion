@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260910h">
+<meta name="app-version" content="20260910i">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Participante</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260910h"></script><script src="js/db.js?v=20260910h"></script><script src="js/common.js?v=20260910h"></script>
+<script src="js/config.js?v=20260910i"></script><script src="js/db.js?v=20260910i"></script><script src="js/common.js?v=20260910i"></script>
 <style>
   .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:14px 14px}
@@ -27,12 +27,16 @@
 <main class="flex-1 p-4"><div id="app" class="max-w-md mx-auto"></div></main>
 <script>
 const PERFILES = ['Mercadeo / Ventas', 'Finanzas / Inversión', 'Operaciones / Cadena de abastecimiento', 'Gente / Cultura', 'Digital / Tecnología / IA', 'Estrategia / Gerencia general', 'Empresario', 'Otro'];
-let snap = null, yo = Yo.get(), pilarSel = null, votosMios = [], evalsMias = {}, viewKey = '', ultimaProyectada = null, consKey = '', sel = {};
+let snap = null, yo = Yo.get(), yoVerificado = false, pilarSel = null, votosMios = [], evalsMias = {}, viewKey = '', ultimaProyectada = null, consKey = '', sel = {};
 renderNav('participante', '', { app: false });
 
 async function cargar() {
   snap = await DB.snapshot();
   setNavEtapa(snap.sesion);
+  if (yo && ['bienvenida', 'instrucciones'].includes(snap.sesion.etapa) && !yoVerificado) {
+    /* Tras "Reiniciar tablero" el registro guardado en el celular apunta a un participante borrado: volver al registro */
+    try { const ps = await DB.getParticipantes(); if (!ps.some(p => p.id === yo.id)) { Yo.clear(); yo = null; viewKey = ''; toast('El foro se reinició: regístrate de nuevo', 'warn'); } else yoVerificado = true; } catch (e) {}
+  }
   if (yo) {
     if (snap.sesion.etapa === 'votacion') votosMios = await DB.getVotos(yo.id);
     if (snap.sesion.etapa === 'matriz') { evalsMias = {}; (await DB.getEvaluaciones(yo.id)).forEach(e => evalsMias[e.idea_id] = e); }
@@ -188,7 +192,8 @@ function render() {
 async function registrar() {
   const nombre = $('regNombre').value.trim(), perfil = $('regPerfil').value;
   if (nombre.length < 2) return toast('Escribe tu nombre', 'warn');
-  try { yo = await DB.registrar(nombre, perfil); Yo.set(yo); viewKey = ''; toast('¡Listo, ' + nombre.split(' ')[0] + '!'); await cargar(); } catch (e) { toast(errMsg(e), 'err'); }
+  const b = document.querySelector('button[onclick="registrar()"]'); if (b) { if (b.disabled) return; b.disabled = true; b.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i>Entrando…'; }
+  try { yo = await DB.registrar(nombre, perfil); Yo.set(yo); yoVerificado = true; viewKey = ''; toast('¡Listo, ' + nombre.split(' ')[0] + '!'); await cargar(); } catch (e) { toast(errMsg(e), 'err'); if (b) { b.disabled = false; b.innerHTML = 'Entrar al foro <i class="fas fa-arrow-right ml-1"></i>'; } }
 }
 function salir() { if (confirm('¿Registrarte con otro nombre?')) { Yo.clear(); yo = null; viewKey = ''; render(); } }
 function setPilar(id) { pilarSel = id; viewKey = ''; render(); }
