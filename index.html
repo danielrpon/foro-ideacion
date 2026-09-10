@@ -10,11 +10,12 @@
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260910c"></script><script src="js/db.js?v=20260910c"></script><script src="js/common.js?v=20260910c"></script>
+<script src="js/config.js?v=20260910d"></script><script src="js/db.js?v=20260910d"></script><script src="js/common.js?v=20260910d"></script>
 <style>
   .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .pick{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
   .sticky-top{position:sticky;top:56px;z-index:20}
+  [id^=card]{scroll-margin-top:170px}
   .chips{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:4px}
 </style>
 </head>
@@ -145,9 +146,12 @@ function render() {
     if (full) {
       lista.forEach(g => { const e = evalsMias[g.id]; sel[g.id] = e ? { e: e.esfuerzo, i: e.impacto } : (sel[g.id] || { e: null, i: null }); });
       app.innerHTML = `<div class="fade-in">
-        <div class="sticky-top bg-gray-100 -mx-4 px-4 py-2 mb-2 border-b"><div class="flex justify-between items-center"><span class="text-xs font-mono uppercase tracking-widest text-gray-500">Etapa 6 · Esfuerzo · Impacto</span><span id="tmr" class="font-mono text-sm font-bold">${timerText(s)}</span></div>
-        <div class="flex items-center gap-2 mt-1"><div class="flex-1 h-2 bg-gray-200 rounded"><div id="progBar" class="h-2 rounded ${quedan ? 'bg-emerald-500' : 'bg-gray-800'} transition-all" style="width:${pct(hechas, lim)}%"></div></div><span id="prog" class="text-xs font-bold ${quedan ? 'text-gray-600' : 'text-gray-900'} whitespace-nowrap">${hechas} de ${lim} · te quedan ${quedan}</span></div></div>
-        <p class="text-[11px] text-gray-500 mb-2">Tienes hasta <b>${lim}</b> calificaciones para ${gs.length} ideas: úsalas donde tengas criterio. Toca un número por criterio (1 = poco · ${max} = mucho) y guarda.</p>
+        <div class="sticky-top bg-gray-100 -mx-4 px-4 pt-2 pb-3 mb-3 border-b"><div class="flex justify-between items-center"><span class="text-xs font-mono uppercase tracking-widest text-gray-500">Etapa 6 · Esfuerzo · Impacto</span><span id="tmr" class="font-mono text-sm font-bold">${timerText(s)}</span></div>
+          <div class="mt-2 flex items-center gap-3"><div class="shrink-0 text-center leading-none"><div class="text-3xl font-black ${quedan ? 'text-emerald-600' : 'text-gray-900'}">${quedan}</div><div class="text-[9px] font-mono uppercase text-gray-500 mt-0.5">te quedan</div></div>
+            <div class="flex-1 min-w-0"><div class="text-sm font-bold text-gray-800 leading-tight">${hechas > lim ? `Tienes ${hechas} guardadas y el tope es ${lim}` : quedan ? `Puedes calificar ${quedan} idea${quedan === 1 ? '' : 's'} más` : `Usaste tus ${lim} calificaciones`}</div><div class="text-[11px] text-gray-500 leading-tight mt-0.5">${hechas > lim ? 'Quita las que menos aporten; no puedes guardar nuevas.' : quedan ? `${hechas} guardada${hechas === 1 ? '' : 's'} de ${lim} · ${gs.length} ideas en total · elige donde tengas criterio` : 'Para cambiar una, quita otra primero.'}</div>
+              <div class="h-2 bg-gray-200 rounded mt-1.5 overflow-hidden"><div id="progBar" class="h-2 rounded ${quedan ? 'bg-emerald-500' : 'bg-gray-800'} transition-all" style="width:${Math.min(100, pct(hechas, lim))}%"></div></div></div>
+            ${(quedan && gs.some(g => !evalsMias[g.id])) ? `<button onclick="irPendiente()" class="pick shrink-0 bg-white border border-gray-300 rounded-lg px-2.5 py-2 text-[11px] font-bold text-gray-700"><i class="fas fa-arrow-down mr-1"></i>Siguiente<br>pendiente</button>` : ''}</div></div>
+        <p class="text-[11px] text-gray-500 mb-2">Toca un número por criterio: 1 = poco · ${max} = mucho. Esfuerzo = plata, tiempo y gente; impacto = ventas y caja en 3 a 6 meses.</p>
         ${lista.length ? lista.map(g => { const c = col(g.pilar_color), e = evalsMias[g.id]; return `<div class="bg-white rounded-xl shadow p-4 mb-3 border-l-4 ${c.border}" id="card${g.id}">
           <div class="text-[10px] font-mono uppercase ${c.text}">${esc(g.pilar_nombre || '')}</div>
           <div class="font-bold ${s.modo_matriz === 'proyectada' ? 'text-xl' : ''}">${esc(g.titulo || g.texto)}</div><p class="text-sm text-gray-600 mt-1">${esc(g.descripcion_corta || '')}</p>
@@ -213,6 +217,7 @@ async function guardarEval(id) {
   catch (e) { toast(errMsg(e), 'err'); if (btn) { btn.innerHTML = 'Reintentar guardar'; btn.className = 'pick mt-3 w-full py-3 rounded-lg font-bold text-sm bg-red-600 text-white'; } }
   finally { if (btn) btn.disabled = false; }
 }
+function irPendiente() { const g = grupos().find(x => !evalsMias[x.id]); const el = g && $('card' + g.id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.add('ring-2', 'ring-emerald-400'); setTimeout(() => el.classList.remove('ring-2', 'ring-emerald-400'), 1500); } }
 async function quitarEval(id) {
   if (!evalsMias[id]) return;
   try { await DB.quitarEvaluacion(id, yo.id); delete evalsMias[id]; sel[id] = { e: null, i: null }; toast('Calificación quitada: tienes una más disponible'); viewKey = ''; render(); } catch (e) { toast(errMsg(e), 'err'); }
