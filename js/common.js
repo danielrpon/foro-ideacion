@@ -66,10 +66,10 @@ window.baseUrl = () => location.origin + location.pathname.replace(/[^/]*$/, '')
 window.urlVista = (archivo) => baseUrl() + archivo + (DB.SES !== (FORO_CONFIG.SESION || 'impercap') ? '?s=' + encodeURIComponent(DB.SES) : '');
 
 /* Nav superior (igual en todas las vistas) */
-window.renderNav = (vista, extra = '') => {
+window.renderNav = (vista, extra = '', opts = {}) => {
   const nav = document.querySelector('nav[data-nav]'); if (!nav) return;
   nav.innerHTML = `
-    <div class="flex items-center gap-3 shrink-0"><span class="fn-mono font-bold text-base tracking-tight">freaknerd<span class="fn-green">_</span></span><span class="text-gray-600 hidden sm:inline">|</span><span class="font-bold text-sm hidden sm:inline text-gray-200">${esc(FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span></div>
+    <div class="flex items-center gap-3 shrink-0"><span class="fn-mono font-bold text-base tracking-tight">freaknerd<span class="fn-green">_</span></span>${opts.app === false ? '' : `<span class="text-gray-600 hidden sm:inline">|</span><span class="font-bold text-sm hidden sm:inline text-gray-200">${esc(FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span>`}</div>
     <div class="text-sm flex items-center gap-2 min-w-0">
       ${DB.MODE === 'local' ? '<span class="bg-amber-500 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
       <span id="navEtapa" class="fn-mono bg-emerald-400 text-black px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider truncate max-w-[58vw] sm:max-w-none">${esc(vista)}</span>
