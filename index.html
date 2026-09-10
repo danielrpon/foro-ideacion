@@ -5,18 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Participante</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="vendor/fonts.css" rel="stylesheet">
+<script src="vendor/tailwind.js"></script>
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/config.js"></script><script src="js/db.js"></script><script src="js/common.js"></script>
+<link rel="stylesheet" href="vendor/fontawesome.min.css">
+<script src="vendor/supabase.min.js"></script>
+<script src="js/config.js?v=20260909"></script><script src="js/db.js?v=20260909"></script><script src="js/common.js?v=20260909"></script>
 <style>
   .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  input[type=range]{accent-color:#2563eb;width:100%;height:44px;margin:0;touch-action:pan-y}
-  input[type=range]::-webkit-slider-thumb{width:30px;height:30px}
+  .pick{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
   .sticky-top{position:sticky;top:56px;z-index:20}
-  .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}.chips::-webkit-scrollbar{display:none}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:4px}
 </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col">
@@ -25,7 +24,7 @@
 <main class="flex-1 p-4"><div id="app" class="max-w-md mx-auto"></div></main>
 <script>
 const PERFILES = ['Mercadeo / Ventas', 'Finanzas / Inversión', 'Operaciones / Cadena de abastecimiento', 'Gente / Cultura', 'Digital / Tecnología / IA', 'Estrategia / Gerencia general', 'Empresario', 'Otro'];
-let snap = null, yo = Yo.get(), pilarSel = null, votosMios = [], evalsMias = {}, viewKey = '', ultimaProyectada = null, consKey = '';
+let snap = null, yo = Yo.get(), pilarSel = null, votosMios = [], evalsMias = {}, viewKey = '', ultimaProyectada = null, consKey = '', sel = {};
 renderNav('participante');
 
 async function cargar() {
@@ -39,7 +38,7 @@ async function cargar() {
 }
 setInterval(() => { if (yo) DB.ping(yo.id); }, 30000);
 
-function grupos() { return snap.ideas.filter(i => i.tipo === 'grupo').sort((a, b) => (a.pilar_orden - b.pilar_orden) || (a.id - b.id)); }
+function grupos() { return calificables(snap.ideas); }
 function misIdeas(pid) { return snap.ideas.filter(i => i.tipo === 'idea' && i.participante_id === yo.id && (!pid || i.pilar_id === pid)); }
 function pilar(id) { return snap.pilares.find(p => p.id === id); }
 function hijasHtml(g) { const h = snap.ideas.filter(i => i.tipo === 'idea' && i.padre_id === g.id); if (!h.length) return ''; return `<details class="mt-2"><summary class="cursor-pointer text-[11px] font-mono uppercase text-gray-500 select-none"><i class="fas fa-caret-right mr-1"></i>Integra ${h.length} idea(s) · ver</summary><ul class="mt-1 pl-3 border-l-2 border-gray-200 space-y-1">${h.map(i => `<li class="text-xs text-gray-700">${esc(i.texto)}</li>`).join('')}</ul></details>`; }
@@ -76,7 +75,8 @@ function render() {
       <p class="text-xs font-mono text-emerald-700 uppercase tracking-widest"><span class="normal-case">freaknerd_</span> · Bienvenido</p>
       <h1 class="text-2xl font-black mt-1">Hola, ${esc(yo.nombre.split(' ')[0])} 👋</h1>
       <p class="text-sm text-gray-600 mt-2">${esc(s.config.caso || '')}</p>
-      <div class="mt-4 space-y-2">${snap.pilares.map(p => { const c = col(p.color); return `<div class="flex items-center gap-3 p-2 rounded-lg ${c.bg}"><i class="fas ${p.icono} ${c.text}"></i><span class="text-sm font-bold ${c.text}">${esc(p.nombre)}</span></div>`; }).join('')}</div>
+      <p class="text-[11px] font-mono uppercase tracking-widest text-gray-400 mt-4">Los pilares · toca uno para ver de qué se trata</p>
+      <div class="mt-2 space-y-2">${snap.pilares.map(p => { const c = col(p.color); return `<details class="rounded-lg ${c.bg} overflow-hidden"><summary class="flex items-center gap-3 p-2.5 cursor-pointer"><i class="fas ${p.icono} ${c.text}"></i><span class="text-sm font-bold ${c.text} flex-1">${esc(p.nombre)}</span><i class="fas fa-chevron-down text-xs ${c.text} opacity-60"></i></summary><div class="px-3 pb-3 text-xs text-gray-700">${esc(p.enunciado || '')}${(p.subfrentes && p.subfrentes.length) ? `<div class="mt-2 flex flex-wrap gap-1">${p.subfrentes.map(f => `<span class="px-2 py-0.5 rounded-full bg-white/70 ${c.text} text-[10px] font-bold">${esc(f)}</span>`).join('')}</div>` : ''}</div></details>`; }).join('')}</div>
       <div class="mt-6 text-center text-gray-400 text-sm"><i class="fas fa-circle-notch fa-spin mr-1"></i>Esperando a que el moderador abra la ideación…</div>
       <button onclick="salir()" class="mt-4 text-[11px] text-gray-400 underline w-full text-center">No soy ${esc(yo.nombre)}</button>
     </div>`; return;
@@ -92,7 +92,7 @@ function render() {
         ${chipsPilares(pilarSel, 'setPilar')}
         <div class="bg-white rounded-xl shadow p-4 border-t-4 ${c.border}">
           <h2 class="font-black text-lg ${c.text}"><i class="fas ${p.icono} mr-1"></i>${esc(p.nombre)}</h2>
-          <p class="text-sm text-gray-600 mt-1">${esc(p.enunciado || '')}</p>
+          <p class="text-[10px] font-mono uppercase tracking-widest text-gray-400 mt-2">De qué se trata este pilar</p><p class="text-sm text-gray-600 mt-0.5">${esc(p.enunciado || '')}</p>
           ${(p.subfrentes && p.subfrentes.length) ? `<label class="block text-xs font-bold text-gray-600 mt-3 mb-1">Frente</label><select id="subfrente" class="w-full p-2 border rounded-lg bg-white text-sm">${p.subfrentes.map(f => `<option>${esc(f)}</option>`).join('')}<option value="">Otro / general</option></select>` : ''}
           <label class="block text-xs font-bold text-gray-600 mt-3 mb-1">Tu idea (qué haría Mauricio, en una o dos frases)</label>
           <textarea id="txtIdea" rows="4" class="w-full p-3 border rounded-lg text-sm" placeholder="Ej.: Contratar un vendedor de campo para Cali con fijo bajo y comisión alta…"></textarea>
@@ -136,23 +136,25 @@ function render() {
   if (et === 'resultados') { if (!full) return; const top = gs.slice().sort((a, b) => b.votos - a.votos).slice(0, 5); app.innerHTML = `<div class="bg-white rounded-xl shadow p-6 mt-2 fade-in"><h2 class="text-xl font-black">Resultados de la votación</h2><p class="text-sm text-gray-500">Mira el muro. Las más votadas:</p><ol class="mt-3 space-y-2 list-decimal pl-5">${top.map(g => `<li class="text-sm"><b>${esc(g.titulo || g.texto)}</b> <span class="text-gray-400">· ${g.votos} votos</span></li>`).join('')}</ol></div>`; return; }
 
   /* ---------- Matriz ---------- */
-  if (et === 'instrucciones_matriz') { if (full) app.innerHTML = espera('Ya casi: matriz esfuerzo · impacto', `Vas a calificar cada idea consolidada de 1 a ${s.config.escala_max || 10} en esfuerzo y en impacto. Piensa en 3 a 6 meses y en la caja que hay.`, 'fa-chart-line'); return; }
+  if (et === 'instrucciones_matriz') { if (full) app.innerHTML = espera('Ya casi: matriz esfuerzo · impacto', `Vas a calificar cada idea consolidada de 1 a ${escalaMax(s)} en esfuerzo y en impacto: 1 = poco, ${escalaMax(s)} = mucho. Toca un número por criterio y guarda. Piensa en 3 a 6 meses y en la caja que hay.`, 'fa-chart-line'); return; }
   if (et === 'matriz') {
-    const max = s.config.escala_max || 10;
+    const max = escalaMax(s);
     const lista = (s.modo_matriz === 'proyectada') ? gs.filter(g => g.id === s.proyectada_id) : gs;
     if (s.modo_matriz === 'proyectada' && s.proyectada_id && s.proyectada_id !== ultimaProyectada) { ultimaProyectada = s.proyectada_id; vibrar(200); }
     const hechas = lista.filter(g => evalsMias[g.id]).length;
     if (full) {
+      lista.forEach(g => { const e = evalsMias[g.id]; sel[g.id] = e ? { e: e.esfuerzo, i: e.impacto } : (sel[g.id] || { e: null, i: null }); });
       app.innerHTML = `<div class="fade-in">
         <div class="sticky-top bg-gray-100 -mx-4 px-4 py-2 mb-2 border-b"><div class="flex justify-between items-center"><span class="text-xs font-mono uppercase tracking-widest text-gray-500">Etapa 6 · Esfuerzo · Impacto</span><span id="tmr" class="font-mono text-sm font-bold">${timerText(s)}</span></div>
         <div class="flex items-center gap-2 mt-1"><div class="flex-1 h-2 bg-gray-200 rounded"><div id="progBar" class="h-2 rounded bg-emerald-500 transition-all" style="width:${pct(hechas, lista.length)}%"></div></div><span id="prog" class="text-xs font-bold text-gray-600 whitespace-nowrap">${hechas} de ${lista.length} calificadas</span></div></div>
+        <p class="text-[11px] text-gray-500 mb-2">Toca un número por criterio (1 = poco · ${max} = mucho) y guarda. Si una idea no te dice nada, puedes dejarla sin calificar.</p>
         ${lista.length ? lista.map(g => { const c = col(g.pilar_color), e = evalsMias[g.id]; return `<div class="bg-white rounded-xl shadow p-4 mb-3 border-l-4 ${c.border}" id="card${g.id}">
           <div class="text-[10px] font-mono uppercase ${c.text}">${esc(g.pilar_nombre || '')}</div>
           <div class="font-bold ${s.modo_matriz === 'proyectada' ? 'text-xl' : ''}">${esc(g.titulo || g.texto)}</div><p class="text-sm text-gray-600 mt-1">${esc(g.descripcion_corta || '')}</p>
           ${s.modo_matriz === 'proyectada' && g.detalle ? `<p class="text-xs text-gray-500 mt-2">${esc(g.detalle)}</p>` : ''}${hijasHtml(g)}
-          <div class="mt-3"><div class="flex justify-between text-xs font-bold"><span class="text-purple-700"><i class="fas fa-dumbbell mr-1"></i>Esfuerzo</span><span id="ve${g.id}" class="font-mono">${e ? e.esfuerzo : '–'}</span></div><input type="range" min="1" max="${max}" value="${e ? e.esfuerzo : Math.ceil(max / 2)}" id="e${g.id}" oninput="$('ve${g.id}').textContent=this.value;marcarPendiente(${g.id})" style="accent-color:#7e22ce"><div class="flex justify-between text-[10px] text-gray-400"><span>1 · fácil y barato</span><span>${max} · exige inversión</span></div></div>
-          <div class="mt-2"><div class="flex justify-between text-xs font-bold"><span class="text-blue-700"><i class="fas fa-bolt mr-1"></i>Impacto</span><span id="vi${g.id}" class="font-mono">${e ? e.impacto : '–'}</span></div><input type="range" min="1" max="${max}" value="${e ? e.impacto : Math.ceil(max / 2)}" id="i${g.id}" oninput="$('vi${g.id}').textContent=this.value;marcarPendiente(${g.id})"><div class="flex justify-between text-[10px] text-gray-400"><span>1 · casi nada</span><span>${max} · cambia el juego</span></div></div>
-          <button id="btn${g.id}" onclick="guardarEval(${g.id})" class="mt-3 w-full py-3 rounded-lg font-bold text-sm ${e ? 'bg-emerald-600 text-white' : 'bg-gray-900 text-emerald-400'}">${e ? '<i class="fas fa-check mr-1"></i>Guardada · toca para cambiar' : 'Guardar calificación'}</button><div id="st${g.id}" class="text-[11px] text-center text-gray-400 mt-1">${e ? 'Puedes ajustar las barras y volver a guardar' : 'Mueve las barras y toca Guardar'}</div>
+          ${pickHtml(g.id, 'e', max, sel[g.id].e)}
+          ${pickHtml(g.id, 'i', max, sel[g.id].i)}
+          <button id="btn${g.id}" onclick="guardarEval(${g.id})" class="pick mt-3 w-full py-3 rounded-lg font-bold text-sm ${e ? 'bg-emerald-600 text-white' : (sel[g.id].e && sel[g.id].i ? 'bg-gray-900 text-emerald-400' : 'bg-gray-200 text-gray-500')}">${e ? '<i class="fas fa-check mr-1"></i>Guardada · toca un número para cambiar' : 'Guardar calificación'}</button><div id="st${g.id}" class="text-[11px] text-center text-gray-400 mt-1">${e ? 'Puedes cambiar los números y volver a guardar' : 'Elige esfuerzo e impacto'}</div>
         </div>`; }).join('') : espera('Esperando la idea proyectada', 'El moderador va a proyectar una idea en el muro; tu celular vibrará.', 'fa-tv')}
       </div>`;
     } else { const t = $('tmr'); if (t) t.textContent = timerText(s); const pr = $('prog'); if (pr) pr.textContent = `${hechas} de ${lista.length} calificadas`; }
@@ -162,7 +164,7 @@ function render() {
   /* ---------- Cierre / reporte ---------- */
   if (['cierre', 'reporte'].includes(et)) {
     if (!full) return;
-    const max = s.config.escala_max || 10;
+    const max = escalaMax(s);
     const qw = gs.filter(g => g.conteo_eval > 0 && cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key === 'quick').sort((a, b) => b.impacto_prom - a.impacto_prom);
     app.innerHTML = `<div class="bg-white rounded-xl shadow p-6 mt-2 fade-in"><h2 class="text-xl font-black">¡Gracias, ${esc(yo.nombre.split(' ')[0])}!</h2><p class="text-sm text-gray-600 mt-1">Mira el muro: ahí está la matriz del foro. Quick wins identificados:</p>
       <div class="mt-3 space-y-2">${qw.length ? qw.map(g => `<div class="p-3 rounded-lg bg-emerald-50 border border-emerald-300 text-sm"><b>${esc(g.titulo || g.texto)}</b><div class="text-[11px] text-gray-500 mt-1">Impacto ${g.impacto_prom} · Esfuerzo ${g.esfuerzo_prom} · ${g.conteo_eval} calificaciones</div></div>`).join('') : '<p class="text-xs text-gray-400">Todavía no hay quick wins calculados.</p>'}</div></div>`; return;
@@ -186,15 +188,28 @@ async function enviarIdea() {
 async function toggleVoto(id) {
   try { if (votosMios.includes(id)) await DB.quitarVoto(id, yo.id); else await DB.votar(id, yo.id); vibrar(40); await cargar(); } catch (e) { toast(errMsg(e), 'err'); }
 }
-function marcarPendiente(id) { const btn = $('btn' + id); if (btn && !btn.disabled) { btn.className = 'mt-3 w-full py-3 rounded-lg font-bold text-sm bg-gray-900 text-emerald-400'; btn.innerHTML = 'Guardar calificación'; } }
+/* Calificación por botones (1..max): sin barras deslizantes, nada se mueve al hacer scroll */
+const CRIT = { e: { label: 'Esfuerzo', icon: 'fa-dumbbell', on: 'bg-purple-600 text-white border-purple-600', txt: 'text-purple-700', hint: 'plata, tiempo, gente' }, i: { label: 'Impacto', icon: 'fa-bolt', on: 'bg-blue-600 text-white border-blue-600', txt: 'text-blue-700', hint: 'ventas y caja en 3–6 meses' } };
+function pickHtml(id, k, max, val) {
+  const c = CRIT[k];
+  return `<div class="mt-3"><div class="flex justify-between items-baseline text-xs font-bold"><span class="${c.txt}"><i class="fas ${c.icon} mr-1"></i>${c.label} <span class="font-normal text-gray-400">· ${c.hint}</span></span><span id="v${k}${id}" class="font-mono">${val || '–'}</span></div>
+    <div class="grid gap-1.5 mt-1" style="grid-template-columns:repeat(${max},minmax(0,1fr))" id="${k}${id}">${Array.from({ length: max }, (_, n) => n + 1).map(v => `<button type="button" onclick="pick(${id},'${k}',${v})" data-v="${v}" class="pick py-3 rounded-lg font-black text-base border ${val === v ? c.on : 'bg-white text-gray-700 border-gray-300 active:bg-gray-100'}">${v}</button>`).join('')}</div></div>`;
+}
+function pick(id, k, v) {
+  sel[id] = sel[id] || { e: null, i: null }; sel[id][k] = v; const c = CRIT[k];
+  const box = $(k + id); if (box) box.querySelectorAll('button').forEach(b => b.className = 'pick py-3 rounded-lg font-black text-base border ' + (Number(b.dataset.v) === v ? c.on : 'bg-white text-gray-700 border-gray-300 active:bg-gray-100'));
+  const lbl = $('v' + k + id); if (lbl) lbl.textContent = v; vibrar(20); marcarPendiente(id);
+}
+function marcarPendiente(id) { const btn = $('btn' + id); const st = $('st' + id); const ok = sel[id] && sel[id].e && sel[id].i; if (btn && !btn.disabled) { btn.className = 'pick mt-3 w-full py-3 rounded-lg font-bold text-sm ' + (ok ? 'bg-gray-900 text-emerald-400' : 'bg-gray-200 text-gray-500'); btn.innerHTML = 'Guardar calificación'; } if (st) st.textContent = ok ? 'Lista para guardar' : (sel[id] && sel[id].e ? 'Falta el impacto' : sel[id] && sel[id].i ? 'Falta el esfuerzo' : 'Elige esfuerzo e impacto'); }
 async function guardarEval(id) {
-  const esf = Number($('e' + id).value), imp = Number($('i' + id).value);
+  const v = sel[id] || {}; const esf = Number(v.e), imp = Number(v.i);
+  if (!esf || !imp) return toast(!esf && !imp ? 'Elige esfuerzo e impacto' : !esf ? 'Falta el esfuerzo' : 'Falta el impacto', 'warn');
   const btn = $('btn' + id); if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i>Guardando…'; }
-  try { await DB.evaluar(id, yo.id, esf, imp); evalsMias[id] = { idea_id: id, esfuerzo: esf, impacto: imp }; $('ve' + id).textContent = esf; $('vi' + id).textContent = imp;
-    if (btn) { btn.className = 'mt-3 w-full py-3 rounded-lg font-bold text-sm bg-emerald-600 text-white'; btn.innerHTML = '<i class="fas fa-check mr-1"></i>Guardada · toca para cambiar'; } $('st' + id).textContent = 'Puedes ajustar las barras y volver a guardar'; toast('Calificación guardada ✓'); vibrar(40);
+  try { await DB.evaluar(id, yo.id, esf, imp); evalsMias[id] = { idea_id: id, esfuerzo: esf, impacto: imp };
+    if (btn) { btn.className = 'pick mt-3 w-full py-3 rounded-lg font-bold text-sm bg-emerald-600 text-white'; btn.innerHTML = '<i class="fas fa-check mr-1"></i>Guardada · toca un número para cambiar'; } $('st' + id).textContent = 'Puedes cambiar los números y volver a guardar'; toast('Calificación guardada ✓'); vibrar(40);
     const lista = snap.sesion.modo_matriz === 'proyectada' ? 1 : grupos().length; const n = Object.keys(evalsMias).filter(k => grupos().some(g => g.id === Number(k))).length; const pr = $('prog'); if (pr) pr.textContent = `${n} de ${lista} calificadas`; const pb = $('progBar'); if (pb) pb.style.width = pct(n, lista) + '%';
     if (n >= lista && lista > 0) toast('¡Listo! Calificaste todas las ideas 🎉'); }
-  catch (e) { toast(errMsg(e), 'err'); if (btn) { btn.innerHTML = 'Reintentar guardar'; btn.className = 'mt-3 w-full py-3 rounded-lg font-bold text-sm bg-red-600 text-white'; } }
+  catch (e) { toast(errMsg(e), 'err'); if (btn) { btn.innerHTML = 'Reintentar guardar'; btn.className = 'pick mt-3 w-full py-3 rounded-lg font-bold text-sm bg-red-600 text-white'; } }
   finally { if (btn) btn.disabled = false; }
 }
 Poll.start(cargar);

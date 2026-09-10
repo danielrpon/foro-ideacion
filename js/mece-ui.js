@@ -5,7 +5,8 @@ window.MeceUI = {
     el.innerHTML = `
       <div class="bg-white rounded-xl shadow p-5 border-t-4 border-purple-500">
         <h3 class="font-black text-lg text-purple-800"><i class="fas fa-wand-magic-sparkles mr-2"></i>Consolidación MECE con IA</h3>
-        <p class="text-xs text-gray-500 mt-1">Agrupa las ideas ${opts.pilarId ? 'de este pilar' : 'de todos los pilares'} en ideas consolidadas (cada idea en un solo grupo, ninguna por fuera). Las ideas marcadas como repetidas no se envían.</p>
+        <p class="text-xs text-gray-500 mt-1">Agrupa las ideas ${opts.pilarId ? 'de este pilar' : 'del foro'} en ideas consolidadas (cada idea en un solo grupo, ninguna por fuera; una idea puede quedar sola). Las ideas marcadas como repetidas no se envían.</p>
+        ${opts.pilarId ? '' : `<div class="mt-3 flex flex-wrap items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg p-3"><label class="text-xs font-bold text-purple-900"><i class="fas fa-layer-group mr-1"></i>Alcance de la corrida</label><select id="meceScope" onchange="MeceUI.scope=this.value;MeceUI.preview=null;$('mecePreview').innerHTML='';MeceUI.resumen()" class="p-2 border rounded text-sm bg-white"><option value="">Todos los pilares en una sola corrida (recomendado)</option></select><span id="meceResumen" class="text-xs text-gray-600"></span></div>`}
         <div class="grid md:grid-cols-2 gap-4 mt-4">
           <div class="space-y-2">
             <label class="block text-xs font-bold text-gray-600">API key de Anthropic (queda guardada solo en este navegador) <button onclick="MeceUI.olvidarKey()" class="ml-2 text-[10px] text-red-600 underline font-normal">olvidar</button></label>
@@ -25,12 +26,21 @@ window.MeceUI = {
         </div>
         <div id="mecePreview" class="mt-4"></div>
       </div>`;
+    this.scope = ''; this.resumen();
+  },
+  /* Llena el selector de alcance con los pilares y muestra cuántas ideas cubre la corrida */
+  resumen() {
+    const snap = this.opts.getSnap(); const sc = $('meceScope'); if (sc && sc.options.length === 1) snap.pilares.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = 'Solo ' + p.nombre; sc.appendChild(o); });
+    const d = this.datos(); const r = $('meceResumen'); if (!r) return;
+    const porPilar = d.pilares.map(p => ({ p, n: d.ideas.filter(i => i.pilar_id === p.id).length }));
+    r.innerHTML = `Cubre <b>${d.ideas.length}</b> ideas: ${porPilar.map(x => `<span class="${x.n ? '' : 'text-gray-400'}">${esc(x.p.nombre)} ${x.n}</span>`).join(' · ')}`;
   },
   saveKey() { MECE.setKey($('meceKey').value); if ($('meceWs')) MECE.setWs($('meceWs').value); toast('API key guardada en este navegador'); },
   olvidarKey() { MECE.clearKey(); $('meceKey').value = ''; if ($('meceWs')) $('meceWs').value = ''; toast('API key borrada de este navegador'); },
   datos() {
     const snap = this.opts.getSnap();
-    const pilares = this.opts.pilarId ? snap.pilares.filter(p => p.id === this.opts.pilarId) : snap.pilares;
+    const pid = this.opts.pilarId || (this.scope ? Number(this.scope) : null);
+    const pilares = pid ? snap.pilares.filter(p => p.id === pid) : snap.pilares;
     const ideas = snap.ideas.filter(i => i.tipo === 'idea' && i.estado !== 'repetida' && pilares.some(p => p.id === i.pilar_id));
     return { sesion: snap.sesion, pilares, ideas };
   },
@@ -68,7 +78,8 @@ window.MeceUI = {
     this.preview.grupos = g.filter(x => x.ideas.length); this.renderPreview();
   },
   async aplicar(reemplazar) {
-    if (!this.preview) return; if (reemplazar && !confirm('¿Reemplazar los grupos existentes ' + (this.opts.pilarId ? 'de este pilar' : 'de todos los pilares') + ' por esta consolidación? Las ideas originales no se pierden.')) return;
-    try { await DB.admin('importar_consolidacion', { grupos: this.preview.grupos, reemplazar, pilar_id: this.opts.pilarId || null }); toast('Consolidación aplicada ✓'); this.preview = null; $('mecePreview').innerHTML = ''; this.opts.onApplied && this.opts.onApplied(); } catch (e) { toast(errMsg(e), 'err'); }
+    if (!this.preview) return; const pid = this.opts.pilarId || (this.scope ? Number(this.scope) : null);
+    if (reemplazar && !confirm('¿Reemplazar los grupos existentes ' + (pid ? 'de este pilar' : 'de todos los pilares') + ' por esta consolidación? Las ideas originales no se pierden.')) return;
+    try { await DB.admin('importar_consolidacion', { grupos: this.preview.grupos, reemplazar, pilar_id: pid }); toast('Consolidación aplicada ✓'); this.preview = null; $('mecePreview').innerHTML = ''; this.opts.onApplied && this.opts.onApplied(); } catch (e) { toast(errMsg(e), 'err'); }
   }
 };

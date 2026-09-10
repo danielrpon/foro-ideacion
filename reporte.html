@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Reporte final</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="vendor/fonts.css" rel="stylesheet">
+<script src="vendor/tailwind.js"></script>
 <style>body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/config.js"></script><script src="js/db.js"></script><script src="js/common.js"></script>
+<link rel="stylesheet" href="vendor/fontawesome.min.css">
+<script src="vendor/supabase.min.js"></script>
+<script src="js/config.js?v=20260909"></script><script src="js/db.js?v=20260909"></script><script src="js/common.js?v=20260909"></script>
 <style>@media print{.noprint{display:none!important}body{background:#fff}.card{box-shadow:none!important;border:1px solid #ddd}} input.inl{border:0;border-bottom:1px dashed #bbb;background:transparent;width:100%;font-size:12px}</style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 min-h-screen">
@@ -22,8 +22,8 @@ let snap = null, rendered = false;
 renderNav('reporte');
 async function cargar() { snap = await DB.snapshot(); setNavEtapa(snap.sesion); if (!rendered) { rendered = true; render(); } }
 function render() {
-  const s = snap.sesion, max = s.config.escala_max || 10, editable = !!DB.clave && sessionStorage.getItem('foro_rol_' + DB.SES);
-  const gs = snap.ideas.filter(i => i.tipo === 'grupo'); const ideas = snap.ideas.filter(i => i.tipo === 'idea');
+  const s = snap.sesion, max = escalaMax(s), editable = !!DB.clave && sessionStorage.getItem('foro_rol_' + DB.SES);
+  const gs = calificables(snap.ideas); const ideas = snap.ideas.filter(i => i.tipo === 'idea');
   const orden = { quick: 0, proyecto: 1, relleno: 2, descartar: 3 };
   const lista = gs.slice().sort((a, b) => { const qa = a.conteo_eval ? orden[cuadrante(a.esfuerzo_prom, a.impacto_prom, max).key] : 9, qb = b.conteo_eval ? orden[cuadrante(b.esfuerzo_prom, b.impacto_prom, max).key] : 9; return (qa - qb) || (b.impacto_prom - a.impacto_prom) || (a.esfuerzo_prom - b.esfuerzo_prom); });
   $('app').innerHTML = `<div class="card bg-white rounded-xl shadow p-8">

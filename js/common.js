@@ -30,6 +30,14 @@ window.COLORS = {
 };
 window.col = (c) => COLORS[c] || COLORS.gray;
 
+/* Escala de calificación (1..N). Una sola fuente de verdad: config.escala_max, por defecto 5 */
+window.escalaMax = (sesion) => { const n = Number(sesion && sesion.config && sesion.config.escala_max); return (n >= 2 && n <= 10) ? n : 5; };
+
+/* Ideas que se califican en la matriz: las consolidadas (grupos) MÁS las ideas validadas que
+   quedaron solas (sin grupo). Así ningún pilar con una sola idea aprobada se queda por fuera. */
+window.calificables = (ideas) => (ideas || []).filter(i => i.tipo === 'grupo' || (i.tipo === 'idea' && i.estado === 'validada' && !i.padre_id))
+  .sort((a, b) => (a.pilar_orden - b.pilar_orden) || (a.id - b.id));
+
 /* Helpers */
 window.$ = (id) => document.getElementById(id);
 window.esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -84,8 +92,8 @@ window.Yo = {
 };
 
 /* Cuadrante de la matriz esfuerzo-impacto */
-window.cuadrante = (esf, imp, max = 10) => {
-  const mid = max / 2 + 0.5; // 5.5 en escala 1-10
+window.cuadrante = (esf, imp, max = 5) => {
+  const mid = max / 2 + 0.5; // 3 en escala 1-5, 5.5 en 1-10
   if (imp >= mid && esf < mid) return { key: 'quick', label: 'QUICK WIN · Hacer ya', color: 'emerald' };
   if (imp >= mid && esf >= mid) return { key: 'proyecto', label: 'PROYECTO · Planificar', color: 'blue' };
   if (imp < mid && esf < mid) return { key: 'relleno', label: 'RELLENO · Si sobra tiempo', color: 'amber' };

@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Muro</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="vendor/fonts.css" rel="stylesheet">
+<script src="vendor/tailwind.js"></script>
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/config.js"></script><script src="js/db.js"></script><script src="js/common.js"></script>
+<link rel="stylesheet" href="vendor/fontawesome.min.css">
+<script src="vendor/chart.umd.min.js"></script>
+<script src="vendor/qrcode.min.js"></script>
+<script src="vendor/supabase.min.js"></script>
+<script src="js/config.js?v=20260909"></script><script src="js/db.js?v=20260909"></script><script src="js/common.js?v=20260909"></script>
 <style>
   .postit{transition:transform .2s}.postit:hover{transform:scale(1.03);z-index:5}
   .fade-in{animation:fadeIn .5s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -39,7 +39,7 @@ renderNav('muro');
 async function cargar() { snap = await DB.snapshot(); setNavEtapa(snap.sesion); render(); }
 setInterval(() => { if (snap) { const t = $('tmr'); const s = snap.sesion; t.textContent = (s.fin_etapa || ['ideacion', 'matriz'].includes(s.etapa)) ? timerText(s) : ''; t.className = 'font-mono text-3xl font-black ' + (timerVencido(s) ? 'text-red-500 animate-pulse' : 'text-emerald-400'); } }, 1000);
 
-const grupos = () => snap.ideas.filter(i => i.tipo === 'grupo').sort((a, b) => (a.pilar_orden - b.pilar_orden) || (a.id - b.id));
+const grupos = () => calificables(snap.ideas);
 const ideasOK = () => snap.ideas.filter(i => i.tipo === 'idea' && i.estado !== 'repetida');
 const nParts = () => Math.max(snap.conectados, 1);
 
@@ -83,7 +83,7 @@ function render() {
     }
     app.innerHTML = `<div class="cols" style="grid-template-columns:repeat(${snap.pilares.length},1fr)">${snap.pilares.map(p => { const c = col(p.color), mios = gs.filter(g => g.pilar_id === p.id); return `<div class="colwrap bg-white rounded-xl shadow border-t-8 ${c.border}"><div class="p-3 border-b"><h3 class="font-black ${c.text}">${esc(p.nombre)}</h3></div><div class="colbody p-3 space-y-2">${mios.map(g => `<div class="p-3 rounded-lg border ${c.border} ${c.bg}"><div class="flex justify-between items-start gap-2"><div class="font-bold">${esc(g.titulo || g.texto)}</div><span class="${c.solid} text-white font-mono font-bold px-2 rounded">${g.votos}</span></div><p class="text-sm text-gray-700 mt-1">${esc(g.descripcion_corta || '')}</p></div>`).join('')}</div></div>`; }).join('')}</div>`; return;
   }
-  if (et === 'instrucciones_matriz') { const mx = s.config.escala_max || 10; app.innerHTML = instr('Matriz esfuerzo · impacto', [`Cada idea consolidada se califica de <b>1 a ${mx}</b> en <b>esfuerzo</b> (plata, tiempo, gente) y en <b>impacto</b> (ventas y caja en 3–6 meses).`, 'Califica desde tu celular; el punto se ubica en el promedio del foro.', 'Buscamos los <b>quick wins</b>: alto impacto, bajo esfuerzo.'], 'fa-chart-line'); return; }
+  if (et === 'instrucciones_matriz') { const mx = escalaMax(s); app.innerHTML = instr('Matriz esfuerzo · impacto', [`Cada idea consolidada se califica de <b>1 a ${mx}</b> en <b>esfuerzo</b> (plata, tiempo, gente) y en <b>impacto</b> (ventas y caja en 3–6 meses).`, 'Califica desde tu celular tocando un número por criterio; el punto se ubica en el promedio del foro.', 'Buscamos los <b>quick wins</b>: alto impacto, bajo esfuerzo.'], 'fa-chart-line'); return; }
   if (et === 'matriz') {
     if (s.modo_matriz === 'proyectada') {
       const g = gs.find(x => x.id === s.proyectada_id);
@@ -96,12 +96,12 @@ function render() {
       <div class="grid grid-cols-2 gap-3">${gs.map(g => { const c = col(g.pilar_color); return `<div class="p-3 rounded-lg border ${c.border} flex items-start gap-3"><div class="flex-1"><div class="text-[10px] font-mono uppercase ${c.text}">${esc(g.pilar_nombre || '')}</div><div class="font-bold">${esc(g.titulo || g.texto)}</div><div class="text-xs text-gray-500">${esc(g.descripcion_corta || '')}</div>${hijasHtml(g, 'text-xs')}</div><div class="text-right"><div class="font-mono text-sm"><span class="text-purple-700">E ${g.conteo_eval ? g.esfuerzo_prom : '–'}</span> · <span class="text-blue-700">I ${g.conteo_eval ? g.impacto_prom : '–'}</span></div><div class="h-2 w-28 bg-gray-100 rounded mt-1"><div class="h-2 rounded bg-emerald-500" style="width:${Math.min(100, pct(g.conteo_eval, nParts()))}%"></div></div><div class="text-[10px] text-gray-400">${g.conteo_eval}/${nParts()} calificaron</div></div></div>`; }).join('')}</div></div>`; return;
   }
   if (et === 'cierre' || et === 'reporte') {
-    const max = s.config.escala_max || 10, ev = gs.filter(g => g.conteo_eval > 0);
+    const max = escalaMax(s), ev = gs.filter(g => g.conteo_eval > 0);
     const qw = ev.filter(g => cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key === 'quick').sort((a, b) => b.impacto_prom - a.impacto_prom);
     const pr = ev.filter(g => cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key === 'proyecto').sort((a, b) => b.impacto_prom - a.impacto_prom);
     const ds = ev.filter(g => !['quick', 'proyecto'].includes(cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key));
     if (et === 'reporte') { app.innerHTML = `<div class="bg-white rounded-xl shadow p-8 h-full overflow-y-auto"><div class="flex justify-between items-center mb-4"><h2 class="text-3xl font-black">Reporte consolidado</h2><a href="${urlVista('reporte.html')}" target="_blank" class="bg-gray-800 text-white px-4 py-2 rounded"><i class="fas fa-print mr-2"></i>Abrir reporte imprimible</a></div><table class="w-full text-sm"><thead class="text-xs uppercase bg-gray-800 text-white"><tr><th class="p-3 text-left">Pilar</th><th class="p-3 text-left">Idea consolidada</th><th class="p-3 text-center">Imp.</th><th class="p-3 text-center">Esf.</th><th class="p-3 text-left">Cuadrante</th><th class="p-3 text-left">Responsable</th><th class="p-3 text-left">Tiempo</th></tr></thead><tbody>${[...qw, ...pr, ...ds].map(g => { const q = cuadrante(g.esfuerzo_prom, g.impacto_prom, max); return `<tr class="border-b"><td class="p-3">${esc(g.pilar_nombre || '')}</td><td class="p-3 font-bold">${esc(g.titulo || g.texto)}</td><td class="p-3 text-center font-mono text-blue-700 font-bold">${g.impacto_prom}</td><td class="p-3 text-center font-mono text-purple-700 font-bold">${g.esfuerzo_prom}</td><td class="p-3"><span class="text-xs font-bold text-${q.color}-700">${q.label}</span></td><td class="p-3">${esc(g.responsable || '')}</td><td class="p-3">${esc(g.tiempo_ejecucion || '')}</td></tr>`; }).join('')}</tbody></table></div>`; return; }
-    app.innerHTML = `<div class="h-full grid gap-4" style="grid-template-columns:1.25fr 1fr"><div class="bg-white rounded-xl shadow p-4 flex flex-col min-h-0"><h2 class="text-xl font-black mb-1">Matriz esfuerzo · impacto <span class="text-sm font-normal text-gray-400">· promedio del foro</span></h2><div class="flex-1 min-h-0 relative"><canvas id="chart"></canvas></div></div>
+    app.innerHTML = `<div class="h-full grid gap-4" style="grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)"><div class="bg-white rounded-xl shadow p-4 flex flex-col min-h-0 min-w-0"><h2 class="text-xl font-black mb-1">Matriz esfuerzo · impacto <span class="text-sm font-normal text-gray-400">· promedio del foro · tamaño del punto = nº de calificaciones</span></h2><div class="flex-1 min-h-0 relative"><canvas id="chart"></canvas></div></div>
       <div class="flex flex-col gap-3 min-h-0 overflow-y-auto"><div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4"><h3 class="font-black text-emerald-800 text-lg"><i class="fas fa-bolt mr-1"></i>QUICK WINS · hacer ya (${qw.length})</h3><ol class="mt-2 space-y-1 list-decimal pl-5">${qw.map(g => `<li><b>${esc(g.titulo || g.texto)}</b> <span class="text-xs font-mono text-gray-500">I ${g.impacto_prom} · E ${g.esfuerzo_prom}</span></li>`).join('') || '<li class="list-none text-sm text-gray-400">Ninguna todavía</li>'}</ol></div>
       <div class="bg-blue-50 border border-blue-300 rounded-xl p-4"><h3 class="font-black text-blue-800"><i class="fas fa-diagram-project mr-1"></i>PROYECTOS · planificar (${pr.length})</h3><ol class="mt-2 space-y-1 list-decimal pl-5 text-sm">${pr.map(g => `<li><b>${esc(g.titulo || g.texto)}</b> <span class="text-xs font-mono text-gray-500">I ${g.impacto_prom} · E ${g.esfuerzo_prom}</span></li>`).join('') || '<li class="list-none text-gray-400">Ninguno</li>'}</ol></div>
       <div class="bg-gray-50 border border-gray-300 rounded-xl p-4"><h3 class="font-bold text-gray-600 text-sm">RELLENOS / DESCARTAR (${ds.length})</h3><p class="text-xs text-gray-500 mt-1">${ds.map(g => esc(g.titulo || g.texto)).join(' · ') || '—'}</p></div></div></div>`;
@@ -114,11 +114,13 @@ function dibujarChart(ev, max) {
   const ctx = $('chart'); if (!ctx) return; if (chart) { chart.destroy(); chart = null; }
   const mid = max / 2 + 0.5;
   const puntos = ev.map(g => ({ x: g.esfuerzo_prom, y: g.impacto_prom, g }));
-  chart = new Chart(ctx, { type: 'scatter', data: { datasets: [{ data: puntos, pointRadius: 11, pointHoverRadius: 14, pointBackgroundColor: puntos.map(p => col(p.g.pilar_color).hex), pointBorderColor: '#fff', pointBorderWidth: 2 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.raw.g.titulo || c.raw.g.texto} · I ${c.raw.y} · E ${c.raw.x} (${c.raw.g.conteo_eval})` } } },
-      scales: { x: { min: 1, max, title: { display: true, text: 'ESFUERZO →', font: { family: 'monospace' } }, grid: { color: (c) => c.tick.value === mid ? '#111' : '#eee' } }, y: { min: 1, max, title: { display: true, text: 'IMPACTO ↑', font: { family: 'monospace' } }, grid: { color: (c) => c.tick.value === mid ? '#111' : '#eee' } } } },
+  const maxN = Math.max(...ev.map(g => g.conteo_eval), 1);
+  const radio = (g) => 7 + Math.round(15 * g.conteo_eval / maxN);   // 7px con 1 calificación → 22px con el máximo
+  chart = new Chart(ctx, { type: 'scatter', data: { datasets: [{ data: puntos, pointRadius: puntos.map(p => radio(p.g)), pointHoverRadius: puntos.map(p => radio(p.g) + 3), pointBackgroundColor: puntos.map(p => col(p.g.pilar_color).hex), pointBorderColor: '#fff', pointBorderWidth: 2, clip: false }] },
+    options: { responsive: true, maintainAspectRatio: false, layout: { padding: { left: 8, right: 120, top: 24, bottom: 8 } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.raw.g.titulo || c.raw.g.texto} · I ${c.raw.y} · E ${c.raw.x} · ${c.raw.g.conteo_eval} calificaciones` } } },
+      scales: { x: { min: 1, max, ticks: { stepSize: 1 }, title: { display: true, text: 'ESFUERZO →', font: { family: 'monospace' } }, grid: { color: (c) => c.tick.value === mid ? '#111' : '#eee' } }, y: { min: 1, max, ticks: { stepSize: 1 }, title: { display: true, text: 'IMPACTO ↑', font: { family: 'monospace' } }, grid: { color: (c) => c.tick.value === mid ? '#111' : '#eee' } } } },
     plugins: [{ id: 'quad', beforeDraw(ch) { const { ctx, chartArea: a, scales: { x, y } } = ch; const mx = x.getPixelForValue(mid), my = y.getPixelForValue(mid); ctx.save(); ctx.fillStyle = 'rgba(16,185,129,.10)'; ctx.fillRect(a.left, a.top, mx - a.left, my - a.top); ctx.fillStyle = 'rgba(37,99,235,.07)'; ctx.fillRect(mx, a.top, a.right - mx, my - a.top); ctx.fillStyle = 'rgba(245,158,11,.08)'; ctx.fillRect(a.left, my, mx - a.left, a.bottom - my); ctx.fillStyle = 'rgba(107,114,128,.08)'; ctx.fillRect(mx, my, a.right - mx, a.bottom - my); ctx.font = 'bold 14px monospace'; ctx.fillStyle = '#047857'; ctx.fillText('QUICK WINS', a.left + 10, a.top + 20); ctx.fillStyle = '#1d4ed8'; ctx.fillText('PROYECTOS', mx + 10, a.top + 20); ctx.fillStyle = '#b45309'; ctx.fillText('RELLENOS', a.left + 10, a.bottom - 10); ctx.fillStyle = '#4b5563'; ctx.fillText('DESCARTAR', mx + 10, a.bottom - 10); ctx.restore(); },
-      afterDatasetsDraw(ch) { const { ctx } = ch; ctx.save(); ctx.font = 'bold 11px sans-serif'; ctx.fillStyle = '#111'; ch.getDatasetMeta(0).data.forEach((pt, i) => { const g = puntos[i].g; const t = (g.titulo || g.texto).slice(0, 28); ctx.fillText(t, pt.x + 12, pt.y + 4); }); ctx.restore(); } }] });
+      afterDatasetsDraw(ch) { const { ctx } = ch; ctx.save(); ctx.font = 'bold 11px sans-serif'; ctx.fillStyle = '#111'; ch.getDatasetMeta(0).data.forEach((pt, i) => { const g = puntos[i].g; const t = (g.titulo || g.texto).slice(0, 28); ctx.fillText(t, pt.x + radio(g) + 3, pt.y + 4); }); ctx.restore(); } }] });
 }
 Poll.start(cargar, 4000);
 </script>
