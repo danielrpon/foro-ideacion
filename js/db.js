@@ -28,6 +28,7 @@
     DB.registrar = async (nombre, perfil) => ok(await sb.from('participantes').insert({ sesion_id: SES, nombre, perfil }).select().single());
     DB.ping = async (pid) => { try { await sb.from('participantes').update({ last_seen: new Date().toISOString() }).eq('id', pid); } catch (e) {} };
     DB.crearIdea = async (d) => ok(await sb.from('ideas').insert({ sesion_id: SES, ...d, tipo: 'idea', estado: 'nueva' }).select().single());
+    DB.crearIdeas = async (arr) => ok(await sb.from('ideas').insert(arr.map(d => ({ sesion_id: SES, ...d, tipo: 'idea', estado: 'nueva' }))).select());
     DB.votar = async (idea_id, pid) => ok(await sb.from('votos').insert({ sesion_id: SES, idea_id, participante_id: pid }));
     DB.quitarVoto = async (idea_id, pid) => ok(await sb.from('votos').delete().eq('idea_id', idea_id).eq('participante_id', pid));
     DB.evaluar = async (idea_id, pid, esfuerzo, impacto) => ok(await sb.from('evaluaciones').upsert({ sesion_id: SES, idea_id, participante_id: pid, esfuerzo, impacto }, { onConflict: 'idea_id,participante_id' }));
