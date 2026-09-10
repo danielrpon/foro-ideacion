@@ -78,6 +78,14 @@ window.timerText = (sesion) => {
 };
 window.timerVencido = (sesion) => !!(sesion && sesion.fin_etapa && new Date(sesion.fin_etapa) <= Date.now());
 
+/* Autoactualización: cada 60 s compara version.txt (sin caché) con la versión de esta página; si cambió, recarga.
+   Así un arreglo publicado durante el foro llega a todos los celulares sin pedirles nada. */
+window.VersionCheck = {
+  mine: (document.querySelector('meta[name="app-version"]') || {}).content || '',
+  start() { if (!this.mine || location.protocol === 'file:') return; const tick = async () => { try { const r = await fetch(baseUrl() + 'version.txt?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) return; const v = (await r.text()).trim(); if (v && v !== this.mine) { console.log('Nueva versión', v, '→ recargando'); location.reload(); } } catch (e) {} }; setTimeout(tick, 15000); setInterval(tick, 60000); }
+};
+VersionCheck.start();
+
 /* Polling con manejo de errores */
 window.Poll = {
   start(fn, ms) {
