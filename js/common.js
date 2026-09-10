@@ -30,6 +30,15 @@ window.COLORS = {
 };
 window.col = (c) => COLORS[c] || COLORS.gray;
 
+/* Orden aleatorio pero estable por participante: baraja con una semilla derivada del id del
+   participante, así cada celular ve las ideas en un orden distinto (evita el sesgo de "las primeras
+   siempre ganan") y ese orden no cambia entre refrescos. */
+window.ordenPersonal = (arr, seed) => {
+  let h = 2166136261; String(seed || '').split('').forEach(ch => { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; });
+  const rnd = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+  const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a;
+};
+
 /* Escala de calificación (1..N). Una sola fuente de verdad: config.escala_max, por defecto 5 */
 /* Tope de calificaciones por participante en la matriz (config.max_calificaciones, por defecto 8),
    nunca mayor que el número de ideas a calificar */

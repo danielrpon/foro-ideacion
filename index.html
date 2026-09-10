@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260910e">
+<meta name="app-version" content="20260910f">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Participante</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260910e"></script><script src="js/db.js?v=20260910e"></script><script src="js/common.js?v=20260910e"></script>
+<script src="js/config.js?v=20260910f"></script><script src="js/db.js?v=20260910f"></script><script src="js/common.js?v=20260910f"></script>
 <style>
   .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .pick{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
@@ -125,7 +125,7 @@ function render() {
   if (et === 'votacion') {
     if (!pilarSel || !pilar(pilarSel)) pilarSel = snap.pilares[0] && snap.pilares[0].id;
     const p = pilar(pilarSel), c = col(p.color), max = s.config.votos_por_pilar || 3;
-    const mios = gs.filter(g => g.pilar_id === pilarSel);
+    const mios = ordenPersonal(gs.filter(g => g.pilar_id === pilarSel), yo.id);
     const usados = votosMios.filter(id => (gs.find(g => g.id === id) || {}).pilar_id === pilarSel).length;
     app.innerHTML = `<div class="fade-in">
       <div class="flex justify-between items-center mb-2"><span class="text-xs font-mono uppercase tracking-widest text-gray-500">Etapa 4 · Votación</span><span class="text-xs font-bold ${usados >= max ? 'text-red-600' : 'text-emerald-700'}">Te quedan ${max - usados} de ${max} votos</span></div>
@@ -138,10 +138,10 @@ function render() {
   if (et === 'resultados') { if (!full) return; const top = gs.slice().sort((a, b) => b.votos - a.votos).slice(0, 5); app.innerHTML = `<div class="bg-white rounded-xl shadow p-6 mt-2 fade-in"><h2 class="text-xl font-black">Resultados de la votación</h2><p class="text-sm text-gray-500">Mira el muro. Las más votadas:</p><ol class="mt-3 space-y-2 list-decimal pl-5">${top.map(g => `<li class="text-sm"><b>${esc(g.titulo || g.texto)}</b> <span class="text-gray-400">· ${g.votos} votos</span></li>`).join('')}</ol></div>`; return; }
 
   /* ---------- Matriz ---------- */
-  if (et === 'instrucciones_matriz') { if (full) app.innerHTML = espera('Ya casi: matriz esfuerzo · impacto', `Tienes hasta <b>${maxCalif(s, gs.length)} calificaciones</b>: úsalas en las ideas donde tengas criterio y deja pasar las demás. Cada una va de 1 a ${escalaMax(s)} en esfuerzo y en impacto (1 = poco, ${escalaMax(s)} = mucho). Piensa en 3 a 6 meses y en la caja que hay.`, 'fa-chart-line'); return; }
+  if (et === 'instrucciones_matriz') { if (full) app.innerHTML = espera('Ya casi: matriz esfuerzo · impacto', `Tienes hasta <b>${maxCalif(s, gs.length)} calificaciones</b>: úsalas en las ideas donde tengas criterio y deja pasar las demás. Cada una va de 1 a ${escalaMax(s)} en esfuerzo y en impacto (1 = poco, ${escalaMax(s)} = mucho). Piensa en 3 a 6 meses y en la caja que hay. Las ideas aparecen en un orden distinto para cada persona.`, 'fa-chart-line'); return; }
   if (et === 'matriz') {
     const max = escalaMax(s);
-    const lista = (s.modo_matriz === 'proyectada') ? gs.filter(g => g.id === s.proyectada_id) : gs;
+    const lista = (s.modo_matriz === 'proyectada') ? gs.filter(g => g.id === s.proyectada_id) : ordenPersonal(gs, yo.id);
     if (s.modo_matriz === 'proyectada' && s.proyectada_id && s.proyectada_id !== ultimaProyectada) { ultimaProyectada = s.proyectada_id; vibrar(200); }
     const lim = maxCalif(s, gs.length), hechas = gs.filter(g => evalsMias[g.id]).length, quedan = Math.max(0, lim - hechas);
     if (full) {
@@ -152,7 +152,7 @@ function render() {
             <div class="flex-1 min-w-0"><div class="text-sm font-bold text-gray-800 leading-tight">${hechas > lim ? `Tienes ${hechas} guardadas y el tope es ${lim}` : quedan ? `Puedes calificar ${quedan} idea${quedan === 1 ? '' : 's'} más` : `Usaste tus ${lim} calificaciones`}</div><div class="text-[11px] text-gray-500 leading-tight mt-0.5">${hechas > lim ? 'Quita las que menos aporten; no puedes guardar nuevas.' : quedan ? `${hechas} guardada${hechas === 1 ? '' : 's'} de ${lim} · ${gs.length} ideas en total · elige donde tengas criterio` : 'Para cambiar una, quita otra primero.'}</div>
               <div class="h-2 bg-gray-200 rounded mt-1.5 overflow-hidden"><div id="progBar" class="h-2 rounded ${quedan ? 'bg-emerald-500' : 'bg-gray-800'} transition-all" style="width:${Math.min(100, pct(hechas, lim))}%"></div></div></div>
             ${(quedan && gs.some(g => !evalsMias[g.id])) ? `<button onclick="irPendiente()" class="pick shrink-0 bg-white border border-gray-300 rounded-lg px-2.5 py-2 text-[11px] font-bold text-gray-700"><i class="fas fa-arrow-down mr-1"></i>Siguiente<br>pendiente</button>` : ''}</div></div>
-        <p class="text-[11px] text-gray-500 mb-2">Toca un número por criterio: 1 = poco · ${max} = mucho. Esfuerzo = plata, tiempo y gente; impacto = ventas y caja en 3 a 6 meses.</p>
+        <p class="text-[11px] text-gray-500 mb-2">Toca un número por criterio: 1 = poco · ${max} = mucho. Esfuerzo = plata, tiempo y gente; impacto = ventas y caja en 3 a 6 meses. El orden de las ideas es distinto para cada persona.</p>
         ${lista.length ? lista.map(g => { const c = col(g.pilar_color), e = evalsMias[g.id]; return `<div class="bg-white rounded-xl shadow p-4 mb-3 border-l-4 ${c.border}" id="card${g.id}">
           <div class="text-[10px] font-mono uppercase ${c.text}">${esc(g.pilar_nombre || '')}</div>
           <div class="font-bold ${s.modo_matriz === 'proyectada' ? 'text-xl' : ''}">${esc(g.titulo || g.texto)}</div><p class="text-sm text-gray-600 mt-1">${esc(g.descripcion_corta || '')}</p>
@@ -218,7 +218,7 @@ async function guardarEval(id) {
   catch (e) { toast(errMsg(e), 'err'); if (btn) { btn.innerHTML = 'Reintentar guardar'; btn.className = 'pick mt-3 w-full py-3 rounded-lg font-bold text-sm bg-red-600 text-white'; } }
   finally { if (btn) btn.disabled = false; }
 }
-function irPendiente() { const g = grupos().find(x => !evalsMias[x.id]); const el = g && $('card' + g.id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.add('ring-2', 'ring-emerald-400'); setTimeout(() => el.classList.remove('ring-2', 'ring-emerald-400'), 1500); } }
+function irPendiente() { const g = ordenPersonal(grupos(), yo.id).find(x => !evalsMias[x.id]); const el = g && $('card' + g.id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.add('ring-2', 'ring-emerald-400'); setTimeout(() => el.classList.remove('ring-2', 'ring-emerald-400'), 1500); } }
 async function quitarEval(id) {
   if (!evalsMias[id]) return;
   try { await DB.quitarEvaluacion(id, yo.id); delete evalsMias[id]; sel[id] = { e: null, i: null }; toast('Calificación quitada: tienes una más disponible'); viewKey = ''; render(); } catch (e) { toast(errMsg(e), 'err'); }

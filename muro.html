@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260910e">
+<meta name="app-version" content="20260910f">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Muro</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -13,7 +13,7 @@
 <script src="vendor/chart.umd.min.js"></script>
 <script src="vendor/qrcode.min.js"></script>
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260910e"></script><script src="js/db.js?v=20260910e"></script><script src="js/common.js?v=20260910e"></script>
+<script src="js/config.js?v=20260910f"></script><script src="js/db.js?v=20260910f"></script><script src="js/common.js?v=20260910f"></script>
 <style>
   .postit{transition:transform .2s}.postit:hover{transform:scale(1.03);z-index:5}
   .fade-in{animation:fadeIn .5s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -84,7 +84,7 @@ function render() {
     }
     app.innerHTML = `<div class="cols" style="grid-template-columns:repeat(${snap.pilares.length},1fr)">${snap.pilares.map(p => { const c = col(p.color), mios = gs.filter(g => g.pilar_id === p.id); return `<div class="colwrap bg-white rounded-xl shadow border-t-8 ${c.border}"><div class="p-3 border-b"><h3 class="font-black ${c.text}">${esc(p.nombre)}</h3></div><div class="colbody p-3 space-y-2">${mios.map(g => `<div class="p-3 rounded-lg border ${c.border} ${c.bg}"><div class="flex justify-between items-start gap-2"><div class="font-bold">${esc(g.titulo || g.texto)}</div><span class="${c.solid} text-white font-mono font-bold px-2 rounded">${g.votos}</span></div><p class="text-sm text-gray-700 mt-1">${esc(g.descripcion_corta || '')}</p></div>`).join('')}</div></div>`; }).join('')}</div>`; return;
   }
-  if (et === 'instrucciones_matriz') { const mx = escalaMax(s); app.innerHTML = instr('Matriz esfuerzo · impacto', [`Cada uno tiene hasta <b>${maxCalif(s, gs.length)} calificaciones</b> para ${gs.length} ideas: úsalas en las ideas donde tengas criterio y deja pasar las demás.`, `Cada calificación va de <b>1 a ${mx}</b> en <b>esfuerzo</b> (plata, tiempo, gente) y en <b>impacto</b> (ventas y caja en 3–6 meses).`, 'Califica desde tu celular tocando un número por criterio; el punto se ubica en el promedio del foro y su tamaño muestra cuántos la calificaron.', 'Buscamos los <b>quick wins</b>: alto impacto, bajo esfuerzo.'], 'fa-chart-line'); return; }
+  if (et === 'instrucciones_matriz') { const mx = escalaMax(s); app.innerHTML = instr('Matriz esfuerzo · impacto', [`Cada uno tiene hasta <b>${maxCalif(s, gs.length)} calificaciones</b> para ${gs.length} ideas: úsalas en las ideas donde tengas criterio y deja pasar las demás.`, `Cada calificación va de <b>1 a ${mx}</b> en <b>esfuerzo</b> (plata, tiempo, gente) y en <b>impacto</b> (ventas y caja en 3–6 meses).`, 'Califica desde tu celular tocando un número por criterio. Cada persona ve las ideas en un orden distinto, para que ninguna gane por salir primero.', 'El punto se ubica en el promedio del foro y su tamaño muestra cuántos la calificaron.', 'Buscamos los <b>quick wins</b>: alto impacto, bajo esfuerzo.'], 'fa-chart-line'); return; }
   if (et === 'matriz') {
     if (s.modo_matriz === 'proyectada') {
       const g = gs.find(x => x.id === s.proyectada_id);
