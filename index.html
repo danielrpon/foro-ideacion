@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260911f">
+<meta name="app-version" content="20260911g">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Participante</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260911f"></script><script src="js/db.js?v=20260911f"></script><script src="js/common.js?v=20260911f"></script>
+<script src="js/config.js?v=20260911g"></script><script src="js/db.js?v=20260911g"></script><script src="js/common.js?v=20260911g"></script>
 <style>
   .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:14px 14px}
@@ -187,7 +187,7 @@ function render() {
   if (['cierre', 'resumen', 'reporte'].includes(et)) {
     if (!full) return;
     const max = escalaMax(s);
-    const qw = gs.filter(g => g.conteo_eval > 0 && cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key === 'quick').sort((a, b) => b.impacto_prom - a.impacto_prom);
+    const nmax = Math.max(...gs.map(g => g.conteo_eval), 1); const qw = gs.filter(g => g.conteo_eval > 0 && cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key === 'quick').sort((a, b) => puntaje(b, nmax) - puntaje(a, nmax));
     app.innerHTML = `<div class="bg-white rounded-xl shadow p-6 mt-2 fade-in"><h2 class="text-xl font-black">¡Gracias, ${esc(yo.nombre.split(' ')[0])}!</h2><p class="text-sm text-gray-600 mt-1">Mira el muro: ahí está la matriz del foro. Quick wins identificados:</p>
       <div class="mt-3 space-y-2">${qw.length ? qw.map(g => `<div class="p-3 rounded-lg bg-emerald-50 border border-emerald-300 text-sm"><b>${esc(g.titulo || g.texto)}</b><div class="text-[11px] text-gray-500 mt-1">Impacto ${g.impacto_prom} · Esfuerzo ${g.esfuerzo_prom} · ${g.conteo_eval} calificaciones</div></div>`).join('') : '<p class="text-xs text-gray-400">Todavía no hay quick wins calculados.</p>'}</div></div>`; return;
   }
