@@ -116,9 +116,14 @@ window.cuadrante = (esf, imp, max = 5) => {
   const mid = max / 2 + 0.5; // 3 en escala 1-5, 5.5 en 1-10
   if (imp >= mid && esf < mid) return { key: 'quick', label: 'QUICK WIN · Hacer ya', color: 'emerald' };
   if (imp >= mid && esf >= mid) return { key: 'proyecto', label: 'PROYECTO · Planificar', color: 'blue' };
-  if (imp < mid && esf < mid) return { key: 'relleno', label: 'RELLENO · Si sobra tiempo', color: 'amber' };
-  return { key: 'descartar', label: 'DESCARTAR', color: 'gray' };
+  if (imp < mid && esf < mid) return { key: 'relleno', label: 'COMPLEMENTO · Si sobra tiempo', color: 'amber' };
+  return { key: 'descartar', label: 'POSTERGAR', color: 'gray' };
 };
+
+/* Puntaje tridimensional para priorizar: impacto menos esfuerzo, más un bono de participación de hasta 2 puntos
+   (la idea que más gente calificó recibe los 2). Mide qué tan buena es la idea y cuánta atención atrajo. */
+window.puntaje = (g, nmax) => Math.round(((Number(g.impacto_prom) - Number(g.esfuerzo_prom)) + 2 * (nmax ? g.conteo_eval / nmax : 0)) * 10) / 10;
+
 
 /* ============================================================
    MECE — consolidación de ideas con IA (Claude)
