@@ -7,13 +7,14 @@ window.STAGES = [
   { key: 'ideacion',                   n: '1',   label: 'Ideación por pilares',          grupo: 'Ideación',  timer: 'minutos_ideacion' },
   { key: 'instrucciones_consolidacion',n: '1.5', label: 'Instr. Consolidación',          grupo: 'Consolidación', opcional: true },
   { key: 'consolidacion',              n: '2',   label: 'Consolidación MECE (IA)',       grupo: 'Consolidación' },
-  { key: 'pausa',                      n: '3',   label: 'Pausa · cafecito',              grupo: 'Consolidación' },
+  { key: 'pausa',                      n: '3',   label: 'Pausa · cafecito',              grupo: 'Consolidación', timer: 'minutos_pausa' },
   { key: 'instrucciones_votacion',     n: '3.5', label: 'Instr. Votación',               grupo: 'Votación (opcional)', opcional: true },
   { key: 'votacion',                   n: '4',   label: 'Votación por votos',            grupo: 'Votación (opcional)', opcional: true },
   { key: 'resultados',                 n: '5',   label: 'Resultados de votación',        grupo: 'Votación (opcional)', opcional: true },
   { key: 'instrucciones_matriz',       n: '5.5', label: 'Instr. Matriz',                 grupo: 'Priorización' },
   { key: 'matriz',                     n: '6',   label: 'Calificación Esfuerzo · Impacto', grupo: 'Priorización', timer: 'minutos_matriz' },
   { key: 'cierre',                     n: '7',   label: 'Matriz final · Quick wins',     grupo: 'Priorización' },
+  { key: 'resumen',                    n: '7.5', label: 'Resumen del foro',              grupo: 'Cierre' },
   { key: 'reporte',                    n: '8',   label: 'Reporte final',                 grupo: 'Cierre' }
 ];
 window.stageInfo = (k) => STAGES.find(s => s.key === k) || { key: k, n: '?', label: k };
@@ -77,7 +78,7 @@ window.renderNav = (vista, extra = '', opts = {}) => {
       <button onclick="window.location.reload()" class="bg-gray-700 hover:bg-gray-600 px-2.5 py-1 rounded text-xs shrink-0" title="Recargar"><i class="fas fa-sync"></i></button>
     </div>`;
 };
-window.setNavEtapa = (sesion) => { const e = $('navEtapa'); if (e && sesion) { const st = stageInfo(sesion.etapa); const corto = { ideacion: 'Ideación', consolidacion: 'Consolidación', matriz: 'Calificación', cierre: 'Matriz final', instrucciones: 'Instrucciones', bienvenida: 'Bienvenida', pausa: 'Pausa', reporte: 'Reporte', votacion: 'Votación', resultados: 'Resultados' }[sesion.etapa]; e.textContent = st.n + ' · ' + (window.innerWidth < 640 && corto ? corto : st.label); } };
+window.setNavEtapa = (sesion) => { const e = $('navEtapa'); if (e && sesion) { const st = stageInfo(sesion.etapa); const corto = { ideacion: 'Ideación', consolidacion: 'Consolidación', matriz: 'Calificación', cierre: 'Matriz final', instrucciones: 'Instrucciones', bienvenida: 'Bienvenida', pausa: 'Pausa', resumen: 'Resumen', reporte: 'Reporte', votacion: 'Votación', resultados: 'Resultados' }[sesion.etapa]; e.textContent = st.n + ' · ' + (window.innerWidth < 640 && corto ? corto : st.label); } };
 
 /* Temporizador de etapa */
 window.timerText = (sesion) => {
@@ -94,6 +95,27 @@ window.VersionCheck = {
   start() { if (!this.mine || location.protocol === 'file:') return; const tick = async () => { try { const r = await fetch(baseUrl() + 'version.txt?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) return; const v = (await r.text()).trim(); if (v && v !== this.mine) { console.log('Nueva versión', v, '→ recargando'); location.reload(); } } catch (e) {} }; setTimeout(tick, 15000); setInterval(tick, 60000); }
 };
 VersionCheck.start();
+
+/* Duración legible */
+window.fmtDur = (ms) => { if (!ms || ms < 0) return '–'; const m = Math.round(ms / 60000); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0') + ' min'; };
+
+/* Métricas de resumen del foro (muro al final y pestaña Resumen del admin) */
+window.resumenForo = ({ sesion, pilares, ideas, participantes = [], evaluaciones = [] }) => {
+  const orig = ideas.filter(i => i.tipo === 'idea'), cons = calificables(ideas), max = escalaMax(sesion);
+  const reales = participantes.filter(p => !/^Demo · /.test(p.nombre || ''));
+  const porPilar = pilares.map(p => ({ nombre: p.nombre, color: p.color, ideas: orig.filter(i => i.pilar_id === p.id).length, consolidadas: cons.filter(g => g.pilar_id === p.id).length }));
+  const porPersona = {}; orig.forEach(i => { const k = i.participante_nombre || '¿?'; porPersona[k] = (porPersona[k] || 0) + 1; });
+  const ranking = Object.entries(porPersona).sort((a, b) => b[1] - a[1]);
+  const nPers = Math.max(participantes.length, ranking.length, 1);
+  const ev = cons.filter(g => g.conteo_eval > 0), nmax = Math.max(...ev.map(g => g.conteo_eval), 1);
+  const cuad = { quick: 0, proyecto: 0, relleno: 0, descartar: 0 }; ev.forEach(g => cuad[cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key]++);
+  const top = ev.slice().sort((a, b) => puntaje(b, nmax) - puntaje(a, nmax)).slice(0, 3);
+  const calif = evaluaciones.length || ev.reduce((a, g) => a + g.conteo_eval, 0);
+  const t = (x) => x ? new Date(x).getTime() : null;
+  const inicio = Math.min(...[...participantes.map(p => t(p.created_at)), ...orig.map(i => t(i.created_at))].filter(Boolean));
+  const fin = Math.max(...[...evaluaciones.map(e => t(e.updated_at || e.created_at)), ...orig.map(i => t(i.updated_at || i.created_at)), ...cons.map(g => t(g.updated_at))].filter(Boolean));
+  return { participantes: participantes.length, reales: reales.length, ideas: orig.length, promIdeas: Math.round(10 * orig.length / nPers) / 10, maxIdeas: ranking[0] ? ranking[0][1] : 0, ranking, porPilar, consolidadas: cons.length, ratio: cons.length ? Math.round(10 * orig.length / cons.length) / 10 : 0, calificaciones: calif, promCalif: Math.round(10 * calif / nPers) / 10, conCuatro: ev.filter(g => g.conteo_eval >= 4).length, cuad, top, nmax, inicio: isFinite(inicio) ? inicio : null, fin: isFinite(fin) ? fin : null, duracion: (isFinite(inicio) && isFinite(fin)) ? fin - inicio : null };
+};
 
 /* Polling con manejo de errores */
 window.Poll = {

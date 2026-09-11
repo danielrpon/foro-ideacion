@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260911d">
+<meta name="app-version" content="20260911e">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Participante</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260911d"></script><script src="js/db.js?v=20260911d"></script><script src="js/common.js?v=20260911d"></script>
+<script src="js/config.js?v=20260911e"></script><script src="js/db.js?v=20260911e"></script><script src="js/common.js?v=20260911e"></script>
 <style>
   .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:14px 14px}
@@ -112,7 +112,7 @@ function render() {
         <div class="bg-white rounded-xl shadow p-4 border-t-4 ${c.border}">
           <h2 class="font-black text-lg ${c.text}"><i class="fas ${p.icono} mr-1"></i>${esc(p.nombre)}</h2>
           <p class="text-[10px] font-mono uppercase tracking-widest text-gray-400 mt-2">De qué se trata este pilar</p><p class="text-sm text-gray-600 mt-0.5">${esc(p.enunciado || '')}</p>
-          ${(p.subfrentes && p.subfrentes.length) ? `<label class="block text-xs font-bold text-gray-600 mt-3 mb-1">Frente</label><select id="subfrente" class="w-full p-2 border rounded-lg bg-white text-sm">${p.subfrentes.map(f => `<option>${esc(f)}</option>`).join('')}<option value="">Otro / general</option></select>` : ''}
+          ${(p.subfrentes && p.subfrentes.length) ? `<label class="block text-xs font-bold text-gray-600 mt-3 mb-1">Frente</label><select id="subfrente" class="w-full p-2 border rounded-lg bg-white text-sm" onchange="this.classList.remove('border-red-400')"><option value="" selected disabled>Elige el frente de tu idea…</option>${p.subfrentes.map(f => `<option>${esc(f)}</option>`).join('')}<option value="Otro / general">Otro / general</option></select>` : ''}
           <label class="block text-xs font-bold text-gray-600 mt-3 mb-1">Tu idea (qué haría Mauricio, en una o dos frases)</label>
           <textarea id="txtIdea" rows="4" class="w-full p-3 border rounded-lg text-sm" placeholder="Ej.: Contratar un vendedor de campo para Cali con fijo bajo y comisión alta…"></textarea>
           <button id="btnEnviar" onclick="enviarIdea()" class="mt-3 w-full ${c.solid} text-white font-bold py-3 rounded-lg"><i class="fas fa-paper-plane mr-2"></i>Enviar idea</button>
@@ -135,7 +135,7 @@ function render() {
       <div class="grid grid-cols-3 gap-2 mt-5"><div class="bg-gray-50 rounded-lg p-3"><div class="text-2xl font-black">${total}</div><div class="text-[10px] uppercase text-gray-500">tus ideas</div></div><div class="bg-gray-50 rounded-lg p-3"><div class="text-2xl font-black">${foro}</div><div class="text-[10px] uppercase text-gray-500">ideas del foro</div></div><div class="bg-gray-50 rounded-lg p-3"><div class="text-2xl font-black text-purple-700">${g}</div><div class="text-[10px] uppercase text-gray-500">consolidadas</div></div></div>
     </div>`; return;
   }
-  if (et === 'pausa') { if (full) app.innerHTML = espera('Pausa · cafecito ☕', 'Cuando el moderador retome, tu celular te lleva solo a la siguiente etapa.', 'fa-mug-hot'); return; }
+  if (et === 'pausa') { if (full) app.innerHTML = espera('Pausa · cafecito ☕', `Volvemos en <span id="tmr" class="font-mono font-bold text-gray-800">${s.fin_etapa ? timerText(s) : 'unos minutos'}</span>. Tu celular te lleva solo a la siguiente etapa.`, 'fa-mug-hot'); else if (s.fin_etapa) { const t = $('tmr'); if (t) t.textContent = timerText(s); } return; }
 
   /* ---------- Votación ---------- */
   if (et === 'instrucciones_votacion') { if (full) app.innerHTML = espera('Ya casi: votación', `Vas a tener ${s.config.votos_por_pilar || 3} votos por pilar para las ideas consolidadas.`, 'fa-check-to-slot'); return; }
@@ -184,7 +184,7 @@ function render() {
   }
 
   /* ---------- Cierre / reporte ---------- */
-  if (['cierre', 'reporte'].includes(et)) {
+  if (['cierre', 'resumen', 'reporte'].includes(et)) {
     if (!full) return;
     const max = escalaMax(s);
     const qw = gs.filter(g => g.conteo_eval > 0 && cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key === 'quick').sort((a, b) => b.impacto_prom - a.impacto_prom);
@@ -205,7 +205,7 @@ function salir() { if (confirm('¿Registrarte con otro nombre?')) { Yo.clear(); 
 function setPilar(id) { pilarSel = id; viewKey = ''; render(); }
 async function enviarIdea() {
   const txt = $('txtIdea').value.trim(); if (txt.length < 5) return toast('Escribe tu idea (mínimo 5 letras)', 'warn');
-  const sf = $('subfrente') ? $('subfrente').value : null; $('btnEnviar').disabled = true;
+  const sf = $('subfrente') ? $('subfrente').value : null; if ($('subfrente') && !sf) { $('subfrente').classList.add('border-red-400'); $('subfrente').focus(); return toast('Elige el frente de tu idea antes de enviar', 'warn'); } $('btnEnviar').disabled = true;
   try { await DB.crearIdea({ pilar_id: pilarSel, subfrente: sf || null, participante_id: yo.id, participante_nombre: yo.nombre, texto: txt }); $('txtIdea').value = ''; toast('Idea enviada ✓'); vibrar(60); await cargar(); }
   catch (e) { toast(errMsg(e), 'err'); } finally { $('btnEnviar').disabled = false; }
 }

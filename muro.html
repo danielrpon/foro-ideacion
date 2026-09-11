@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260911d">
+<meta name="app-version" content="20260911e">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Muro</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -13,7 +13,7 @@
 <script src="vendor/chart.umd.min.js"></script>
 <script src="vendor/qrcode.min.js"></script>
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260911d"></script><script src="js/db.js?v=20260911d"></script><script src="js/common.js?v=20260911d"></script>
+<script src="js/config.js?v=20260911e"></script><script src="js/db.js?v=20260911e"></script><script src="js/common.js?v=20260911e"></script>
 <style>
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:18px 18px}
   .postit{transition:transform .2s}.postit:hover{transform:scale(1.03);z-index:5}
@@ -39,7 +39,7 @@ function toggleTodos() { todosAbiertos = !todosAbiertos; localStorage.setItem('m
 function hijasHtml(g, cls = 'text-sm') { const h = snap.ideas.filter(i => i.tipo === 'idea' && i.padre_id === g.id); if (!h.length) return ''; const op = (todosAbiertos || abiertos.has(g.id)) ? 'open' : ''; return `<details ${op} ontoggle="toggleAb(${g.id}, this.open)" class="mt-2"><summary class="cursor-pointer text-[11px] font-mono uppercase text-gray-500 hover:text-gray-800 select-none"><i class="fas fa-caret-right mr-1"></i>Integra ${h.length} idea(s) · ver</summary><ul class="mt-1 pl-3 border-l-2 border-gray-200 space-y-1">${h.map(i => `<li class="${cls} text-gray-700">${esc(i.texto)}</li>`).join('')}</ul></details>`; }
 renderNav('muro', '', { app: false });
 async function cargar() { snap = await DB.snapshot(); setNavEtapa(snap.sesion); render(); }
-setInterval(() => { if (snap) { const t = $('tmr'); const s = snap.sesion; t.textContent = (s.fin_etapa || ['ideacion', 'matriz'].includes(s.etapa)) ? timerText(s) : ''; t.className = 'font-mono text-3xl font-black ' + (timerVencido(s) ? 'text-red-500 animate-pulse' : 'text-emerald-400'); } }, 1000);
+setInterval(() => { if (snap) { const t = $('tmr'); const s = snap.sesion; t.textContent = (s.fin_etapa || ['ideacion', 'matriz'].includes(s.etapa)) ? timerText(s) : ''; const tp = $('tmrPausa'); if (tp) tp.textContent = timerText(s); t.className = 'font-mono text-3xl font-black ' + (timerVencido(s) ? 'text-red-500 animate-pulse' : 'text-emerald-400'); } }, 1000);
 
 const grupos = () => calificables(snap.ideas);
 const ideasOK = () => snap.ideas.filter(i => i.tipo === 'idea' && i.estado !== 'repetida');
@@ -84,7 +84,8 @@ function render() {
     app.innerHTML = `<div class="flex justify-between items-end mb-3"><h2 class="text-2xl font-black">Ideas consolidadas <span class="text-gray-400 font-normal text-lg">· ${gs.length} consolidadas a partir de ${ideas.length} ideas (${pct(agrup, ideas.length)}% cubiertas)</span></h2><button onclick="toggleTodos()" class="text-xs font-bold px-3 py-1.5 rounded-full border ${todosAbiertos ? 'bg-gray-800 text-white' : 'bg-white text-gray-600'}"><i class="fas fa-list-ul mr-1"></i>${todosAbiertos ? 'Ocultar ideas originales' : 'Mostrar ideas originales'}</button></div>
       <div class="cols" style="grid-template-columns:repeat(${snap.pilares.length},1fr);height:calc(100% - 44px)">${snap.pilares.map(p => { const c = col(p.color), mios = gs.filter(g => g.pilar_id === p.id); return `<div class="colwrap bg-white rounded-xl shadow border-t-8 ${c.border}"><div class="p-3 border-b flex justify-between"><h3 class="font-black ${c.text}">${esc(p.nombre)}</h3><span class="text-sm text-gray-400">${mios.length}</span></div><div class="colbody p-3 space-y-2">${mios.map(g => `<div class="p-3 rounded-lg border ${c.border} ${c.bg}"><div class="font-bold text-base leading-snug">${esc(g.titulo || g.texto)}</div><p class="text-sm text-gray-700 mt-1">${esc(g.descripcion_corta || '')}</p>${hijasHtml(g, 'text-xs')}</div>`).join('')}</div></div>`; }).join('')}</div>`; return;
   }
-  if (et === 'pausa') { app.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center"><i class="fas fa-mug-hot text-8xl text-amber-500 mb-6"></i><h2 class="text-6xl font-black">Pausa · cafecito</h2><p class="text-2xl text-gray-500 mt-4">Volvemos en unos minutos con las ideas consolidadas.</p></div>`; return; }
+  if (et === 'pausa') { app.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center"><i class="fas fa-mug-hot text-8xl text-amber-500 mb-6"></i><h2 class="text-6xl font-black">Pausa · cafecito</h2>${s.fin_etapa ? `<div id="tmrPausa" class="font-mono text-8xl font-black text-emerald-600 mt-6">${timerText(s)}</div><p class="text-2xl text-gray-500 mt-4">Volvemos con las ideas consolidadas.</p>` : `<p class="text-2xl text-gray-500 mt-4">Volvemos en unos minutos con las ideas consolidadas.</p>`}</div>`; return; }
+  if (et === 'resumen') { renderResumen(); return; }
   if (et === 'instrucciones_votacion') { app.innerHTML = instr('Votación', [`Cada uno tiene <b>${s.config.votos_por_pilar || 3} votos por pilar</b>.`, 'Vota las ideas consolidadas que más valgan la pena discutir.', 'Puedes quitar un voto y moverlo mientras la etapa esté abierta.'], 'fa-check-to-slot'); return; }
   if (et === 'votacion' || et === 'resultados') {
     const tot = gs.reduce((a, g) => a + g.votos, 0);
@@ -127,6 +128,23 @@ function render() {
     dibujarChart(ev, max); if (fijado && ev.some(g => g.id === fijado)) mostrarDetalle(fijado); return;
   }
   app.innerHTML = `<div class="h-full flex items-center justify-center text-3xl text-gray-400">${esc(stageInfo(et).label)}</div>`;
+}
+
+/* Resumen del foro (etapa 7.5): métricas para proyectar al cierre */
+async function renderResumen() {
+  const app = $('app'); app.innerHTML = '<div class="h-full flex items-center justify-center text-3xl text-gray-400">Calculando el resumen…</div>';
+  let participantes = [], evaluaciones = []; try { participantes = await DB.getParticipantes(); } catch (e) {} try { evaluaciones = await DB.getAllEvaluaciones(); } catch (e) {}
+  const r = resumenForo({ sesion: snap.sesion, pilares: snap.pilares, ideas: snap.ideas, participantes, evaluaciones });
+  const kpi = (n, l, sub = '') => `<div class="bg-white rounded-xl shadow p-5 text-center"><div class="text-6xl font-black leading-none">${n}</div><div class="font-mono text-xs uppercase tracking-widest text-gray-500 mt-3">${l}</div>${sub ? `<div class="text-sm text-gray-400 mt-1">${sub}</div>` : ''}</div>`;
+  const mxP = Math.max(...r.porPilar.map(p => p.ideas), 1);
+  app.innerHTML = `<div class="h-full flex flex-col gap-4 min-h-0">
+    <div class="grid grid-cols-5 gap-4">${kpi(r.participantes, 'participantes')}${kpi(r.ideas, 'ideas', r.promIdeas + ' por persona · máx ' + r.maxIdeas)}${kpi(r.ideas + ' → ' + r.consolidadas, 'originales → consolidadas', r.ratio ? r.ratio + ' ideas por consolidada' : '')}${kpi(r.calificaciones, 'calificaciones', r.promCalif + ' por persona · ' + r.conCuatro + ' ideas con 4 o más')}${kpi(r.duracion ? fmtDur(r.duracion) : '–', 'duración', (r.inicio ? fmtHora(new Date(r.inicio).toISOString()) : '') + (r.fin ? ' → ' + fmtHora(new Date(r.fin).toISOString()) : ''))}</div>
+    <div class="grid grid-cols-3 gap-4 flex-1 min-h-0">
+      <div class="bg-white rounded-xl shadow p-5 min-h-0 overflow-y-auto"><h3 class="font-black text-lg mb-3">Ideas por pilar</h3>${r.porPilar.map(p => { const c = col(p.color); return `<div class="mb-3"><div class="flex justify-between text-sm"><span class="font-bold ${c.text}">${esc(p.nombre)}</span><span class="font-mono">${p.ideas} → ${p.consolidadas}</span></div><div class="h-3 bg-gray-100 rounded mt-1"><div class="h-3 rounded ${c.solid}" style="width:${pct(p.ideas, mxP)}%"></div></div></div>`; }).join('')}</div>
+      <div class="bg-white rounded-xl shadow p-5 min-h-0 overflow-y-auto"><h3 class="font-black text-lg mb-3">Ideas por participante</h3>${r.ranking.map(([n, k]) => `<div class="flex justify-between text-sm py-1 border-b border-gray-100"><span>${esc(n)}</span><span class="font-mono font-bold">${k}</span></div>`).join('') || '<p class="text-gray-400 text-sm">Sin ideas</p>'}</div>
+      <div class="flex flex-col gap-4 min-h-0"><div class="bg-white rounded-xl shadow p-5"><h3 class="font-black text-lg mb-3">Matriz</h3><div class="grid grid-cols-2 gap-2 text-center"><div class="bg-emerald-50 rounded-lg p-3"><div class="text-3xl font-black text-emerald-700">${r.cuad.quick}</div><div class="text-[10px] font-mono uppercase text-emerald-700">quick wins</div></div><div class="bg-blue-50 rounded-lg p-3"><div class="text-3xl font-black text-blue-700">${r.cuad.proyecto}</div><div class="text-[10px] font-mono uppercase text-blue-700">proyectos</div></div><div class="bg-amber-50 rounded-lg p-3"><div class="text-3xl font-black text-amber-700">${r.cuad.relleno}</div><div class="text-[10px] font-mono uppercase text-amber-700">tareas menores</div></div><div class="bg-gray-100 rounded-lg p-3"><div class="text-3xl font-black text-gray-600">${r.cuad.descartar}</div><div class="text-[10px] font-mono uppercase text-gray-600">postergar</div></div></div></div>
+        <div class="bg-fn text-white rounded-xl shadow p-5 flex-1"><h3 class="font-black text-lg mb-3 text-emerald-400">Top 3 por puntaje</h3>${r.top.map((g, i) => `<div class="flex items-start gap-3 mb-3"><span class="shrink-0 w-8 h-8 rounded-full bg-emerald-400 text-black font-black flex items-center justify-center">${i + 1}</span><div><div class="font-bold leading-tight">${esc(g.titulo || g.texto)}</div><div class="font-mono text-xs text-gray-400 mt-1">P ${puntaje(g, r.nmax)} · I ${g.impacto_prom} · E ${g.esfuerzo_prom} · ${g.conteo_eval} calif.</div></div></div>`).join('') || '<p class="text-gray-400 text-sm">Aún sin calificaciones</p>'}</div></div>
+    </div></div>`;
 }
 
 /* Detalle de una idea (tarjeta lateral): al pasar el mouse se muestra; con clic se fija */

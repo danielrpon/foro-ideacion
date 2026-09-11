@@ -45,7 +45,7 @@
     const seed = () => ({
       seq: 5,
       sesion: { id: SES, nombre: 'Foro de ideación · Impercap', empresa: 'Impercap', facilitador: 'Daniel Restrepo', etapa: 'bienvenida', etapa_ts: nowIso(), fin_etapa: null, proyectada_id: null, modo_matriz: 'todas', clave_admin: 'admin', clave_lider: 'lider', created_at: nowIso(),
-        config: { votos_por_pilar: 3, minutos_ideacion: 10, minutos_matriz: 8, escala_max: 5, max_calificaciones: 12,
+        config: { votos_por_pilar: 3, minutos_ideacion: 10, minutos_matriz: 8, minutos_pausa: 5, escala_max: 5, max_calificaciones: 12,
           caso: 'Impercap (Impermeables Vélez y Forero SAS) lleva más de 10 años fabricando impermeables para moto en plástico reciclado en Medellín. En 2025 vendió $2.734M (+50%) y enero–abril de 2026 iba +32%. Con El Niño, de mayo a agosto la venta cayó 40%: $153M/mes frente a ~$250M que necesita para cubrir sus costos; enero a julio ya acumula pérdidas por $178M, con 37 personas en nómina y la caja para pocos meses. El reto del foro: ideas que den ventas y aire financiero en los próximos 3 a 6 meses, desde Mercadeo y Ventas, Financiero, Estructura y Cultura, Operaciones y Otros.',
           restricciones: ['Caja limitada: no hay flujo para indemnizar ni para contratar sin retorno rápido', 'Un vendedor tarda ~3 meses en volverse rentable', 'El clima vuelve a favor ~febrero: el corto plazo es sobrevivir y llegar al punto de equilibrio', 'Puede haber activos vendibles o una línea de crédito: preguntar antes de asumir'] } },
       pilares: [
