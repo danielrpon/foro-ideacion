@@ -72,6 +72,49 @@ window.DEMO = {
     const filas = this.ideas.map(([pn, sf, texto, w]) => { const p = pil(pn); return { pilar_id: p.id, subfrente: sf && (p.subfrentes || []).includes(sf) ? sf : null, participante_id: parts[w].id, participante_nombre: parts[w].nombre, texto }; });
     onProgress('Enviando 50 ideas…');
     if (DB.crearIdeas) await DB.crearIdeas(filas); else for (const f of filas) await DB.crearIdea(f);
-    return { participantes: parts.length, ideas: filas.length };
+    return { participantes: parts.length, ideas: filas.length, parts };
+  },
+
+  /* Títulos de las consolidadas demo por pilar + frente (consolidación determinista, sin IA) */
+  titulos: {
+    'Mercadeo y Ventas|Cobertura geográfica': ['Vendedores y distribuidores donde sí llueve', 'Fuerza comercial por comisión en Cali, el Pacífico y Bogotá.'],
+    'Mercadeo y Ventas|Desarrollo del cliente actual': ['Vender más al cliente que ya compra', 'Exhibición, incentivos por volumen y reactivación de clientes de 2025.'],
+    'Mercadeo y Ventas|Clientes nuevos': ['Nuevos segmentos: domicilios, minería, colegios, eventos', 'Dotación reflectiva, capas de marca propia y ventas en eventos.'],
+    'Mercadeo y Ventas|Diversificación de productos': ['Productos para tiempo seco y todo el año', 'Sombra, mascotas, forros, delantales y batas.'],
+    'Mercadeo y Ventas|Canal digital / IA': ['Canal digital: marketplaces, redes y bot de WhatsApp', 'Mercado Libre, campañas por pronóstico de lluvia y pedidos por WhatsApp.'],
+    'Financiero|Caja y financiación': ['Caja rápida: anticipos, factoring, plazos y crédito', 'Renegociar proveedores, anticipos de clientes grandes, factoring y línea rotativa.'],
+    'Financiero|Estructura de costos y gastos': ['Bajar el gasto fijo mientras dura el verano', 'Jornada de cuatro días, congelar horas extra y renegociar arriendo.'],
+    'Financiero|Activos y capital de trabajo': ['Monetizar activos ociosos', 'Inventario lento con descuento y alquiler de maquinaria.'],
+    'Estructura y Cultura|Fuerza comercial': ['Más gente vendiendo con la misma nómina', 'Operarios en ventas telefónicas, comisión pura y practicante en redes.'],
+    'Estructura y Cultura|Roles y estructura': ['Reorganizar roles para liberar al gerente', 'Líder de operaciones asume logística y compras; responsable único de digital.'],
+    'Estructura y Cultura|Cultura y capacidad de reinvención': ['Rituales e incentivos para activar ideas', 'Reunión semanal de ideas, bono colectivo por equilibrio y cursos cofinanciados.'],
+    'Operaciones|Capacidad y planta': ['Usar la capacidad ociosa: maquila e inventario', 'Maquila para hard discounts y otras marcas; producir en verano para febrero.'],
+    'Operaciones|Compras y proveedores': ['Comprar mejor la materia prima', 'Lotes pequeños y segundo proveedor de PEMD.'],
+    'Operaciones|Logística y entregas': ['Logística más barata por zona', 'Despachos consolidados y pago contra entrega.'],
+    'Operaciones|Calidad y procesos': ['Menos desperdicio y menos referencias', 'Kaizen quincenal y pausar referencias de bajo margen.'],
+    'Otros|': ['Alianzas: escuelas, alcaldías, marcas de motos y exportación', 'Convenios y programa de reciclaje con descuento.']
+  },
+  /* Demo completo: ideas → consolidación determinista → calificaciones con cantidades distintas por idea → matriz final.
+     Sirve para ensayar la lectura de la matriz (tamaño = nº de calificaciones, número = prioridad). */
+  async cargarCompleto(snap, onProgress = () => {}) {
+    const r = await this.cargar(snap, onProgress); const parts = r.parts;
+    onProgress('Consolidando por frente…');
+    const s2 = await DB.snapshot(); const ideas = s2.ideas.filter(i => i.tipo === 'idea' && i.estado !== 'repetida');
+    const byKey = {}; ideas.forEach(i => { const p = s2.pilares.find(x => x.id === i.pilar_id) || {}; const k = (p.nombre || '') + '|' + (i.subfrente || ''); (byKey[k] = byKey[k] || { pilar_id: i.pilar_id, ids: [] }).ids.push(i.id); });
+    const grupos = Object.entries(byKey).map(([k, v]) => { const t = this.titulos[k] || [(ideas.find(i => i.id === v.ids[0]) || {}).texto.slice(0, 60), '']; return { pilar_id: v.pilar_id, titulo: t[0], descripcion_corta: t[1], detalle: 'Integra ' + v.ids.length + ' ideas del foro (demo).', ideas: v.ids, origen: 'ia' }; });
+    await DB.admin('importar_consolidacion', { grupos, reemplazar: true, pilar_id: null });
+    await DB.admin('cambiar_etapa', { etapa: 'matriz', minutos: 0 });
+    onProgress('Calificando con los participantes demo…');
+    const s3 = await DB.snapshot(); const cal = calificables(s3.ideas); const lim = maxCalif(s3.sesion, cal.length); const usadas = parts.map(() => 0);
+    /* perfil de calificación por consolidada: [esfuerzo, impacto, nº de calificadores] con dispersión intencional */
+    const perfil = [[1, 5, 5], [2, 4, 4], [2, 5, 3], [3, 4, 5], [1, 3, 2], [3, 3, 4], [4, 4, 3], [2, 2, 1], [3, 2, 2], [4, 3, 5], [5, 2, 1], [2, 4, 2], [4, 5, 4], [3, 3, 1], [5, 1, 2], [2, 3, 3]];
+    let n = 0;
+    for (let k = 0; k < cal.length; k++) {
+      const [e, i, nr] = perfil[k % perfil.length];
+      for (let j = 0; j < nr; j++) { const w = (k + j) % parts.length; if (usadas[w] >= lim) continue; const esf = Math.max(1, Math.min(5, e + ((j % 3) - 1))), imp = Math.max(1, Math.min(5, i + ((j % 2) ? 0 : (j ? -1 : 0)))); await DB.evaluar(cal[k].id, parts[w].id, esf, imp); usadas[w]++; n++; }
+      onProgress('Calificando… ' + (k + 1) + ' de ' + cal.length);
+    }
+    await DB.admin('cambiar_etapa', { etapa: 'cierre', minutos: 0 });
+    return { participantes: parts.length, ideas: r.ideas, consolidadas: cal.length, calificaciones: n };
   }
 };
