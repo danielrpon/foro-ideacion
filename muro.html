@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260911e">
+<meta name="app-version" content="20260911f">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Muro</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -13,7 +13,7 @@
 <script src="vendor/chart.umd.min.js"></script>
 <script src="vendor/qrcode.min.js"></script>
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260911e"></script><script src="js/db.js?v=20260911e"></script><script src="js/common.js?v=20260911e"></script>
+<script src="js/config.js?v=20260911f"></script><script src="js/db.js?v=20260911f"></script><script src="js/common.js?v=20260911f"></script>
 <style>
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:18px 18px}
   .postit{transition:transform .2s}.postit:hover{transform:scale(1.03);z-index:5}
@@ -138,10 +138,9 @@ async function renderResumen() {
   const kpi = (n, l, sub = '') => `<div class="bg-white rounded-xl shadow p-5 text-center"><div class="text-6xl font-black leading-none">${n}</div><div class="font-mono text-xs uppercase tracking-widest text-gray-500 mt-3">${l}</div>${sub ? `<div class="text-sm text-gray-400 mt-1">${sub}</div>` : ''}</div>`;
   const mxP = Math.max(...r.porPilar.map(p => p.ideas), 1);
   app.innerHTML = `<div class="h-full flex flex-col gap-4 min-h-0">
-    <div class="grid grid-cols-5 gap-4">${kpi(r.participantes, 'participantes')}${kpi(r.ideas, 'ideas', r.promIdeas + ' por persona · máx ' + r.maxIdeas)}${kpi(r.ideas + ' → ' + r.consolidadas, 'originales → consolidadas', r.ratio ? r.ratio + ' ideas por consolidada' : '')}${kpi(r.calificaciones, 'calificaciones', r.promCalif + ' por persona · ' + r.conCuatro + ' ideas con 4 o más')}${kpi(r.duracion ? fmtDur(r.duracion) : '–', 'duración', (r.inicio ? fmtHora(new Date(r.inicio).toISOString()) : '') + (r.fin ? ' → ' + fmtHora(new Date(r.fin).toISOString()) : ''))}</div>
-    <div class="grid grid-cols-3 gap-4 flex-1 min-h-0">
-      <div class="bg-white rounded-xl shadow p-5 min-h-0 overflow-y-auto"><h3 class="font-black text-lg mb-3">Ideas por pilar</h3>${r.porPilar.map(p => { const c = col(p.color); return `<div class="mb-3"><div class="flex justify-between text-sm"><span class="font-bold ${c.text}">${esc(p.nombre)}</span><span class="font-mono">${p.ideas} → ${p.consolidadas}</span></div><div class="h-3 bg-gray-100 rounded mt-1"><div class="h-3 rounded ${c.solid}" style="width:${pct(p.ideas, mxP)}%"></div></div></div>`; }).join('')}</div>
-      <div class="bg-white rounded-xl shadow p-5 min-h-0 overflow-y-auto"><h3 class="font-black text-lg mb-3">Ideas por participante</h3>${r.ranking.map(([n, k]) => `<div class="flex justify-between text-sm py-1 border-b border-gray-100"><span>${esc(n)}</span><span class="font-mono font-bold">${k}</span></div>`).join('') || '<p class="text-gray-400 text-sm">Sin ideas</p>'}</div>
+    <div class="grid grid-cols-5 gap-4">${kpi(r.participantes, 'participantes')}${kpi(r.ideas, 'ideas', r.promIdeas + ' por persona')}${kpi(r.ideas + ' → ' + r.consolidadas, 'originales → consolidadas', r.ratio ? r.ratio + ' ideas por consolidada' : '')}${kpi(r.calificaciones, 'calificaciones', r.promCalif + ' por persona · ' + r.conCuatro + ' ideas con 4 o más')}${kpi(r.duracion ? fmtDur(r.duracion) : '–', 'duración', (r.inicio ? fmtHora(new Date(r.inicio).toISOString()) : '') + (r.fin ? ' → ' + fmtHora(new Date(r.fin).toISOString()) : ''))}</div>
+    <div class="grid grid-cols-2 gap-4 flex-1 min-h-0">
+      <div class="bg-white rounded-xl shadow p-6 min-h-0 overflow-y-auto"><h3 class="font-black text-lg mb-1">Ideas por pilar</h3><p class="text-xs text-gray-400 mb-4">Porcentaje de las ${r.ideas} ideas originales · a la derecha, cuántas consolidadas salieron</p>${r.porPilar.map(p => { const c = col(p.color), pc = pct(p.ideas, r.ideas); return `<div class="mb-4"><div class="flex justify-between items-baseline"><span class="font-bold text-lg ${c.text}">${esc(p.nombre)}</span><span class="font-mono"><b class="text-2xl">${pc}%</b> <span class="text-gray-400 text-sm">· ${p.consolidadas} consolidada${p.consolidadas === 1 ? '' : 's'}</span></span></div><div class="h-4 bg-gray-100 rounded mt-1"><div class="h-4 rounded ${c.solid}" style="width:${pc}%"></div></div></div>`; }).join('')}</div>
       <div class="flex flex-col gap-4 min-h-0"><div class="bg-white rounded-xl shadow p-5"><h3 class="font-black text-lg mb-3">Matriz</h3><div class="grid grid-cols-2 gap-2 text-center"><div class="bg-emerald-50 rounded-lg p-3"><div class="text-3xl font-black text-emerald-700">${r.cuad.quick}</div><div class="text-[10px] font-mono uppercase text-emerald-700">quick wins</div></div><div class="bg-blue-50 rounded-lg p-3"><div class="text-3xl font-black text-blue-700">${r.cuad.proyecto}</div><div class="text-[10px] font-mono uppercase text-blue-700">proyectos</div></div><div class="bg-amber-50 rounded-lg p-3"><div class="text-3xl font-black text-amber-700">${r.cuad.relleno}</div><div class="text-[10px] font-mono uppercase text-amber-700">tareas menores</div></div><div class="bg-gray-100 rounded-lg p-3"><div class="text-3xl font-black text-gray-600">${r.cuad.descartar}</div><div class="text-[10px] font-mono uppercase text-gray-600">postergar</div></div></div></div>
         <div class="bg-fn text-white rounded-xl shadow p-5 flex-1"><h3 class="font-black text-lg mb-3 text-emerald-400">Top 3 por puntaje</h3>${r.top.map((g, i) => `<div class="flex items-start gap-3 mb-3"><span class="shrink-0 w-8 h-8 rounded-full bg-emerald-400 text-black font-black flex items-center justify-center">${i + 1}</span><div><div class="font-bold leading-tight">${esc(g.titulo || g.texto)}</div><div class="font-mono text-xs text-gray-400 mt-1">P ${puntaje(g, r.nmax)} · I ${g.impacto_prom} · E ${g.esfuerzo_prom} · ${g.conteo_eval} calif.</div></div></div>`).join('') || '<p class="text-gray-400 text-sm">Aún sin calificaciones</p>'}</div></div>
     </div></div>`;

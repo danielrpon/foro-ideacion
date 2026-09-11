@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260911e">
+<meta name="app-version" content="20260911f">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Admin</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260911e"></script><script src="js/db.js?v=20260911e"></script><script src="js/common.js?v=20260911e"></script><script src="js/mece-ui.js?v=20260911e"></script><script src="js/demo-data.js?v=20260911e"></script>
+<script src="js/config.js?v=20260911f"></script><script src="js/db.js?v=20260911f"></script><script src="js/common.js?v=20260911f"></script><script src="js/mece-ui.js?v=20260911f"></script><script src="js/demo-data.js?v=20260911f"></script>
 <style>.fade-in{animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}} .tab{display:none}.tab.on{display:block}</style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col">
@@ -125,8 +125,8 @@ async function renderResumenAdmin() {
   $('tab-resumen').innerHTML = `<div class="flex flex-wrap gap-3 items-center mb-4"><h3 class="font-black text-lg">Resumen del foro</h3><button onclick="cambiarEtapa('resumen')" class="bg-fn text-emerald-400 px-4 py-2 rounded-lg text-sm font-bold"><i class="fas fa-tv mr-1"></i>Proyectar resumen en el muro (etapa 7.5)</button><span class="text-xs text-gray-500">Los participantes "Demo ·" cuentan; reinicia el tablero antes del foro real.</span></div>
     <div class="grid md:grid-cols-3 gap-4">
       <div class="bg-white rounded-xl shadow p-4"><h4 class="font-black mb-2">Cifras</h4><table class="w-full text-sm">${row('Participantes registrados', r.participantes)}${row('Ideas originales', r.ideas)}${row('Ideas por persona (promedio · máx)', r.promIdeas + ' · ' + r.maxIdeas)}${row('Ideas consolidadas', r.consolidadas)}${row('Originales por consolidada', r.ratio)}${row('Calificaciones', r.calificaciones)}${row('Calificaciones por persona', r.promCalif)}${row('Ideas con 4 o más calificaciones', r.conCuatro)}${row('Quick wins · proyectos · tareas menores · postergar', [r.cuad.quick, r.cuad.proyecto, r.cuad.relleno, r.cuad.descartar].join(' · '))}${row('Inicio (primer registro)', r.inicio ? fmtHora(new Date(r.inicio).toISOString()) : '–')}${row('Fin (última acción)', r.fin ? fmtHora(new Date(r.fin).toISOString()) : '–')}${row('Duración', r.duracion ? fmtDur(r.duracion) : '–')}</table></div>
-      <div class="bg-white rounded-xl shadow p-4"><h4 class="font-black mb-2">Ideas por pilar (originales → consolidadas)</h4>${r.porPilar.map(p => `<div class="flex justify-between text-sm py-1 border-b"><span class="${col(p.color).text} font-bold">${esc(p.nombre)}</span><span class="font-mono">${p.ideas} → ${p.consolidadas}</span></div>`).join('')}<h4 class="font-black mb-2 mt-4">Top 3 por puntaje</h4>${r.top.map((g, i) => `<div class="text-sm py-1 border-b"><b>${i + 1}. ${esc(g.titulo || g.texto)}</b> <span class="font-mono text-xs text-gray-500">P ${puntaje(g, r.nmax)} · I ${g.impacto_prom} · E ${g.esfuerzo_prom} · ${g.conteo_eval}</span></div>`).join('') || '<p class="text-xs text-gray-400">Sin calificaciones</p>'}</div>
-      <div class="bg-white rounded-xl shadow p-4"><h4 class="font-black mb-2">Ideas por participante</h4>${r.ranking.map(([n, k]) => `<div class="flex justify-between text-sm py-1 border-b"><span>${esc(n)}</span><span class="font-mono font-bold">${k}</span></div>`).join('') || '<p class="text-xs text-gray-400">Sin ideas</p>'}</div>
+      <div class="bg-white rounded-xl shadow p-4"><h4 class="font-black mb-2">Ideas por pilar (originales → consolidadas)</h4>${r.porPilar.map(p => `<div class="flex justify-between text-sm py-1 border-b"><span class="${col(p.color).text} font-bold">${esc(p.nombre)}</span><span class="font-mono">${pct(p.ideas, r.ideas)}% · ${p.ideas} → ${p.consolidadas}</span></div>`).join('')}<h4 class="font-black mb-2 mt-4">Top 3 por puntaje</h4>${r.top.map((g, i) => `<div class="text-sm py-1 border-b"><b>${i + 1}. ${esc(g.titulo || g.texto)}</b> <span class="font-mono text-xs text-gray-500">P ${puntaje(g, r.nmax)} · I ${g.impacto_prom} · E ${g.esfuerzo_prom} · ${g.conteo_eval}</span></div>`).join('') || '<p class="text-xs text-gray-400">Sin calificaciones</p>'}</div>
+      <div class="bg-white rounded-xl shadow p-4"><h4 class="font-black mb-2">Ideas por participante <span class="text-xs font-normal text-gray-400">(solo aquí; no se proyecta)</span></h4>${r.ranking.map(([n, k]) => `<div class="flex justify-between text-sm py-1 border-b"><span>${esc(n)}</span><span class="font-mono font-bold">${k}</span></div>`).join('') || '<p class="text-xs text-gray-400">Sin ideas</p>'}</div>
     </div>`;
 }
 async function cargarDemo(completo) {
