@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260910m">
+<meta name="app-version" content="20260911a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Muro</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -13,7 +13,7 @@
 <script src="vendor/chart.umd.min.js"></script>
 <script src="vendor/qrcode.min.js"></script>
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260910m"></script><script src="js/db.js?v=20260910m"></script><script src="js/common.js?v=20260910m"></script>
+<script src="js/config.js?v=20260911a"></script><script src="js/db.js?v=20260911a"></script><script src="js/common.js?v=20260911a"></script>
 <style>
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:18px 18px}
   .postit{transition:transform .2s}.postit:hover{transform:scale(1.03);z-index:5}
@@ -123,7 +123,7 @@ function render() {
       <div id="detalle" class="shrink-0 bg-white border-2 border-gray-900 rounded-xl p-5 min-h-[110px]"><p class="text-sm text-gray-400"><i class="fas fa-hand-pointer mr-1"></i>Pasa el mouse o haz clic sobre un punto o un título para ver la idea completa.</p></div>
       <div class="shrink-0 bg-emerald-50 border border-emerald-300 rounded-xl p-4"><h3 class="font-black text-emerald-800 text-lg"><i class="fas fa-bolt mr-1"></i>QUICK WINS · hacer ya (${qw.length})</h3><ul class="mt-3 space-y-2">${qw.map(item).join('') || '<li class="text-sm text-gray-400">Ninguna todavía</li>'}</ul></div>
       <div class="shrink-0 bg-blue-50 border border-blue-300 rounded-xl p-4"><h3 class="font-black text-blue-800"><i class="fas fa-diagram-project mr-1"></i>PROYECTOS · planificar (${pr.length})</h3><ul class="mt-3 space-y-2 text-sm">${pr.map(item).join('') || '<li class="text-gray-400">Ninguno</li>'}</ul></div>
-      <div class="shrink-0 bg-gray-50 border border-gray-300 rounded-xl p-4"><h3 class="font-bold text-gray-600 text-sm">COMPLEMENTOS · si sobra tiempo / POSTERGAR (${ds.length})</h3><ul class="mt-3 space-y-2 text-xs">${ds.map(item).join('') || '<li class="text-gray-400">—</li>'}</ul></div></div></div>`;
+      <div class="shrink-0 bg-gray-50 border border-gray-300 rounded-xl p-4"><h3 class="font-bold text-gray-600 text-sm">TAREAS MENORES · si sobra tiempo / POSTERGAR (${ds.length})</h3><ul class="mt-3 space-y-2 text-xs">${ds.map(item).join('') || '<li class="text-gray-400">—</li>'}</ul></div></div></div>`;
     dibujarChart(ev, max); if (fijado && ev.some(g => g.id === fijado)) mostrarDetalle(fijado); return;
   }
   app.innerHTML = `<div class="h-full flex items-center justify-center text-3xl text-gray-400">${esc(stageInfo(et).label)}</div>`;
@@ -156,7 +156,7 @@ function dibujarChart(ev, max) {
       plugins: { legend: { display: false }, tooltip: { displayColors: false, titleFont: { size: 15, weight: 'bold' }, bodyFont: { size: 13 }, padding: 10, callbacks: { title: (c) => `#${NUM[c[0].raw.g.id]} · ${c[0].raw.g.titulo || c[0].raw.g.texto}`, label: (c) => { const g = c.raw.g; const d = (g.descripcion_corta || '').match(/.{1,60}(\s|$)/g) || []; return [...d, `Puntaje ${PT[g.id]} · Impacto ${g.impacto_prom} · Esfuerzo ${g.esfuerzo_prom} · ${g.conteo_eval} calificaciones`]; } } } },
       scales: { x: { min: 0.6, max: max + 0.4, ticks: { stepSize: 0.5, callback: tick, font: { family: 'monospace' } }, title: { display: true, text: 'ESFUERZO →', font: { family: 'monospace' } }, grid: { color: (c) => c.tick.value === mid ? '#111' : (Number.isInteger(c.tick.value) ? '#eee' : 'transparent') } },
                 y: { min: 0.6, max: max + 0.4, ticks: { stepSize: 0.5, callback: tick, font: { family: 'monospace' } }, title: { display: true, text: 'IMPACTO ↑', font: { family: 'monospace' } }, grid: { color: (c) => c.tick.value === mid ? '#111' : (Number.isInteger(c.tick.value) ? '#eee' : 'transparent') } } } },
-    plugins: [{ id: 'quad', beforeDraw(ch) { const { ctx, chartArea: a, scales: { x, y } } = ch; const mx = x.getPixelForValue(mid), my = y.getPixelForValue(mid); ctx.save(); ctx.fillStyle = 'rgba(16,185,129,.10)'; ctx.fillRect(a.left, a.top, mx - a.left, my - a.top); ctx.fillStyle = 'rgba(37,99,235,.07)'; ctx.fillRect(mx, a.top, a.right - mx, my - a.top); ctx.fillStyle = 'rgba(245,158,11,.08)'; ctx.fillRect(a.left, my, mx - a.left, a.bottom - my); ctx.fillStyle = 'rgba(107,114,128,.08)'; ctx.fillRect(mx, my, a.right - mx, a.bottom - my); ctx.font = 'bold 14px monospace'; ctx.globalAlpha = 0.55; ctx.fillStyle = '#047857'; ctx.fillText('QUICK WINS', a.left + 10, a.top + 20); ctx.fillStyle = '#1d4ed8'; ctx.fillText('PROYECTOS', mx + 10, a.top + 20); ctx.fillStyle = '#b45309'; ctx.fillText('COMPLEMENTOS', a.left + 10, a.bottom - 10); ctx.fillStyle = '#4b5563'; ctx.fillText('POSTERGAR', mx + 10, a.bottom - 10); ctx.restore(); },
+    plugins: [{ id: 'quad', beforeDraw(ch) { const { ctx, chartArea: a, scales: { x, y } } = ch; const mx = x.getPixelForValue(mid), my = y.getPixelForValue(mid); ctx.save(); ctx.fillStyle = 'rgba(16,185,129,.10)'; ctx.fillRect(a.left, a.top, mx - a.left, my - a.top); ctx.fillStyle = 'rgba(37,99,235,.07)'; ctx.fillRect(mx, a.top, a.right - mx, my - a.top); ctx.fillStyle = 'rgba(245,158,11,.08)'; ctx.fillRect(a.left, my, mx - a.left, a.bottom - my); ctx.fillStyle = 'rgba(107,114,128,.08)'; ctx.fillRect(mx, my, a.right - mx, a.bottom - my); ctx.font = 'bold 14px monospace'; ctx.globalAlpha = 0.55; ctx.fillStyle = '#047857'; ctx.fillText('QUICK WINS', a.left + 10, a.top + 20); ctx.fillStyle = '#1d4ed8'; ctx.fillText('PROYECTOS', mx + 10, a.top + 20); ctx.fillStyle = '#b45309'; ctx.fillText('TAREAS MENORES', a.left + 10, a.bottom - 10); ctx.fillStyle = '#4b5563'; ctx.fillText('POSTERGAR', mx + 10, a.bottom - 10); ctx.restore(); },
       afterDatasetsDraw(ch) { const { ctx } = ch; ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ch.getDatasetMeta(0).data.forEach((pt, i) => { const g = puntos[i].g; ctx.font = `bold ${Math.max(11, Math.round(radio(g) * 0.9))}px sans-serif`; ctx.fillText(String(NUM[g.id] || ''), pt.x, pt.y + 1); }); ctx.restore(); } }] });
 }
 Poll.start(cargar, 4000);

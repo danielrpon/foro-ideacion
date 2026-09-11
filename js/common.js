@@ -116,7 +116,7 @@ window.cuadrante = (esf, imp, max = 5) => {
   const mid = max / 2 + 0.5; // 3 en escala 1-5, 5.5 en 1-10
   if (imp >= mid && esf < mid) return { key: 'quick', label: 'QUICK WIN · Hacer ya', color: 'emerald' };
   if (imp >= mid && esf >= mid) return { key: 'proyecto', label: 'PROYECTO · Planificar', color: 'blue' };
-  if (imp < mid && esf < mid) return { key: 'relleno', label: 'COMPLEMENTO · Si sobra tiempo', color: 'amber' };
+  if (imp < mid && esf < mid) return { key: 'relleno', label: 'TAREA MENOR · Si sobra tiempo', color: 'amber' };
   return { key: 'descartar', label: 'POSTERGAR', color: 'gray' };
 };
 
