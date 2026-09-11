@@ -162,7 +162,7 @@ window.MECE = {
     lineas.push('- "detalle": empieza con "Integra N ideas:" y luego UNA frase por cada idea original, en el mismo orden de la lista, conservando su mecanismo, matiz o ejemplo específico (por ejemplo: "vender en sitios turísticos como el Salto del Buey"). Si una idea añade un matiz distinto a las demás del grupo, dilo explícitamente.');
     lineas.push('- Escribe en español de Colombia, directo, sin adjetivos de relleno.');
     lineas.push('');
-    lineas.push('FORMATO: responde SOLO con JSON válido, sin texto adicional ni bloques de código, con esta forma exacta:');
+    lineas.push('FORMATO: responde SOLO con JSON válido, sin texto adicional ni bloques de código, con esta forma exacta. Dentro de los textos NO uses comillas dobles ni saltos de línea (si citas algo, usa comillas simples):');
     lineas.push('{"grupos":[{"pilar_id":1,"titulo":"...","descripcion_corta":"...","detalle":"Integra 2 ideas: ...","ideas":[12,15]}]}');
     lineas.push('');
     pilares.forEach(p => {
@@ -179,18 +179,37 @@ window.MECE = {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: Object.assign({ 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }, this.getWs() ? { 'anthropic-workspace-id': this.getWs() } : {}),
-      body: JSON.stringify({ model: this.MODEL, max_tokens: 16000, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: this.MODEL, max_tokens: 32000, messages: [{ role: 'user', content: prompt }] })
     });
     const data = await res.json();
     if (!res.ok) throw new Error((data.error && data.error.message) || ('HTTP ' + res.status));
     if (data.stop_reason === 'refusal') throw new Error('El modelo rechazó la solicitud.');
-    return (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+    const txt = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+    if (data.stop_reason === 'max_tokens') console.warn('MECE: respuesta cortada por límite de salida; se intentará rescatar los grupos completos');
+    return txt;
   },
   parse(text) {
     let t = String(text).trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
     const a = t.indexOf('{'), b = t.lastIndexOf('}'); if (a >= 0 && b > a) t = t.slice(a, b + 1);
-    const obj = JSON.parse(t); if (!obj || !Array.isArray(obj.grupos)) throw new Error('El JSON no trae "grupos".');
-    return obj;
+    try { const obj = JSON.parse(t); if (!obj || !Array.isArray(obj.grupos)) throw new Error('El JSON no trae "grupos".'); return obj; }
+    catch (e) {
+      /* Respuesta cortada o con un error puntual: rescatar los objetos de grupo que estén completos */
+      const grupos = this.rescatar(t); if (!grupos.length) throw e;
+      console.warn('MECE: JSON incompleto; rescatados ' + grupos.length + ' grupos'); return { grupos, rescatado: true };
+    }
+  },
+  /* Recorre el texto y extrae cada objeto {...} balanceado que tenga "ideas" (tolera comillas y llaves dentro de cadenas) */
+  rescatar(t) {
+    const out = []; let i = t.indexOf('['); if (i < 0) return out;
+    while (i < t.length) {
+      const s = t.indexOf('{', i); if (s < 0) break;
+      let depth = 0, inStr = false, esc = false, e = -1;
+      for (let k = s; k < t.length; k++) { const ch = t[k]; if (inStr) { if (esc) esc = false; else if (ch === '\\') esc = true; else if (ch === '"') inStr = false; continue; } if (ch === '"') inStr = true; else if (ch === '{') depth++; else if (ch === '}') { depth--; if (depth === 0) { e = k; break; } } }
+      if (e < 0) break;
+      try { const g = JSON.parse(t.slice(s, e + 1)); if (g && Array.isArray(g.ideas)) out.push(g); } catch (x) {}
+      i = e + 1;
+    }
+    return out;
   },
   /* Garantiza MECE: cada idea en un solo grupo; las que falten van a un grupo "Otras ideas" del pilar */
   validate(obj, { pilares, ideas }) {
