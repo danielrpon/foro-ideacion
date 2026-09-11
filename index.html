@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260911b">
+<meta name="app-version" content="20260911c">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Participante</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260911b"></script><script src="js/db.js?v=20260911b"></script><script src="js/common.js?v=20260911b"></script>
+<script src="js/config.js?v=20260911c"></script><script src="js/db.js?v=20260911c"></script><script src="js/common.js?v=20260911c"></script>
 <style>
   .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:14px 14px}
@@ -48,9 +48,14 @@ setInterval(() => { if (yo) DB.ping(yo.id); }, 30000);
 function grupos() { return calificables(snap.ideas); }
 function misIdeas(pid) { return snap.ideas.filter(i => i.tipo === 'idea' && i.participante_id === yo.id && (!pid || i.pilar_id === pid)); }
 function pilar(id) { return snap.pilares.find(p => p.id === id); }
+/* Pilar afín al perfil del participante (por palabras clave; sirve para cualquier sesión) */
+const AFINIDAD = [[/mercadeo|venta|comercial/i, /mercadeo|venta|comercial/i], [/finan|inversi/i, /finan/i], [/operac|producc|cadena|log[ií]st/i, /operac|producc|planta/i], [/gente|cultura|talento|humano/i, /cultura|estructura|gente|talento/i], [/digital|tecnolog|\bIA\b/i, /digital|mercadeo/i]];
+function pilarAfin() { const perfil = (yo && yo.perfil) || ''; for (const [rp, rpil] of AFINIDAD) if (rp.test(perfil)) { const p = snap.pilares.find(x => rpil.test(x.nombre)); if (p) return p; } return null; }
+/* Orden personal de los pilares: el afín primero, los demás barajados con la semilla del participante (evita que todos empiecen por el mismo) */
+function pilaresOrdenados() { const afin = pilarAfin(); const resto = ordenPersonal(snap.pilares.filter(p => !afin || p.id !== afin.id), yo ? yo.id : ''); return afin ? [afin, ...resto] : resto; }
 function hijasHtml(g) { const h = snap.ideas.filter(i => i.tipo === 'idea' && i.padre_id === g.id); if (!h.length) return ''; return `<details class="mt-2"><summary class="cursor-pointer text-[11px] font-mono uppercase text-gray-500 select-none"><i class="fas fa-caret-right mr-1"></i>Integra ${h.length} idea(s) · ver</summary><ul class="mt-1 pl-3 border-l-2 border-gray-200 space-y-1">${h.map(i => `<li class="text-xs text-gray-700">${esc(i.texto)}</li>`).join('')}</ul></details>`; }
 function chipsPilares(activo, onclick) {
-  return `<div class="chips mb-3">${snap.pilares.map(p => { const c = col(p.color); const on = p.id === activo; return `<button onclick="${onclick}(${p.id})" class="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold border ${on ? c.solid + ' text-white border-transparent' : 'bg-white ' + c.text + ' ' + c.border}"><i class="fas ${p.icono} mr-1"></i>${esc(p.nombre)}</button>`; }).join('')}</div>`;
+  return `<div class="chips mb-3">${pilaresOrdenados().map(p => { const c = col(p.color); const on = p.id === activo; return `<button onclick="${onclick}(${p.id})" class="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold border ${on ? c.solid + ' text-white border-transparent' : 'bg-white ' + c.text + ' ' + c.border}"><i class="fas ${p.icono} mr-1"></i>${esc(p.nombre)}</button>`; }).join('')}</div>`;
 }
 function espera(titulo, texto, icono = 'fa-pause-circle') {
   return `<div class="flex flex-col items-center justify-center text-center text-gray-500 mt-16 fade-in"><i class="fas ${icono} text-5xl mb-4 text-gray-300"></i><h2 class="text-xl font-bold text-gray-700">${titulo}</h2><p class="mt-2 text-sm">${texto}</p></div>`;
@@ -71,7 +76,7 @@ function render() {
         <label class="block text-xs font-bold text-gray-600 mb-1">Tu nombre</label>
         <input id="regNombre" class="w-full p-3 border rounded-lg mb-3" placeholder="Nombre y apellido" autocomplete="name">
         <label class="block text-xs font-bold text-gray-600 mb-1">Tu perfil (para autosegmentarte)</label>
-        <select id="regPerfil" class="w-full p-3 border rounded-lg mb-4 bg-white">${PERFILES.map(p => `<option>${p}</option>`).join('')}</select>
+        <select id="regPerfil" class="w-full p-3 border rounded-lg mb-4 bg-white" onchange="this.classList.remove('border-red-400')"><option value="" selected disabled>Selecciona tu área de expertiz…</option>${PERFILES.map(p => `<option>${p}</option>`).join('')}</select>
         <button onclick="registrar()" class="w-full bg-fn hover:bg-gray-800 text-emerald-400 font-bold py-3 rounded-lg">Entrar al foro <i class="fas fa-arrow-right ml-1"></i></button>
         <p class="text-[11px] text-gray-400 mt-3 text-center">Tu registro queda guardado en este celular.</p>
         </div>
@@ -98,7 +103,7 @@ function render() {
 
   /* ---------- Ideación ---------- */
   if (et === 'ideacion') {
-    if (!pilarSel || !pilar(pilarSel)) pilarSel = snap.pilares[0] && snap.pilares[0].id;
+    if (!pilarSel || !pilar(pilarSel)) pilarSel = (pilaresOrdenados()[0] || {}).id;
     const p = pilar(pilarSel), c = col(p.color), mias = misIdeas(pilarSel), total = misIdeas().length;
     if (full) {
       app.innerHTML = `<div class="fade-in">
@@ -135,7 +140,7 @@ function render() {
   /* ---------- Votación ---------- */
   if (et === 'instrucciones_votacion') { if (full) app.innerHTML = espera('Ya casi: votación', `Vas a tener ${s.config.votos_por_pilar || 3} votos por pilar para las ideas consolidadas.`, 'fa-check-to-slot'); return; }
   if (et === 'votacion') {
-    if (!pilarSel || !pilar(pilarSel)) pilarSel = snap.pilares[0] && snap.pilares[0].id;
+    if (!pilarSel || !pilar(pilarSel)) pilarSel = (pilaresOrdenados()[0] || {}).id;
     const p = pilar(pilarSel), c = col(p.color), max = s.config.votos_por_pilar || 3;
     const mios = ordenPersonal(gs.filter(g => g.pilar_id === pilarSel), yo.id);
     const usados = votosMios.filter(id => (gs.find(g => g.id === id) || {}).pilar_id === pilarSel).length;
@@ -192,6 +197,7 @@ function render() {
 async function registrar() {
   const nombre = $('regNombre').value.trim(), perfil = $('regPerfil').value;
   if (nombre.length < 2) return toast('Escribe tu nombre', 'warn');
+  if (!perfil) { $('regPerfil').classList.add('border-red-400'); $('regPerfil').focus(); return toast('Selecciona tu área de expertiz para entrar', 'warn'); }
   const b = document.querySelector('button[onclick="registrar()"]'); if (b) { if (b.disabled) return; b.disabled = true; b.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i>Entrando…'; }
   try { yo = await DB.registrar(nombre, perfil); Yo.set(yo); yoVerificado = true; viewKey = ''; toast('¡Listo, ' + nombre.split(' ')[0] + '!'); await cargar(); } catch (e) { toast(errMsg(e), 'err'); if (b) { b.disabled = false; b.innerHTML = 'Entrar al foro <i class="fas fa-arrow-right ml-1"></i>'; } }
 }
