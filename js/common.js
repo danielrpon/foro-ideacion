@@ -142,9 +142,18 @@ window.cuadrante = (esf, imp, max = 5) => {
   return { key: 'descartar', label: 'POSTERGAR', color: 'gray' };
 };
 
-/* Puntaje tridimensional para priorizar: impacto menos esfuerzo, más un bono de participación de hasta 2 puntos
-   (la idea que más gente calificó recibe los 2). Mide qué tan buena es la idea y cuánta atención atrajo. */
-window.puntaje = (g, nmax) => Math.round(((Number(g.impacto_prom) - Number(g.esfuerzo_prom)) + 2 * (nmax ? g.conteo_eval / nmax : 0)) * 10) / 10;
+/* Puntaje tridimensional para priorizar (impacto, esfuerzo y cuánta gente calificó).
+   1) Promedios ponderados por participación: cada promedio se mezcla con el punto neutro (3) como si hubiera
+      K = 3 calificaciones neutras extra. Con 1 calificación el promedio pesa poco; con 6 o más, casi todo.
+      Así una sola persona con 5/1 no supera a seis personas de acuerdo.
+   2) Bono de participación de hasta 2 puntos (la idea que más gente calificó recibe los 2).
+   Puntaje = (impacto ponderado − esfuerzo ponderado) + 2 · n / nmax. Rango típico: −2 a +6. */
+window.PUNTAJE_K = 3;
+window.puntaje = (g, nmax, max) => {
+  const n = Number(g.conteo_eval) || 0, K = window.PUNTAJE_K, mid = ((max || 5) + 1) / 2;
+  const imp = (n * Number(g.impacto_prom) + K * mid) / (n + K), esf = (n * Number(g.esfuerzo_prom) + K * mid) / (n + K);
+  return Math.round(((imp - esf) + 2 * (nmax ? n / nmax : 0)) * 10) / 10;
+};
 
 
 /* ============================================================
