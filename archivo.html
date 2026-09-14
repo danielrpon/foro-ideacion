@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260914b">
+<meta name="app-version" content="20260914c">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Archivo</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <style>body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260914b"></script><script src="js/db.js?v=20260914b"></script><script src="js/common.js?v=20260914b"></script><script src="js/archivo.js?v=20260914b"></script>
+<script src="js/config.js?v=20260914c"></script><script src="js/db.js?v=20260914c"></script><script src="js/common.js?v=20260914c"></script><script src="js/archivo.js?v=20260914c"></script>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 min-h-screen">
 <nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md border-b border-emerald-500/30"></nav>
@@ -32,7 +32,7 @@
   <div class="bg-white rounded-xl shadow p-5">
     <h3 class="font-black mb-3"><i class="fas fa-folder-open mr-1"></i>Ejercicios cargados en este navegador</h3>
     <div id="lista"></div>
-    <p class="text-[11px] text-gray-500 mt-3">Clave de administrador de un ejercicio cargado: <b>admin</b> (la del foro original no viaja en el archivo). Si lo editas, los cambios quedan solo aquí; para conservarlos, descárgalo de nuevo desde su Admin.</p>
+    <p class="text-[11px] text-gray-500 mt-3">Admin de un ejercicio cargado entra sin clave (si la pide, es <b>admin</b>; la del foro original no viaja en el archivo). Si lo editas, los cambios quedan solo aquí; para conservarlos, descárgalo de nuevo desde su Admin.</p>
   </div>
 </div></main>
 <script>
@@ -50,7 +50,7 @@ function render() {
       <div class="flex flex-wrap gap-2 mt-3 text-xs font-bold">
         <a href="${ARCHIVO.url('muro.html', a.slug)}" target="_blank" class="bg-fn text-emerald-400 px-4 py-2 rounded-lg"><i class="fas fa-tv mr-1"></i>Muro</a>
         <a href="${ARCHIVO.url('reporte.html', a.slug)}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-file-lines mr-1"></i>Reporte</a>
-        <a href="${ARCHIVO.url('admin.html', a.slug)}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-gauge-high mr-1"></i>Admin (clave admin)</a>
+        <a href="${ARCHIVO.url('admin.html', a.slug)}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-gauge-high mr-1"></i>Admin</a>
       </div></div>`; }).join('') : '<div class="text-sm text-gray-400">Todavía no hay ejercicios cargados.</div>';
 }
 async function cargarArchivo(file) {
