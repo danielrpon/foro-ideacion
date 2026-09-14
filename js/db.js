@@ -34,6 +34,12 @@
     DB.quitarEvaluacion = async (idea_id, pid) => ok(await sb.from('evaluaciones').delete().eq('idea_id', idea_id).eq('participante_id', pid));
     DB.evaluar = async (idea_id, pid, esfuerzo, impacto) => ok(await sb.from('evaluaciones').upsert({ sesion_id: SES, idea_id, participante_id: pid, esfuerzo, impacto }, { onConflict: 'idea_id,participante_id' }));
     DB.admin = async (op, payload = {}, clave) => ok(await sb.rpc('admin_op', { p_sesion: SES, p_clave: clave || DB.clave, p_op: op, p_payload: payload }));
+    /* Tablas crudas de la sesión (sin claves), paginadas de a 1000 filas */
+    DB.exportar = async () => {
+      const todo = async (tabla, orden) => { let out = []; for (let de = 0; ; de += 1000) { const r = ok(await sb.from(tabla).select('*').eq('sesion_id', SES).order(orden).range(de, de + 999)) || []; out = out.concat(r); if (r.length < 1000) return out; } };
+      const [sesion, pilares, participantes, ideas, votos, evaluaciones] = await Promise.all([DB.getSesion(), todo('pilares', 'orden'), todo('participantes', 'created_at'), todo('ideas', 'id'), todo('votos', 'id'), todo('evaluaciones', 'id')]);
+      return { sesion, pilares, participantes, ideas, votos, evaluaciones };
+    };
   }
 
   /* ---------------- LOCAL (demo) ---------------- */
@@ -126,6 +132,8 @@
       save(s); return delay({ ...r, ok: true, rol });
     };
     DB.onChange = (fn) => { if (chan) chan.onmessage = fn; window.addEventListener('storage', (e) => { if (e.key === KEY) fn(); }); };
+    DB.exportar = async () => { const s = load(); return { sesion: pub(s), pilares: s.pilares, participantes: s.participantes, ideas: s.ideas, votos: s.votos, evaluaciones: s.evaluaciones }; };
+    try { DB.archivo = (JSON.parse(localStorage.getItem(KEY) || 'null') || {}).archivo || null; } catch (e) { DB.archivo = null; } // ejercicio cargado desde archivo.html
   }
 
   /* ---------------- común ---------------- */

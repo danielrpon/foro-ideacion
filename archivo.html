@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="app-version" content="20260914a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>freaknerd_ · Foro de Ideación · Archivo</title>
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<link href="vendor/fonts.css" rel="stylesheet">
+<script src="vendor/tailwind.js"></script>
+<style>body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
+<link rel="stylesheet" href="vendor/fontawesome.min.css">
+<script src="vendor/supabase.min.js"></script>
+<script src="js/config.js?v=20260914a"></script><script src="js/db.js?v=20260914a"></script><script src="js/common.js?v=20260914a"></script><script src="js/archivo.js?v=20260914a"></script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 min-h-screen">
+<nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md border-b border-emerald-500/30"></nav>
+<main class="p-4 md:p-6"><div class="max-w-4xl mx-auto space-y-4">
+  <div><h1 class="text-2xl font-black"><i class="fas fa-box-archive mr-2"></i>Archivo de ejercicios</h1>
+    <p class="text-sm text-gray-600 mt-1">Vuelve a abrir un foro terminado, tal cual quedó: muro, matriz, resumen y reporte. El ejercicio se carga <b>solo en este navegador</b> y no toca la nube ni el foro en curso.</p></div>
+
+  <div class="bg-white rounded-xl shadow p-5">
+    <h3 class="font-black mb-2"><i class="fas fa-file-arrow-up mr-1"></i>Cargar un ejercicio guardado</h3>
+    <label id="zona" class="block border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/40">
+      <input id="archivo" type="file" accept=".json,application/json" class="hidden" onchange="cargarArchivo(this.files[0])">
+      <i class="fas fa-cloud-arrow-up text-3xl text-gray-400"></i>
+      <div class="font-bold mt-2">Elegir el archivo .json o arrastrarlo aquí</div>
+      <div class="text-xs text-gray-500 mt-1">Se descarga en Admin › Control › Archivo del ejercicio.</div>
+    </label>
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-5">
+    <h3 class="font-black mb-3"><i class="fas fa-folder-open mr-1"></i>Ejercicios cargados en este navegador</h3>
+    <div id="lista"></div>
+    <p class="text-[11px] text-gray-500 mt-3">Clave de administrador de un ejercicio cargado: <b>admin</b> (la del foro original no viaja en el archivo). Si lo editas, los cambios quedan solo aquí; para conservarlos, descárgalo de nuevo desde su Admin.</p>
+  </div>
+</div></main>
+<script>
+renderNav('archivo');
+const fmtFecha = (iso) => iso ? new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) : '–';
+let recien = null;
+function render() {
+  const l = ARCHIVO.lista();
+  $('lista').innerHTML = l.length ? l.map(a => { const c = a.conteos || {}, st = stageInfo(a.etapa); return `
+    <div class="border rounded-xl p-4 mb-3 ${a.slug === recien ? 'border-emerald-500 ring-2 ring-emerald-200' : 'border-gray-200'}">
+      <div class="flex flex-wrap justify-between gap-2"><div><div class="font-black">${esc(a.nombre)}</div>
+        <div class="text-xs text-gray-500">Descargado ${esc(fmtFecha(a.exportado))} · etapa ${esc(st.n + ' · ' + st.label)} · <span class="fn-mono">${esc(a.slug)}</span></div></div>
+        <button onclick="quitar('${esc(a.slug)}')" class="text-xs text-red-600 hover:underline self-start"><i class="fas fa-trash mr-1"></i>Quitar de este navegador</button></div>
+      <div class="text-xs text-gray-600 mt-2">${c.participantes ?? '–'} participantes · ${c.ideas ?? '–'} ideas · ${c.consolidadas ?? '–'} consolidadas · ${c.evaluaciones ?? '–'} calificaciones${c.votos ? ' · ' + c.votos + ' votos' : ''}</div>
+      <div class="flex flex-wrap gap-2 mt-3 text-xs font-bold">
+        <a href="${ARCHIVO.url('muro.html', a.slug)}" target="_blank" class="bg-fn text-emerald-400 px-4 py-2 rounded-lg"><i class="fas fa-tv mr-1"></i>Muro</a>
+        <a href="${ARCHIVO.url('reporte.html', a.slug)}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-file-lines mr-1"></i>Reporte</a>
+        <a href="${ARCHIVO.url('admin.html', a.slug)}" target="_blank" class="bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-gauge-high mr-1"></i>Admin (clave admin)</a>
+      </div></div>`; }).join('') : '<div class="text-sm text-gray-400">Todavía no hay ejercicios cargados.</div>';
+}
+async function cargarArchivo(file) {
+  if (!file) return;
+  try { recien = await ARCHIVO.leer(file); toast('Ejercicio cargado ✓'); render(); }
+  catch (e) { toast(errMsg(e), 'err'); }
+  $('archivo').value = '';
+}
+function quitar(slug) { if (confirm('¿Quitar este ejercicio de este navegador? El archivo .json no se borra.')) { ARCHIVO.quitar(slug); render(); } }
+const zona = $('zona');
+['dragenter', 'dragover'].forEach(ev => zona.addEventListener(ev, (e) => { e.preventDefault(); zona.classList.add('border-emerald-500'); }));
+['dragleave', 'drop'].forEach(ev => zona.addEventListener(ev, (e) => { e.preventDefault(); zona.classList.remove('border-emerald-500'); }));
+zona.addEventListener('drop', (e) => cargarArchivo(e.dataTransfer.files[0]));
+render();
+</script>
+</body>
+</html>

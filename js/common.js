@@ -64,7 +64,12 @@ window.toast = (msg, tipo = 'ok') => {
 window.errMsg = (e) => { const m = String(e && e.message || e); if (/row-level security|violates/i.test(m)) return 'Esta etapa ya se cerró: el moderador pasó a la siguiente.'; if (/Failed to fetch|NetworkError|Load failed|network|timeout/i.test(m)) return 'Sin conexión. Revisa el Wi‑Fi o los datos y reintenta.'; if (/LIMITE_VOTOS/.test(m)) return 'Ya usaste tus votos en este pilar.'; if (/LIMITE_CALIFICACIONES/.test(m)) return 'Ya usaste todas tus calificaciones: quita una para calificar otra idea.'; if (/ETAPA_CERRADA/.test(m)) return 'Esta etapa ya se cerró.'; if (/CLAVE_INVALIDA/.test(m)) return 'Clave incorrecta.'; if (/SOLO_ADMIN/.test(m)) return 'Solo el administrador puede hacer esto.'; if (/duplicate|unique/i.test(m)) return 'Ya lo habías hecho.'; return m; };
 window.vibrar = (ms = 120) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
 window.baseUrl = () => location.origin + location.pathname.replace(/[^/]*$/, '');
-window.urlVista = (archivo) => baseUrl() + archivo + (DB.SES !== (FORO_CONFIG.SESION || 'impercap') ? '?s=' + encodeURIComponent(DB.SES) : '');
+window.urlVista = (archivo) => {
+  const p = new URLSearchParams();
+  if (DB.SES !== (FORO_CONFIG.SESION || 'impercap')) p.set('s', DB.SES);
+  if (DB.MODE === 'local' && new URLSearchParams(location.search).get('demo') === '1') p.set('demo', '1'); // un ejercicio cargado o de práctica no salta a la nube
+  const q = p.toString(); return baseUrl() + archivo + (q ? '?' + q : '');
+};
 
 /* Nav superior (igual en todas las vistas) */
 window.renderNav = (vista, extra = '', opts = {}) => {
@@ -72,7 +77,7 @@ window.renderNav = (vista, extra = '', opts = {}) => {
   nav.innerHTML = `
     <div class="flex items-center gap-3 shrink-0"><span class="fn-mono font-bold text-base tracking-tight">freaknerd<span class="fn-green">_</span></span>${opts.app === false ? '' : `<span class="text-gray-600 hidden sm:inline">|</span><span class="font-bold text-sm hidden sm:inline text-gray-200">${esc(FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span>`}</div>
     <div class="text-sm flex items-center gap-2 min-w-0">
-      ${DB.MODE === 'local' ? '<span class="bg-amber-500 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
+      ${DB.archivo ? `<span class="bg-sky-400 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap" title="Ejercicio guardado, cargado solo en este navegador. No toca la nube.">archivo · ${esc(new Date(DB.archivo.exportado).toLocaleDateString('es-CO'))}</span>` : DB.MODE === 'local' ? '<span class="bg-amber-500 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
       <span id="navEtapa" class="fn-mono bg-emerald-400 text-black px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider truncate max-w-[58vw] sm:max-w-none">${esc(vista)}</span>
       ${extra}
       <button onclick="window.location.reload()" class="bg-gray-700 hover:bg-gray-600 px-2.5 py-1 rounded text-xs shrink-0" title="Recargar"><i class="fas fa-sync"></i></button>
