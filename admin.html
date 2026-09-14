@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260914a">
+<meta name="app-version" content="20260914b">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Admin</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260914a"></script><script src="js/db.js?v=20260914a"></script><script src="js/common.js?v=20260914a"></script><script src="js/mece-ui.js?v=20260914a"></script><script src="js/demo-data.js?v=20260914a"></script><script src="js/archivo.js?v=20260914a"></script>
+<script src="js/config.js?v=20260914b"></script><script src="js/db.js?v=20260914b"></script><script src="js/common.js?v=20260914b"></script><script src="js/mece-ui.js?v=20260914b"></script><script src="js/demo-data.js?v=20260914b"></script><script src="js/archivo.js?v=20260914b"></script>
 <style>.fade-in{animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}} .tab{display:none}.tab.on{display:block}</style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col">
@@ -48,9 +48,9 @@ function render() {
     if ($('lgClave')) return; // no redibujar el login mientras se escribe
     app.innerHTML = `<div class="flex items-center justify-center mt-16"><div class="bg-white p-8 rounded-lg shadow-lg w-96 fade-in"><h2 class="text-2xl font-bold text-center mb-6"><i class="fas fa-user-shield mr-2"></i>Acceso Administrador</h2><input id="lgClave" type="password" class="w-full p-2 border rounded mb-4" placeholder="Clave de administrador" onkeydown="if(event.key==='Enter')login()"><button onclick="login()" class="w-full bg-fn text-emerald-400 font-bold py-2 rounded hover:bg-gray-800">Ingresar</button>${DB.MODE === 'local' ? '<p class="text-[11px] text-gray-400 mt-3 text-center">Demo local: clave <b>admin</b></p>' : ''}</div></div>`; return;
   }
-  const gs = grupos(), ids = ideas(), np = Math.max(snap.conectados, 1);
+  const gs = grupos(), ids = ideas(), np = parts.length || snap.conectados; // posibles = tope por persona × registrados (los conectados caen a 0 al cerrar el foro)
   const kpi = { ideas: ids.length, rep: ids.filter(i => i.estado === 'repetida').length, nuevas: ids.filter(i => i.estado === 'nueva').length, agrup: ids.filter(i => i.estado === 'agrupada').length, grupos: gs.length, votos: gs.reduce((a, g) => a + g.votos, 0), evalTot: gs.reduce((a, g) => a + g.conteo_eval, 0), evalMax: maxCalif(s, gs.length) * np };
-  const pDep = pct(ids.length - kpi.nuevas, ids.length), pCob = pct(kpi.agrup + kpi.rep, ids.length), pEval = pct(kpi.evalTot, kpi.evalMax);
+  const pDep = pct(ids.length - kpi.nuevas, ids.length), pCob = pct(kpi.agrup + kpi.rep, ids.length), pEval = Math.min(100, pct(kpi.evalTot, kpi.evalMax));
   if (!$('layout')) {
     app.innerHTML = `<div id="layout" class="fade-in">
       <div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h1 class="text-2xl font-black"><i class="fas fa-gauge-high mr-2"></i>Dashboard de control</h1><div class="text-xs text-gray-500">${esc(s.nombre)} · ${esc(s.facilitador || '')}</div></div>
@@ -69,7 +69,7 @@ function render() {
       <div class="bg-white rounded-xl shadow p-4"><div class="text-xs font-bold uppercase text-gray-500">Conectados</div><div class="text-3xl font-black">${snap.conectados}<span class="text-sm text-gray-400 font-normal"> / ${parts.length} registrados</span></div></div>
       <div class="bg-white rounded-xl shadow p-4"><div class="text-xs font-bold uppercase text-gray-500">Avance depuración</div><div class="text-3xl font-black ${semaforo(pDep)}">${pDep}%</div><div class="text-xs text-gray-400">${ids.length - kpi.nuevas} de ${ids.length} ideas revisadas</div></div>
       <div class="bg-white rounded-xl shadow p-4"><div class="text-xs font-bold uppercase text-gray-500">Cobertura consolidación</div><div class="text-3xl font-black ${semaforo(pCob)}">${pCob}%</div><div class="text-xs text-gray-400">${kpi.agrup} agrupadas · ${kpi.rep} repetidas · ${gs.length} grupos</div></div>
-      <div class="bg-white rounded-xl shadow p-4"><div class="text-xs font-bold uppercase text-gray-500">Progreso matriz</div><div class="text-3xl font-black ${semaforo(pEval)}">${pEval}%</div><div class="text-xs text-gray-400">${kpi.evalTot} de ${kpi.evalMax} calificaciones · ${kpi.votos} votos</div></div></div>
+      <div class="bg-white rounded-xl shadow p-4"><div class="text-xs font-bold uppercase text-gray-500">Progreso matriz</div><div class="text-3xl font-black ${semaforo(pEval)}">${pEval}%</div><div class="text-xs text-gray-400">${kpi.evalTot} de ${kpi.evalMax} posibles (${maxCalif(s, gs.length)} × ${np} registrados) · ${kpi.votos} votos</div></div></div>
     <div class="grid lg:grid-cols-3 gap-4">
       <div class="lg:col-span-2 bg-white rounded-xl shadow p-4"><div class="flex justify-between items-center mb-3"><h3 class="font-black"><i class="fas fa-list-ol mr-1"></i>Etapa actual: <span class="text-blue-700">${st.n} · ${st.label}</span></h3><span class="font-mono text-2xl font-black ${timerVencido(s) ? 'text-red-600' : ''}" id="tmrA">${(s.fin_etapa || ['ideacion', 'matriz'].includes(s.etapa)) ? timerText(s) : ''}</span></div>
         <div class="grid md:grid-cols-2 gap-2">${STAGES.filter(x => !x.opcional).map(x => `<button onclick="cambiarEtapa('${x.key}')" class="w-full p-3 text-left rounded-lg text-sm font-semibold border ${s.etapa === x.key ? 'bg-blue-600 text-white ring-2 ring-blue-300' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'}"><span class="font-mono text-xs opacity-70 mr-2">${x.n}</span>${x.label}${x.timer ? ` <span class="text-[10px] opacity-60">⏱ ${s.config[x.timer] || ''} min</span>` : ''}</button>`).join('')}</div>
