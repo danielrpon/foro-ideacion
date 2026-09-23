@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="app-version" content="20260923a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>freaknerd_ · Acciones de la mesa</title>
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<link href="vendor/fonts.css" rel="stylesheet">
+<script src="vendor/tailwind.js"></script>
+<link rel="stylesheet" href="vendor/fontawesome.min.css">
+<script src="vendor/supabase.min.js"></script>
+<style>body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
+<script src="js/config.js?v=20260923a"></script><script src="js/db.js?v=20260923a"></script><script src="js/common.js?v=20260923a"></script><script src="js/acciones.js?v=20260923a"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+<nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md"></nav>
+<div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
+<main id="app" class="flex-1 p-4 max-w-3xl w-full mx-auto"></main>
+
+<script>
+/* Vista del líder de mesa: escribe las acciones que salieron y quedan en el tablero del wrap up.
+   La lista se refresca sola cada 4 s; el formulario NO se vuelve a dibujar, para no borrar lo que
+   el líder está escribiendo mientras la mesa conversa. */
+let yo = JSON.parse(localStorage.getItem('acc_yo') || 'null');   // { mesa, nombre }
+let filas = [], editando = null, mesaSel = yo ? yo.mesa : '';
+
+renderNav('Acciones');
+
+/* ---------- entrada ---------- */
+function vistaEntrada() {
+  $('app').innerHTML = `
+    <div class="bg-white rounded-2xl shadow p-6 mt-6">
+      <h1 class="text-2xl font-black">Acciones de la mesa</h1>
+      <p class="text-sm text-gray-600 mt-2">Aquí escribe el líder de cada mesa lo que salió. Lo que guardes aparece en el tablero que se proyecta en el cierre.</p>
+      <label class="block mt-5 text-xs font-bold uppercase tracking-wider text-gray-500">Tu mesa</label>
+      <div class="grid gap-2 mt-2">${MESAS.map(m => `
+        <button onclick="elegirMesa('${m.slug}')" data-mesa="${m.slug}" class="mesa-btn text-left border-2 rounded-xl px-4 py-3 font-bold hover:border-emerald-500 ${mesaSel === m.slug ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'}">
+          <i class="fas ${m.icono} mr-2 text-gray-400"></i>${esc(m.nombre)}</button>`).join('')}</div>
+      <label class="block mt-5 text-xs font-bold uppercase tracking-wider text-gray-500">Tu nombre</label>
+      <input id="nombre" value="${esc(yo ? yo.nombre : '')}" placeholder="Quién relata la mesa" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 mt-2">
+      <label class="block mt-5 text-xs font-bold uppercase tracking-wider text-gray-500">Clave de la mesa</label>
+      <input id="clave" type="password" autocomplete="off" onkeydown="if(event.key==='Enter')entrar()" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 mt-2">
+      <button onclick="entrar()" class="w-full bg-fn text-white font-bold rounded-xl py-3 mt-6 hover:opacity-90">Entrar</button>
+      <p class="text-xs text-gray-500 mt-3">La clave la da el moderador y solo se necesita para escribir: el tablero proyectado se ve sin clave.</p>
+    </div>`;
+}
+function elegirMesa(slug) {
+  mesaSel = slug;
+  document.querySelectorAll('.mesa-btn').forEach(b => {
+    const on = b.dataset.mesa === slug;
+    b.classList.toggle('border-emerald-500', on); b.classList.toggle('bg-emerald-50', on); b.classList.toggle('border-gray-200', !on);
+  });
+}
+async function entrar() {
+  const nombre = $('nombre').value.trim(), clave = $('clave').value.trim();
+  if (!mesaSel) return toast('Elige tu mesa', 'warn');
+  if (!nombre) return toast('Escribe tu nombre', 'warn');
+  DB.setClaveMesa(clave);
+  try { await DB.accionOp('validar'); } catch (e) { return toast(errMsg(e), 'err'); }
+  yo = { mesa: mesaSel, nombre }; localStorage.setItem('acc_yo', JSON.stringify(yo));
+  arrancar();
+}
+function salir() { localStorage.removeItem('acc_yo'); location.reload(); }
+
+/* ---------- vista de trabajo (armazón fijo + lista que se refresca) ---------- */
+function vistaMesa() {
+  const m = mesaInfo(yo.mesa);
+  $('app').innerHTML = `
+    <div class="flex items-center justify-between mt-4">
+      <div><div class="fn-mono text-[11px] uppercase tracking-widest text-gray-500">Mesa · ${esc(yo.nombre)}</div>
+        <h1 class="text-2xl font-black"><i class="fas ${m.icono} mr-2 text-gray-400"></i>${esc(m.nombre)}</h1></div>
+      <div class="text-right"><div id="cuenta" class="text-3xl font-black">0</div><div id="cuentaPie" class="text-[11px] uppercase text-gray-500">acciones</div></div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow p-4 mt-4">
+      <div id="formTit" class="fn-mono text-[11px] uppercase tracking-widest text-gray-500 mb-2">Nueva acción</div>
+      <textarea id="f_titulo" rows="2" placeholder="La acción, en una frase" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2"></textarea>
+      <div class="grid sm:grid-cols-2 gap-2 mt-2">
+        <input id="f_responsable" placeholder="Responsable (Impercap)" class="border-2 border-gray-200 rounded-xl px-3 py-2">
+        <input id="f_acompana" placeholder="Quién acompaña" class="border-2 border-gray-200 rounded-xl px-3 py-2">
+        <input id="f_fecha" placeholder="Fecha (10/10, semana del 6…)" class="border-2 border-gray-200 rounded-xl px-3 py-2">
+        <input id="f_senal" placeholder="Cómo sabemos que avanzó" class="border-2 border-gray-200 rounded-xl px-3 py-2">
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button id="btnGuardar" onclick="guardar()" class="flex-1 bg-fn text-white font-bold rounded-xl py-3 hover:opacity-90"><i class="fas fa-plus mr-2"></i>Agregar</button>
+        <button id="btnCancelar" hidden onclick="cancelar()" class="px-4 rounded-xl border-2 border-gray-200 font-bold">Cancelar</button>
+      </div>
+      <p class="text-xs text-gray-500 mt-2">Puedes guardarla a medias y completarla después: lo único obligatorio es la acción.</p>
+    </div>
+
+    <div id="lista" class="mt-4 space-y-2"></div>
+
+    <div class="flex flex-wrap gap-2 justify-center my-8">
+      <a href="${urlVista('tablero.html')}" target="_blank" class="text-sm font-bold text-gray-600 hover:text-black"><i class="fas fa-tv mr-1"></i>Ver el tablero proyectado</a>
+      <span class="text-gray-300">·</span>
+      <button onclick="salir()" class="text-sm font-bold text-gray-600 hover:text-black"><i class="fas fa-right-from-bracket mr-1"></i>Salir</button>
+    </div>`;
+  pintarLista();
+}
+
+const falta = (f) => !f.responsable || !f.fecha;
+function pintarLista() {
+  if (!$('lista')) return;
+  const mias = filas.filter(f => f.mesa === yo.mesa), listas = mias.filter(f => f.estado === 'confirmada').length;
+  $('cuenta').textContent = mias.length;
+  $('cuentaPie').textContent = (mias.length === 1 ? 'acción' : 'acciones') + ' · ' + listas + (listas === 1 ? ' lista' : ' listas');
+  $('lista').innerHTML = mias.length ? mias.map(fila).join('') : '<p class="text-center text-gray-400 py-8">Todavía no hay acciones de esta mesa.</p>';
+}
+function fila(f) {
+  const lista = f.estado === 'confirmada';
+  return `<div class="bg-white rounded-xl border-l-4 ${lista ? 'border-emerald-500' : falta(f) ? 'border-amber-400' : 'border-gray-300'} shadow-sm p-3">
+    <div class="flex justify-between gap-3">
+      <p class="font-bold leading-snug">${esc(f.titulo)}</p>
+      <div class="flex gap-1 shrink-0">
+        <button onclick="editar(${f.id})" class="w-8 h-8 rounded-lg border border-gray-200 text-gray-500 hover:text-black" title="Editar"><i class="fas fa-pen text-xs"></i></button>
+        <button onclick="alternar(${f.id}, ${lista})" class="w-8 h-8 rounded-lg border ${lista ? 'border-emerald-500 text-emerald-600' : 'border-gray-200 text-gray-400'}" title="${lista ? 'Reabrir' : 'Marcar lista'}"><i class="fas fa-check text-xs"></i></button>
+        <button onclick="borrar(${f.id})" class="w-8 h-8 rounded-lg border border-gray-200 text-gray-400 hover:text-red-600" title="Borrar"><i class="fas fa-trash text-xs"></i></button>
+      </div>
+    </div>
+    <div class="text-xs text-gray-600 mt-2 flex flex-wrap gap-x-4 gap-y-1">
+      <span><i class="fas fa-user mr-1 text-gray-400"></i>${esc(f.responsable || '¿responsable?')}</span>
+      <span><i class="fas fa-handshake-angle mr-1 text-gray-400"></i>${esc(f.acompana || '¿quién acompaña?')}</span>
+      <span><i class="fas fa-calendar mr-1 text-gray-400"></i>${esc(f.fecha || '¿fecha?')}</span>
+      ${f.senal ? `<span><i class="fas fa-flag-checkered mr-1 text-gray-400"></i>${esc(f.senal)}</span>` : ''}
+    </div>
+  </div>`;
+}
+
+/* ---------- formulario ---------- */
+const CAMPOS = ['titulo', 'responsable', 'acompana', 'fecha', 'senal'];
+const datos = () => Object.fromEntries(CAMPOS.map(k => [k, $('f_' + k).value.trim()]));
+function llenar(f) { CAMPOS.forEach(k => $('f_' + k).value = f ? (f[k] || '') : ''); }
+function modo(edit) {
+  editando = edit;
+  $('formTit').textContent = edit ? 'Editar acción' : 'Nueva acción';
+  $('btnGuardar').innerHTML = `<i class="fas fa-${edit ? 'check' : 'plus'} mr-2"></i>${edit ? 'Guardar cambios' : 'Agregar'}`;
+  $('btnCancelar').hidden = !edit;
+}
+function editar(id) { const f = filas.find(x => x.id === id); if (!f) return; llenar(f); modo(f); window.scrollTo({ top: 0, behavior: 'smooth' }); $('f_titulo').focus(); }
+function cancelar() { llenar(null); modo(null); }
+async function guardar() {
+  const d = datos(); if (!d.titulo) return toast('Escribe la acción', 'warn');
+  try {
+    if (editando) await DB.accionOp('editar', { id: editando.id, ...d });
+    else await DB.accionOp('crear', { mesa: yo.mesa, autor: yo.nombre, ...d });
+    cancelar(); vibrar(); toast('Guardado'); await refrescar();
+  } catch (e) { toast(errMsg(e), 'err'); }
+}
+async function alternar(id, lista) { try { await DB.accionOp(lista ? 'reabrir' : 'confirmar', { id }); await refrescar(); } catch (e) { toast(errMsg(e), 'err'); } }
+async function borrar(id) {
+  const f = filas.find(x => x.id === id); if (!f) return;
+  if (!confirm('¿Borrar esta acción?\n\n' + f.titulo)) return;
+  if (editando && editando.id === id) cancelar();
+  try { await DB.accionOp('borrar', { id }); await refrescar(); } catch (e) { toast(errMsg(e), 'err'); }
+}
+
+/* ---------- ciclo ---------- */
+async function refrescar() { filas = await DB.getAcciones(); pintarLista(); }
+function arrancar() { vistaMesa(); Poll.start(refrescar, 4000); DB.onAccionesChange && DB.onAccionesChange(refrescar); }
+yo ? arrancar() : vistaEntrada();
+</script>
+</body>
+</html>

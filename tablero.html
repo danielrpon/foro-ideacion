@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="app-version" content="20260923a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>freaknerd_ · Tablero de acciones</title>
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<link href="vendor/fonts.css" rel="stylesheet">
+<script src="vendor/tailwind.js"></script>
+<link rel="stylesheet" href="vendor/fontawesome.min.css">
+<script src="vendor/qrcode.min.js"></script>
+<script src="vendor/supabase.min.js"></script>
+<style>
+  body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}
+  .fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}
+  .dotgrid{background-image:radial-gradient(rgba(38,229,124,.18) 1px,transparent 1px);background-size:20px 20px}
+  .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  [hidden]{display:none !important}
+  @media print{.no-print{display:none}body{background:#fff}.card{break-inside:avoid}}
+</style>
+<script src="js/config.js?v=20260923a"></script><script src="js/db.js?v=20260923a"></script><script src="js/common.js?v=20260923a"></script><script src="js/acciones.js?v=20260923a"></script>
+</head>
+<body class="bg-fn text-white min-h-screen flex flex-col">
+<nav data-nav class="bg-fn text-white p-3 flex justify-between items-center border-b border-emerald-500/30 no-print"></nav>
+<div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
+
+<header class="px-8 pt-6 pb-3 flex items-end justify-between dotgrid">
+  <div>
+    <div class="fn-mono text-[12px] uppercase tracking-[.2em] fn-green">Wrap up · lo que queda por escrito</div>
+    <h1 class="text-4xl font-black mt-1">Tablero de acciones</h1>
+  </div>
+  <div class="flex items-end gap-8">
+    <div class="text-right"><div id="kTotal" class="text-5xl font-black leading-none">0</div><div class="text-[11px] uppercase tracking-widest text-gray-400 mt-1">acciones</div></div>
+    <div class="text-right"><div id="kListas" class="text-5xl font-black leading-none fn-green">0</div><div class="text-[11px] uppercase tracking-widest text-gray-400 mt-1">con dueño y fecha</div></div>
+  </div>
+</header>
+
+<main id="mesas" class="flex-1 px-8 pb-4 grid gap-5 content-start"></main>
+
+<footer class="px-8 py-3 flex items-center justify-between border-t border-white/10 no-print">
+  <span class="fn-mono text-sm font-bold">freaknerd<span class="fn-green">_</span></span>
+  <div class="flex items-center gap-2">
+    <button onclick="exportar()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold"><i class="fas fa-file-csv mr-1"></i>CSV para el acta</button>
+    <button onclick="window.print()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold"><i class="fas fa-print mr-1"></i>Imprimir</button>
+    <button onclick="toggleQr()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold"><i class="fas fa-qrcode mr-1"></i>QR para líderes</button>
+  </div>
+</footer>
+
+<div id="qrBox" hidden class="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center no-print" onclick="toggleQr()">
+  <div class="bg-white p-6 rounded-2xl text-center"><div id="qr"></div><p class="text-black font-bold mt-3">acciones.html</p></div>
+  <p class="text-gray-300 text-sm mt-4">Los líderes de mesa escanean y entran con la clave</p>
+</div>
+
+<script>
+/* Tablero proyectado en el cierre: solo lee. Se refresca cada 4 s, así los líderes pueden seguir
+   escribiendo desde su mesa mientras la sala ve aparecer las acciones. */
+let filas = [];
+renderNav('Tablero', '', { app: false });
+
+const falta = (f) => !f.responsable || !f.fecha;
+function tarjeta(f) {
+  const lista = f.estado === 'confirmada';
+  return `<div class="card fade-in rounded-xl p-3 border-l-4 ${lista ? 'border-emerald-400 bg-white/10' : 'border-white/25 bg-white/5'}">
+    <p class="font-bold text-[17px] leading-snug">${esc(f.titulo)}</p>
+    <div class="flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-gray-300 mt-2">
+      <span><i class="fas fa-user mr-1 text-gray-400"></i>${esc(f.responsable) || '<span class="text-amber-300">falta responsable</span>'}</span>
+      <span><i class="fas fa-handshake-angle mr-1 text-gray-400"></i>${esc(f.acompana) || '<span class="text-amber-300">falta acompañante</span>'}</span>
+      <span><i class="fas fa-calendar mr-1 text-gray-400"></i>${esc(f.fecha) || '<span class="text-amber-300">falta fecha</span>'}</span>
+    </div>
+    ${f.senal ? `<p class="text-[12px] text-gray-400 mt-1"><i class="fas fa-flag-checkered mr-1"></i>${esc(f.senal)}</p>` : ''}
+  </div>`;
+}
+function render() {
+  const conDatos = MESAS.filter(m => filas.some(f => f.mesa === m.slug));
+  const mesas = conDatos.length ? conDatos : MESAS.filter(m => m.slug !== 'general');
+  $('mesas').style.gridTemplateColumns = `repeat(${Math.min(mesas.length, 3)}, minmax(0,1fr))`;
+  $('mesas').innerHTML = mesas.map(m => {
+    const f = filas.filter(x => x.mesa === m.slug);
+    return `<section>
+      <div class="flex items-baseline justify-between border-b border-white/15 pb-2 mb-3">
+        <h2 class="text-xl font-black"><i class="fas ${m.icono} mr-2 fn-green"></i>${esc(m.nombre)}</h2>
+        <span class="fn-mono text-xs text-gray-400">${f.length} ${f.length === 1 ? 'acción' : 'acciones'}</span>
+      </div>
+      <div class="space-y-2">${f.length ? f.map(tarjeta).join('') : '<p class="text-gray-400 text-sm py-6 text-center">Esperando a la mesa…</p>'}</div>
+    </section>`;
+  }).join('');
+  $('kTotal').textContent = filas.length;
+  $('kListas').textContent = filas.filter(f => !falta(f)).length;
+}
+async function refrescar() { const antes = JSON.stringify(filas); filas = await DB.getAcciones(); if (antes !== JSON.stringify(filas)) render(); }
+
+function exportar() {
+  if (!filas.length) return toast('El tablero está vacío', 'warn');
+  const hoy = new Date().toISOString().slice(0, 10);
+  descargarCsv(`acciones_${DB.SES}_${hoy}.csv`, accionesCsv(filas));
+}
+let qrHecho = false;
+function toggleQr() {
+  const box = $('qrBox'); box.hidden = !box.hidden;
+  if (!box.hidden && !qrHecho) { new QRCode($('qr'), { text: urlVista('acciones.html'), width: 220, height: 220 }); qrHecho = true; }
+}
+render(); Poll.start(refrescar, 4000); DB.onAccionesChange && DB.onAccionesChange(refrescar);
+</script>
+</body>
+</html>

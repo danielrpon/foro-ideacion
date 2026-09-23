@@ -35,3 +35,22 @@ index.html muro.html area.html admin.html reporte.html manual.html
 js/config.js  js/db.js (supabase | local)  js/common.js (etapas, MECE)  js/mece-ui.js
 supabase/schema.sql  supabase/seed_impercap.sql
 ```
+
+## Tablero de acciones (wrap up)
+
+Submódulo para el cierre de una junta: cada líder de mesa escribe las acciones que salieron y la
+sala las ve en una sola pantalla.
+
+- `acciones.html` — vista del líder de mesa. Entra con su mesa, su nombre y la **clave de líder**
+  (también sirve la de admin). Crea, edita, marca como lista y borra acciones. El formulario no se
+  redibuja solo: se puede escribir mientras la mesa conversa.
+- `tablero.html` — vista que se proyecta. Solo lee, se refresca cada 4 s, muestra cuántas acciones
+  tienen dueño y fecha, exporta **CSV para el acta**, imprime y muestra un **QR** con el enlace de
+  los líderes.
+- `js/acciones.js` — capa de datos (Supabase o localStorage), lista de mesas y CSV.
+- `supabase/acciones_2026-09-23.sql` — tabla `acciones` + RPC `acciones_op`. **Correr una vez** en el
+  SQL Editor antes de usarlo en producción. La escritura pasa siempre por el RPC con clave; la
+  lectura es abierta (el tablero se proyecta sin clave).
+
+Las mesas se cambian en `MESAS`, en `js/acciones.js`. Con `?demo=1` todo funciona en el navegador
+sin base de datos: es el plan B si falla la red (los líderes escriben en el portátil del moderador).
