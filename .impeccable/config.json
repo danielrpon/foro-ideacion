@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "montserrat",
+        "createdAt": "2026-09-26T18:06:21.129Z",
+        "reason": "Montserrat es la tipografia de la casa Freaknerd, ya usada en toda la herramienta y en los decks del cliente"
+      }
+    ]
+  }
+}
