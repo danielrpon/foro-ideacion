@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260926a">
+<meta name="app-version" content="20260926b">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Acciones de la mesa</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
 <style>body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
-<script src="js/config.js?v=20260926a"></script><script src="js/db.js?v=20260926a"></script><script src="js/common.js?v=20260926a"></script><script src="js/acciones.js?v=20260926a"></script>
+<script src="js/config.js?v=20260926b"></script><script src="js/db.js?v=20260926b"></script><script src="js/common.js?v=20260926b"></script><script src="js/acciones.js?v=20260926b"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
 <nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md"></nav>
@@ -57,8 +57,8 @@ async function entrar() {
   if (!mesaSel) return toast('Elige tu mesa', 'warn');
   if (!nombre) return toast('Escribe tu nombre', 'warn');
   DB.setClaveMesa(clave);
-  try { await DB.accionOp('validar'); } catch (e) { return toast(errMsg(e), 'err'); }
-  yo = { mesa: mesaSel, nombre }; localStorage.setItem('acc_yo', JSON.stringify(yo));
+  let r; try { r = await DB.accionOp('validar'); } catch (e) { return toast(errMsg(e), 'err'); }
+  yo = { mesa: mesaSel, nombre, admin: !!(r && r.admin) }; localStorage.setItem('acc_yo', JSON.stringify(yo));
   arrancar();
 }
 function salir() { localStorage.removeItem('acc_yo'); location.reload(); }
@@ -81,6 +81,7 @@ function vistaMesa() {
         <input id="f_acompana" placeholder="Quién acompaña" class="border-2 border-gray-200 rounded-xl px-3 py-2">
         <input id="f_fecha" placeholder="Fecha (10/10, semana del 6…)" class="border-2 border-gray-200 rounded-xl px-3 py-2">
         <input id="f_senal" placeholder="Cómo sabemos que avanzó" class="border-2 border-gray-200 rounded-xl px-3 py-2">
+        ${yo.admin ? `<select id="f_mesa" class="border-2 border-gray-200 rounded-xl px-3 py-2 sm:col-span-2">${MESAS.map(x => `<option value="${x.slug}">Mesa: ${esc(x.nombre)}</option>`).join('')}</select>` : ''}
       </div>
       <div class="flex gap-2 mt-3">
         <button id="btnGuardar" onclick="guardar()" class="flex-1 bg-fn text-white font-bold rounded-xl py-3 hover:opacity-90"><i class="fas fa-plus mr-2"></i>Agregar</button>
@@ -88,6 +89,16 @@ function vistaMesa() {
       </div>
       <p class="text-xs text-gray-500 mt-2">Puedes guardarla a medias y completarla después: lo único obligatorio es la acción.</p>
     </div>
+
+    ${yo.admin ? `<div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 mt-4">
+      <div class="fn-mono text-[11px] uppercase tracking-widest text-amber-700 mb-2"><i class="fas fa-key mr-1"></i>Administrador</div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs font-bold text-gray-600">Ver y editar:</span>
+        ${MESAS.map(x => `<button onclick="verMesa('${x.slug}')" data-ver="${x.slug}" class="ver-btn px-3 py-1.5 rounded-lg text-xs font-bold border-2 ${yo.mesa === x.slug ? 'border-amber-500 bg-white' : 'border-transparent bg-white/60 text-gray-600'}">${esc(x.nombre)}</button>`).join('')}
+        <button onclick="vaciar()" class="ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-white border-2 border-red-200 text-red-600 hover:bg-red-50"><i class="fas fa-trash mr-1"></i>Vaciar tablero</button>
+      </div>
+      <p class="text-[11px] text-amber-800 mt-2">Con la clave de admin puedes trabajar cualquier mesa y mover acciones entre mesas al editarlas.</p>
+    </div>` : ''}
 
     <div id="lista" class="mt-4 space-y-2"></div>
 
@@ -129,8 +140,8 @@ function fila(f) {
 
 /* ---------- formulario ---------- */
 const CAMPOS = ['titulo', 'responsable', 'acompana', 'fecha', 'senal'];
-const datos = () => Object.fromEntries(CAMPOS.map(k => [k, $('f_' + k).value.trim()]));
-function llenar(f) { CAMPOS.forEach(k => $('f_' + k).value = f ? (f[k] || '') : ''); }
+const datos = () => { const d = Object.fromEntries(CAMPOS.map(k => [k, $('f_' + k).value.trim()])); if ($('f_mesa')) d.mesa = $('f_mesa').value; return d; };
+function llenar(f) { CAMPOS.forEach(k => $('f_' + k).value = f ? (f[k] || '') : ''); if ($('f_mesa')) $('f_mesa').value = f ? f.mesa : yo.mesa; }
 function modo(edit) {
   editando = edit;
   $('formTit').textContent = edit ? 'Editar acción' : 'Nueva acción';
@@ -153,6 +164,15 @@ async function borrar(id) {
   if (!confirm('¿Borrar esta acción?\n\n' + f.titulo)) return;
   if (editando && editando.id === id) cancelar();
   try { await DB.accionOp('borrar', { id }); await refrescar(); } catch (e) { toast(errMsg(e), 'err'); }
+}
+
+/* ---------- administrador ---------- */
+function verMesa(slug) { yo.mesa = slug; localStorage.setItem('acc_yo', JSON.stringify(yo)); cancelar(); vistaMesa(); }
+async function vaciar() {
+  const n = filas.length;
+  if (!n) return toast('El tablero ya está vacío', 'warn');
+  if (!confirm(`¿Borrar las ${n} acciones del tablero, de todas las mesas?\n\nEsto no se puede deshacer. Exporta antes el CSV desde el tablero si quieres conservarlas.`)) return;
+  try { await DB.accionOp('limpiar'); cancelar(); await refrescar(); toast('Tablero vacío'); } catch (e) { toast(errMsg(e), 'err'); }
 }
 
 /* ---------- ciclo ---------- */
