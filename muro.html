@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260926b">
+<meta name="app-version" content="20260929a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Muro</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -13,7 +13,7 @@
 <script src="vendor/chart.umd.min.js"></script>
 <script src="vendor/qrcode.min.js"></script>
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20260926b"></script><script src="js/db.js?v=20260926b"></script><script src="js/common.js?v=20260926b"></script>
+<script src="js/config.js?v=20260929a"></script><script src="js/db.js?v=20260929a"></script><script src="js/common.js?v=20260929a"></script>
 <style>
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:18px 18px}
   .postit{transition:transform .2s}.postit:hover{transform:scale(1.03);z-index:5}
@@ -38,7 +38,7 @@ function toggleAb(id, open) { open ? abiertos.add(id) : abiertos.delete(id); loc
 function toggleTodos() { todosAbiertos = !todosAbiertos; localStorage.setItem('muro_todos', todosAbiertos ? '1' : '0'); viewKey = ''; render(); }
 function hijasHtml(g, cls = 'text-sm') { const h = snap.ideas.filter(i => i.tipo === 'idea' && i.padre_id === g.id); if (!h.length) return ''; const op = (todosAbiertos || abiertos.has(g.id)) ? 'open' : ''; return `<details ${op} ontoggle="toggleAb(${g.id}, this.open)" class="mt-2"><summary class="cursor-pointer text-[11px] font-mono uppercase text-gray-500 hover:text-gray-800 select-none"><i class="fas fa-caret-right mr-1"></i>Integra ${h.length} idea(s) · ver</summary><ul class="mt-1 pl-3 border-l-2 border-gray-200 space-y-1">${h.map(i => `<li class="${cls} text-gray-700">${esc(i.texto)}</li>`).join('')}</ul></details>`; }
 renderNav('muro', '', { app: false });
-async function cargar() { snap = await DB.snapshot(); setNavEtapa(snap.sesion); render(); }
+async function cargar() { snap = await DB.snapshot(); if (saltarAJunta(snap.sesion, 'tablero.html')) return; setNavEtapa(snap.sesion); render(); }
 setInterval(() => { if (snap) { const t = $('tmr'); const s = snap.sesion; t.textContent = (s.fin_etapa || ['ideacion', 'matriz'].includes(s.etapa)) ? timerText(s) : ''; const tp = $('tmrPausa'); if (tp) tp.textContent = timerText(s); t.className = 'font-mono text-3xl font-black ' + (timerVencido(s) ? 'text-red-500 animate-pulse' : 'text-emerald-400'); } }, 1000);
 
 const grupos = () => calificables(snap.ideas);

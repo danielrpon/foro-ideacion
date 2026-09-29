@@ -63,7 +63,7 @@
       ],
       participantes: [], ideas: [], votos: [], evaluaciones: []
     });
-    const load = () => { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.sesion) return s; } catch (e) {} const s = seed(); save(s); return s; };
+    const load = () => { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.sesion) return s; } catch (e) {} const s = seed(); if (/junta/i.test(SES)) { s.sesion.nombre = 'Junta asesora · Impercap'; s.sesion.config = { tipo: 'junta' }; s.pilares = []; } save(s); return s; };
     const save = (s) => { localStorage.setItem(KEY, JSON.stringify(s)); if (chan) chan.postMessage('upd'); };
     const nextId = (s) => (s.seq = (s.seq || 1) + 1);
     const delay = (v) => Promise.resolve(v);

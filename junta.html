@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="app-version" content="20260929a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>freaknerd_ · Junta asesora · Admin</title>
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<link href="vendor/fonts.css" rel="stylesheet">
+<script src="vendor/tailwind.js"></script>
+<link rel="stylesheet" href="vendor/fontawesome.min.css">
+<script src="vendor/qrcode.min.js"></script>
+<script src="vendor/supabase.min.js"></script>
+<style>
+  body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}[hidden]{display:none!important}
+  .inp{width:100%;border:2px solid #e5e7eb;border-radius:.6rem;padding:.45rem .7rem;background:#fff;outline:none;transition:border-color 150ms ease}.inp:focus{border-color:#10b981}
+  .lab{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:.25rem}
+  .sw{position:relative;width:40px;height:24px;border-radius:999px;background:#d1d5db;transition:background-color 160ms ease;flex-shrink:0}
+  .sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform 180ms cubic-bezier(.23,1,.32,1)}
+  .sw[aria-checked="true"]{background:#10b981}.sw[aria-checked="true"]::after{transform:translateX(16px)}
+  .sw:disabled{opacity:.35;cursor:not-allowed}
+  @media (prefers-reduced-motion:reduce){.sw::after{transition:none}}
+  .qr-print{display:none}
+  @media print{
+    body.imprimir-qr > *:not(#qrPrint){display:none!important}
+    body.imprimir-qr #qrPrint{display:block}
+    .qr-page{break-after:page;height:95vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#111}
+  }
+</style>
+<script src="js/config.js?v=20260929a"></script><script src="js/db.js?v=20260929a"></script><script src="js/common.js?v=20260929a"></script><script src="js/acciones.js?v=20260929a"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+<nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md sticky top-0 z-50 border-b border-emerald-500/30"></nav>
+<div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
+<main class="flex-1 p-4"><div id="app" class="max-w-6xl mx-auto"></div></main>
+<div id="qrPrint" class="qr-print"></div>
+
+<script>
+/* Administración de la junta asesora (aparte de la ideación):
+   · Mesas: nombre, pregunta, quién modera, quién relata, miembros, color e ícono.
+   · Campos: qué se diligencia en cada acción y qué es obligatorio para darla por lista.
+   · QR y pantallas: QR de cada mesa para los miembros, enlaces del relator y de los tableros.
+   · Acciones: conteos por mesa, CSV y vaciar el tablero. */
+const TABS = [['mesas', 'fa-table-cells-large', 'Mesas'], ['campos', 'fa-list-check', 'Campos'], ['qr', 'fa-qrcode', 'QR y pantallas'], ['acciones', 'fa-clipboard-check', 'Acciones']];
+let tab = sessionStorage.getItem('junta_tab') || 'mesas', ses = null, filas = [], draft = null, sucio = false;
+renderNav('Junta · admin', '', { nombre: 'Junta asesora' });
+const esAdmin = () => DB.clave && sessionStorage.getItem('foro_rol_' + DB.SES) === 'admin';
+const clonar = (o) => JSON.parse(JSON.stringify(o));
+
+/* ---------- acceso ---------- */
+function vistaLogin() {
+  $('app').innerHTML = `<div class="flex items-center justify-center mt-16"><div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
+    <div class="fn-mono text-[11px] uppercase tracking-widest text-gray-500">${esc(ses ? ses.nombre : DB.SES)}</div>
+    <h2 class="text-2xl font-black mt-1 mb-5">Administrar la junta</h2>
+    <label class="lab" for="lgClave">Clave de administrador</label>
+    <input id="lgClave" type="password" class="inp" onkeydown="if(event.key==='Enter')login()" autofocus>
+    <button onclick="login()" class="press w-full bg-fn text-white font-bold rounded-xl py-3 mt-4">Entrar</button>
+  </div></div>`;
+}
+async function login() {
+  const clave = $('lgClave').value;
+  try { const r = await DB.admin('login', {}, clave); if (r.rol !== 'admin') return toast('Esa clave es de relator, no de administrador', 'warn'); DB.setClave(clave); sessionStorage.setItem('foro_rol_' + DB.SES, 'admin'); arrancar(); }
+  catch (e) { toast(errMsg(e), 'err'); }
+}
+function logout() { DB.setClave(''); sessionStorage.removeItem('foro_rol_' + DB.SES); location.reload(); }
+
+/* La junta vive en su propia sesión: si abren esta página con la sesión del foro de ideación, se explica y se ofrece ir */
+function vistaNoEsJunta() {
+  $('app').innerHTML = `<div class="max-w-lg mx-auto mt-12 bg-white rounded-2xl shadow p-6">
+    <h2 class="text-xl font-black">Esta sesión es de ideación</h2>
+    <p class="text-sm text-gray-600 mt-2"><b>${esc(ses ? ses.nombre : DB.SES)}</b> es un foro de ideación. La junta asesora vive en su propia sesión para no mezclar sus acciones con las ideas del foro.</p>
+    <label class="lab mt-5" for="sesId">Id de la sesión de la junta</label>
+    <input id="sesId" class="inp fn-mono" value="impercap-junta-1" onkeydown="if(event.key==='Enter')irSesion()">
+    <button onclick="irSesion()" class="press w-full bg-fn text-white font-bold rounded-xl py-3 mt-4">Abrir la junta</button>
+    <p class="text-xs text-gray-500 mt-3">La sesión se crea una vez con <span class="fn-mono">supabase/junta_2026-09-29.sql</span>. Para practicar sin la nube: <a class="underline" href="junta.html?s=junta-demo&demo=1">junta de práctica</a> (clave <span class="fn-mono">admin</span>).</p>
+  </div>`;
+}
+function irSesion() { const id = $('sesId').value.trim(); if (!id) return; const p = new URLSearchParams(location.search); p.set('s', id); location.search = p.toString(); }
+
+/* ---------- armazón ---------- */
+function armazon() {
+  const claveDefault = /^CAMBIAR/.test(DB.clave);
+  $('app').innerHTML = `
+    ${claveDefault ? `<div class="bg-red-50 border-2 border-red-200 text-red-800 rounded-xl p-3 mb-4 text-sm"><i class="fas fa-triangle-exclamation mr-1"></i>La sesión todavía tiene las claves de ejemplo del SQL. Cámbialas antes de la junta: <span class="fn-mono">update sesiones set clave_admin = '…', clave_lider = '…' where id = '${esc(DB.SES)}';</span></div>` : ''}
+    <div class="flex flex-wrap justify-between items-end gap-3 mb-4">
+      <div><div class="fn-mono text-[11px] uppercase tracking-widest text-gray-500">Junta asesora · sesión <span class="text-gray-700">${esc(DB.SES)}</span></div>
+        <h1 id="tit" class="text-2xl font-black">${esc(ses.nombre)}</h1></div>
+      <div class="flex flex-wrap gap-2 text-xs font-bold">
+        <a href="${urlVista('tablero.html')}" target="_blank" class="press bg-fn text-emerald-400 px-4 py-2 rounded-lg"><i class="fas fa-tv mr-1"></i>PROYECTAR (general)</a>
+        <a href="${urlVista('acciones.html')}" target="_blank" class="press bg-gray-700 text-white px-3 py-2 rounded-lg"><i class="fas fa-pen mr-1"></i>Relator</a>
+        <button onclick="logout()" class="press bg-gray-200 px-3 py-2 rounded-lg">Salir</button>
+      </div>
+    </div>
+    <div class="flex gap-1 mb-4 border-b flex-wrap" role="tablist">${TABS.map(([k, i, t]) => `<button role="tab" data-tab="${k}" onclick="setTab('${k}')" class="px-4 py-2 text-sm font-bold border-b-2"><i class="fas ${i} mr-1"></i>${t}</button>`).join('')}</div>
+    <div id="panel"></div>`;
+  pintarTabs();
+}
+function pintarTabs() {
+  document.querySelectorAll('[data-tab]').forEach(b => { const on = b.dataset.tab === tab; b.setAttribute('aria-selected', on); b.className = 'px-4 py-2 text-sm font-bold border-b-2 ' + (on ? 'border-emerald-500 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-800'); });
+  ({ mesas: pMesas, campos: pCampos, qr: pQr, acciones: pAcciones })[tab]();
+}
+function setTab(t) { tab = t; sessionStorage.setItem('junta_tab', t); pintarTabs(); }
+function marcarSucio(v = true) { sucio = v; const b = $('barraGuardar'); if (b) b.hidden = !v; }
+const barraGuardar = () => `<div id="barraGuardar" ${sucio ? '' : 'hidden'} class="sticky bottom-3 mt-4 bg-fn text-white rounded-xl shadow-lg p-3 flex items-center justify-between gap-3">
+  <span class="text-sm"><i class="fas fa-circle text-[8px] text-amber-400 mr-2 align-middle"></i>Cambios sin guardar</span>
+  <div class="flex gap-2"><button onclick="descartar()" class="press px-3 py-2 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20">Descartar</button>
+  <button onclick="guardarTodo()" class="press px-4 py-2 rounded-lg text-xs font-bold bg-emerald-400 text-black">Guardar</button></div></div>`;
+
+/* ---------- MESAS ---------- */
+function pMesas() {
+  const n = (slug) => filas.filter(f => f.mesa === slug).length;
+  $('panel').innerHTML = `
+    <div class="bg-white rounded-xl shadow p-4 mb-4 max-w-xl"><label class="lab" for="sesNombre">Nombre de la sesión (se ve en todas las pantallas)</label>
+      <input id="sesNombre" class="inp font-bold" value="${esc(draft.nombre)}" oninput="draft.nombre=this.value;marcarSucio()"></div>
+    <div class="grid lg:grid-cols-2 gap-4">
+      ${draft.mesas.map((m, i) => `
+      <div class="bg-white rounded-xl shadow p-4 border-t-4 ${col(m.color).border}">
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2 min-w-0"><span class="w-9 h-9 rounded-lg grid place-items-center ${col(m.color).bg} ${col(m.color).text}"><i class="fas ${esc(m.icono)}"></i></span>
+            <div class="min-w-0"><div class="font-black truncate">${esc(m.nombre || 'Mesa sin nombre')}</div><div class="fn-mono text-[11px] text-gray-400">m=${esc(m.slug)} · ${n(m.slug)} ${n(m.slug) === 1 ? 'acción' : 'acciones'}</div></div></div>
+          <div class="flex gap-1 shrink-0">
+            <button onclick="mover(${i},-1)" ${i === 0 ? 'disabled' : ''} class="press w-8 h-8 rounded-lg border text-gray-500 disabled:opacity-30" aria-label="Subir"><i class="fas fa-arrow-up text-xs"></i></button>
+            <button onclick="mover(${i},1)" ${i === draft.mesas.length - 1 ? 'disabled' : ''} class="press w-8 h-8 rounded-lg border text-gray-500 disabled:opacity-30" aria-label="Bajar"><i class="fas fa-arrow-down text-xs"></i></button>
+            <button onclick="quitarMesa(${i})" class="press w-8 h-8 rounded-lg border text-gray-400 hover:text-red-600" aria-label="Eliminar mesa"><i class="fas fa-trash text-xs"></i></button>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div class="sm:col-span-2"><label class="lab">Nombre</label><input class="inp font-bold" value="${esc(m.nombre)}" oninput="upd(${i},'nombre',this.value)"></div>
+          <div class="sm:col-span-2"><label class="lab">Pregunta u objetivo de la mesa</label><textarea rows="2" class="inp" oninput="upd(${i},'pregunta',this.value)" placeholder="¿Qué tiene que salir de esta mesa?">${esc(m.pregunta)}</textarea></div>
+          <div><label class="lab">Modera</label><input class="inp" value="${esc(m.modera)}" oninput="upd(${i},'modera',this.value)"></div>
+          <div><label class="lab">Relata (escribe las acciones)</label><input class="inp" value="${esc(m.relata)}" oninput="upd(${i},'relata',this.value)"></div>
+          <div class="sm:col-span-2"><label class="lab">Miembros · uno por línea</label><textarea rows="3" class="inp" oninput="upd(${i},'miembros',this.value.split('\\n').map(s=>s.trim()).filter(Boolean))">${esc((m.miembros || []).join('\n'))}</textarea></div>
+          <div><label class="lab">Color</label><div class="flex flex-wrap gap-1.5">${Object.keys(COLORS).map(c => `<button onclick="upd(${i},'color','${c}',true)" aria-label="${c}" class="press w-7 h-7 rounded-full ${COLORS[c].solid} ${m.color === c ? 'ring-2 ring-offset-2 ring-gray-800' : ''}"></button>`).join('')}</div></div>
+          <div><label class="lab">Ícono</label><div class="flex flex-wrap gap-1">${ICONOS_MESA.map(ic => `<button onclick="upd(${i},'icono','${ic}',true)" aria-label="${ic}" class="press w-8 h-8 rounded-lg border ${m.icono === ic ? 'border-gray-800 bg-gray-100' : 'border-gray-200 text-gray-400'}"><i class="fas ${ic} text-xs"></i></button>`).join('')}</div></div>
+        </div>
+      </div>`).join('')}
+      <button onclick="nuevaMesa()" class="press rounded-xl border-2 border-dashed border-gray-300 text-gray-500 hover:text-gray-800 hover:border-gray-400 font-bold min-h-[140px]"><i class="fas fa-plus mr-2"></i>Agregar mesa</button>
+    </div>
+    ${barraGuardar()}`;
+}
+function upd(i, k, v, redibujar) { draft.mesas[i][k] = v; marcarSucio(); if (redibujar) pMesas(); }
+function mover(i, d) { const a = draft.mesas; [a[i], a[i + d]] = [a[i + d], a[i]]; marcarSucio(); pMesas(); }
+function nuevaMesa() {
+  const nombre = prompt('Nombre de la mesa'); if (!nombre) return;
+  let s = slugify(nombre), k = 2; while (draft.mesas.some(m => m.slug === s)) s = slugify(nombre) + '-' + k++;
+  const libres = Object.keys(COLORS).filter(c => !draft.mesas.some(m => m.color === c));
+  draft.mesas.push({ slug: s, nombre: nombre.trim(), color: libres[0] || 'gray', icono: 'fa-comments', pregunta: '', modera: '', relata: '', miembros: [] });
+  marcarSucio(); pMesas();
+}
+function quitarMesa(i) {
+  const m = draft.mesas[i], n = filas.filter(f => f.mesa === m.slug).length;
+  if (!confirm(`¿Eliminar la mesa "${m.nombre}"?` + (n ? `\n\nTiene ${n} ${n === 1 ? 'acción' : 'acciones'}: no se borran, quedan en el tablero general como "Otras" y se pueden mover a otra mesa desde la vista del relator.` : ''))) return;
+  draft.mesas.splice(i, 1); marcarSucio(); pMesas();
+}
+
+/* ---------- CAMPOS ---------- */
+function pCampos() {
+  $('panel').innerHTML = `
+    <div class="grid lg:grid-cols-5 gap-4">
+      <div class="lg:col-span-3 bg-white rounded-xl shadow overflow-hidden">
+        <div class="grid grid-cols-[1fr_auto_auto] gap-x-4 items-center px-4 py-2 bg-gray-800 text-white text-[11px] font-bold uppercase tracking-wider"><span>Campo · etiqueta que ve el relator</span><span>Activo</span><span>Obligatorio</span></div>
+        ${draft.campos.map((c, i) => `
+        <div class="grid grid-cols-[1fr_auto_auto] gap-x-4 items-center px-4 py-3 border-b last:border-0 ${c.activo ? '' : 'bg-gray-50'}">
+          <div class="flex items-center gap-2 min-w-0"><i class="fas ${c.icono || 'fa-pen'} w-4 text-gray-400"></i>
+            <input class="inp ${c.activo ? '' : 'text-gray-400'}" value="${esc(c.etiqueta)}" oninput="draft.campos[${i}].etiqueta=this.value;marcarSucio();pPreview()" aria-label="Etiqueta de ${esc(c.k)}">
+            ${c.base ? '' : '<span class="fn-mono text-[10px] text-gray-400 shrink-0">extra</span>'}</div>
+          <div class="w-[60px] grid place-items-center"><button class="sw" role="switch" aria-checked="${c.activo}" ${c.fijo ? 'disabled' : ''} onclick="toggleCampo(${i},'activo')" aria-label="Activo"></button></div>
+          <div class="w-[84px] grid place-items-center"><button class="sw" role="switch" aria-checked="${c.obligatorio}" ${c.fijo || !c.activo ? 'disabled' : ''} onclick="toggleCampo(${i},'obligatorio')" aria-label="Obligatorio"></button></div>
+        </div>`).join('')}
+      </div>
+      <div class="lg:col-span-2">
+        <div class="lab mb-2">Así lo ve el relator</div>
+        <div id="preview" class="bg-white rounded-xl shadow p-4"></div>
+        <p class="text-xs text-gray-500 mt-3 leading-relaxed"><b>Obligatorio</b> no impide guardar a medias: el relator puede anotar la acción y completarla después. Lo que exige es que esté completa para marcarla como <b>lista</b>, y en los tableros la acción incompleta queda en ámbar con lo que le falta.</p>
+      </div>
+    </div>
+    ${barraGuardar()}`;
+  pPreview();
+}
+function pPreview() {
+  const p = $('preview'); if (!p) return;
+  const act = draft.campos.filter(c => c.activo);
+  p.innerHTML = act.map(c => `<div class="mb-3 last:mb-0"><div class="lab">${esc(c.etiqueta)}${c.obligatorio ? ' <span class="text-red-500">*</span>' : ''}</div><div class="border-2 border-gray-200 rounded-lg ${c.tipo === 'textarea' ? 'h-12' : 'h-9'} px-2 text-xs text-gray-400 flex items-center">${c.tipo === 'select' ? esc(c.opciones.join(' · ')) : esc(c.ph || '')}</div></div>`).join('');
+}
+function toggleCampo(i, k) { const c = draft.campos[i]; if (c.fijo) return; c[k] = !c[k]; if (k === 'activo' && !c.activo) c.obligatorio = false; marcarSucio(); pCampos(); }
+
+/* ---------- QR Y PANTALLAS ---------- */
+function pQr() {
+  const g = JUNTA.mesas;   // lo guardado: los QR apuntan a mesas que ya existen
+  const enlace = (href, ico, txt, osc) => `<a href="${href}" target="_blank" class="press flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold ${osc ? 'bg-fn text-emerald-400' : 'bg-gray-100 hover:bg-gray-200'}"><i class="fas ${ico} w-4"></i>${txt}</a>`;
+  $('panel').innerHTML = `
+    ${sucio ? '<div class="bg-amber-50 border-2 border-amber-200 text-amber-800 rounded-xl p-3 mb-4 text-sm">Hay cambios sin guardar en mesas o campos: los QR muestran lo último guardado.</div>' : ''}
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <p class="text-sm text-gray-600 max-w-2xl">Cada mesa tiene un QR para sus miembros: ven en vivo lo que escribe el relator y descargan las acciones (CSV o PDF), sin clave. El relator entra desde el mismo QR con “Soy el relator” o por su enlace, con la clave de relator.</p>
+      <button onclick="imprimirQr()" class="press bg-fn text-white px-4 py-2 rounded-lg text-sm font-bold"><i class="fas fa-print mr-2"></i>Imprimir QR (una hoja por mesa)</button>
+    </div>
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+      ${g.map(m => `
+      <div class="bg-white rounded-xl shadow p-4 border-t-4 ${col(m.color).border} flex flex-col">
+        <div class="font-black"><i class="fas ${esc(m.icono)} mr-2 ${col(m.color).text}"></i>${esc(m.nombre)}</div>
+        <div class="text-xs text-gray-500 mt-1">${[m.modera && 'Modera ' + esc(m.modera), m.relata && 'Relata ' + esc(m.relata), (m.miembros || []).length && (m.miembros.length + ' miembros')].filter(Boolean).join(' · ') || 'Sin personas asignadas'}</div>
+        <div class="grid place-items-center my-4"><div class="qr" data-url="${esc(urlMesa('mesa.html', m.slug))}"></div></div>
+        <div class="grid grid-cols-2 gap-2 mt-auto">
+          ${enlace(urlMesa('mesa.html', m.slug), 'fa-users', 'Miembros')}
+          ${enlace(urlMesa('acciones.html', m.slug), 'fa-pen', 'Relator')}
+          ${enlace(urlMesa('tablero.html', m.slug), 'fa-tv', 'Tablero mesa', true)}
+          <button onclick="copiar('${esc(urlMesa('mesa.html', m.slug))}')" class="press flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-gray-100 hover:bg-gray-200"><i class="fas fa-link w-4"></i>Copiar enlace</button>
+        </div>
+      </div>`).join('')}
+      <div class="bg-fn text-white rounded-xl shadow p-4 flex flex-col">
+        <div class="font-black"><i class="fas fa-table-columns mr-2 fn-green"></i>Visualizador general</div>
+        <div class="text-xs text-gray-400 mt-1">Todas las acciones de todas las mesas: es lo que se proyecta en el wrap up.</div>
+        <div class="grid place-items-center my-4"><div class="qr bg-white p-2 rounded-lg" data-url="${esc(urlVista('mesa.html'))}"></div></div>
+        <p class="text-[11px] text-gray-400 text-center -mt-2 mb-3">QR general: cada quien elige su mesa</p>
+        <div class="grid grid-cols-2 gap-2 mt-auto">
+          ${enlace(urlVista('tablero.html'), 'fa-tv', 'Proyectar', true)}
+          <button onclick="copiar('${esc(urlVista('tablero.html'))}')" class="press flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20"><i class="fas fa-link w-4"></i>Copiar enlace</button>
+        </div>
+      </div>
+    </div>`;
+  document.querySelectorAll('#panel .qr').forEach(el => new QRCode(el, { text: el.dataset.url, width: 168, height: 168 }));
+}
+function imprimirQr() {
+  $('qrPrint').innerHTML = JUNTA.mesas.map(m => `<div class="qr-page">
+    <div style="font:700 14px ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;color:#555">${esc(ses.nombre)}</div>
+    <div style="font:900 44px Montserrat,sans-serif;margin:12px 0 4px">${esc(m.nombre)}</div>
+    ${m.pregunta ? `<div style="font:500 18px Montserrat,sans-serif;max-width:640px;color:#333">${esc(m.pregunta)}</div>` : ''}
+    <div class="qp" data-url="${esc(urlMesa('mesa.html', m.slug))}" style="margin:28px 0"></div>
+    <div style="font:600 18px Montserrat,sans-serif">Escanea para ver y descargar las acciones de esta mesa</div>
+    <div style="font:500 14px Montserrat,sans-serif;color:#555;margin-top:6px">${[m.modera && 'Modera: ' + esc(m.modera), m.relata && 'Relata: ' + esc(m.relata)].filter(Boolean).join(' · ')}</div>
+    <div style="font:700 13px ui-monospace,Menlo,monospace;margin-top:24px">freaknerd_</div>
+  </div>`).join('');
+  document.querySelectorAll('#qrPrint .qp').forEach(el => new QRCode(el, { text: el.dataset.url, width: 360, height: 360 }));
+  document.body.classList.add('imprimir-qr');
+  setTimeout(() => { window.print(); document.body.classList.remove('imprimir-qr'); }, 300);
+}
+async function copiar(t) { try { await navigator.clipboard.writeText(t); toast('Enlace copiado'); } catch (e) { prompt('Copia el enlace', t); } }
+
+/* ---------- ACCIONES ---------- */
+function pAcciones() {
+  const conocidas = new Set(JUNTA.mesas.map(m => m.slug));
+  const filasMesa = [...JUNTA.mesas.map(m => [m, filas.filter(f => f.mesa === m.slug)]), ['otras', filas.filter(f => !conocidas.has(f.mesa))]].filter(([m, f]) => m !== 'otras' || f.length);
+  $('panel').innerHTML = `
+    <div class="grid lg:grid-cols-3 gap-4">
+      <div class="lg:col-span-2 bg-white rounded-xl shadow overflow-x-auto"><table class="w-full text-sm">
+        <thead class="bg-gray-800 text-white text-[11px] uppercase tracking-wider"><tr><th class="p-3 text-left">Mesa</th><th class="p-3 text-right">Acciones</th><th class="p-3 text-right">Completas</th><th class="p-3 text-right">Listas</th><th class="p-3"></th></tr></thead>
+        <tbody>${filasMesa.map(([m, f]) => `<tr class="border-b">
+          <td class="p-3 font-bold">${m === 'otras' ? '<i class="fas fa-inbox mr-2 text-gray-400"></i>Otras (mesa eliminada)' : `<i class="fas ${esc(m.icono)} mr-2 ${col(m.color).text}"></i>${esc(m.nombre)}`}</td>
+          <td class="p-3 text-right fn-mono font-bold">${f.length}</td>
+          <td class="p-3 text-right fn-mono">${f.filter(x => JUNTA.completa(x)).length}</td>
+          <td class="p-3 text-right fn-mono">${f.filter(x => x.estado === 'confirmada').length}</td>
+          <td class="p-3 text-right">${m === 'otras' ? '' : `<a href="${urlMesa('tablero.html', m.slug)}" target="_blank" class="text-xs font-bold text-gray-500 hover:text-black">Ver <i class="fas fa-arrow-up-right-from-square ml-1"></i></a>`}</td></tr>`).join('')}
+          <tr class="bg-gray-50 font-black"><td class="p-3">Total</td><td class="p-3 text-right fn-mono">${filas.length}</td><td class="p-3 text-right fn-mono">${filas.filter(x => JUNTA.completa(x)).length}</td><td class="p-3 text-right fn-mono">${filas.filter(x => x.estado === 'confirmada').length}</td><td></td></tr>
+        </tbody></table></div>
+      <div class="space-y-3">
+        <div class="bg-white rounded-xl shadow p-4"><h3 class="font-black mb-2">Para el acta</h3>
+          <button onclick="filas.length ? descargarCsv(nombreArchivo(''), accionesCsv(filas)) : toast('No hay acciones', 'warn')" class="press w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg py-2 text-sm font-bold"><i class="fas fa-file-csv mr-1"></i>CSV de todas las mesas</button>
+          <a href="${urlVista('acciones.html')}" target="_blank" class="press block text-center w-full bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-sm font-bold mt-2"><i class="fas fa-pen mr-1"></i>Editar acciones (entra con la clave de admin)</a></div>
+        <div class="bg-white rounded-xl shadow p-4"><h3 class="font-black mb-2 text-red-700"><i class="fas fa-triangle-exclamation mr-1"></i>Zona de riesgo</h3>
+          <button onclick="vaciar()" class="press w-full bg-red-50 hover:bg-red-100 text-red-700 border-2 border-red-200 rounded-lg py-2 text-sm font-bold"><i class="fas fa-trash mr-1"></i>Vaciar tablero (todas las mesas)</button>
+          <p class="text-xs text-gray-500 mt-2">Úsalo después del ensayo. Descarga antes el CSV si quieres conservarlas.</p></div>
+      </div>
+    </div>`;
+}
+async function vaciar() {
+  if (!filas.length) return toast('El tablero ya está vacío', 'warn');
+  if (!confirm(`¿Borrar las ${filas.length} acciones de todas las mesas?\n\nNo se puede deshacer.`)) return;
+  try { await DB.accionOp('limpiar', {}, DB.clave); await refrescar(); toast('Tablero vacío'); } catch (e) { toast(errMsg(e), 'err'); }
+}
+
+/* ---------- guardar ---------- */
+async function guardarTodo() {
+  const vacias = draft.mesas.filter(m => !m.nombre.trim());
+  if (vacias.length) return toast('Hay una mesa sin nombre', 'warn');
+  if (!draft.mesas.length) return toast('La junta necesita al menos una mesa', 'warn');
+  try {
+    await JUNTA.guardar({ mesas: draft.mesas.map(m => ({ ...m, nombre: m.nombre.trim() })), campos: draft.campos, nombre: draft.nombre.trim() || ses.nombre });
+    ses = await DB.getSesion(); JUNTA.leer(ses); tomarDraft(); marcarSucio(false); $('tit').textContent = ses.nombre; pintarTabs(); toast('Guardado · las pantallas se actualizan solas');
+  } catch (e) { toast(errMsg(e), 'err'); }
+}
+function descartar() { tomarDraft(); marcarSucio(false); pintarTabs(); }
+function tomarDraft() { draft = { nombre: ses.nombre, mesas: clonar(JUNTA.mesas), campos: clonar(JUNTA.campos) }; }
+window.addEventListener('beforeunload', (e) => { if (sucio) { e.preventDefault(); e.returnValue = ''; } });
+
+/* ---------- ciclo ---------- */
+async function refrescar() {
+  filas = await DB.getAcciones();
+  if (tab === 'acciones' && $('panel')) pAcciones();
+}
+async function arrancar() {
+  [ses, filas] = await Promise.all([DB.getSesion(), DB.getAcciones()]); JUNTA.leer(ses); tomarDraft();
+  armazon(); Poll.start(refrescar, 5000); DB.onAccionesChange && DB.onAccionesChange(refrescar);
+}
+(async () => {
+  try { ses = await DB.getSesion(); } catch (e) { return toast(errMsg(e), 'err'); }
+  if (!ses) { $('app').innerHTML = `<p class="text-center mt-16 text-gray-500">No existe la sesión <span class="fn-mono">${esc(DB.SES)}</span>. Córrela con <span class="fn-mono">supabase/junta_2026-09-29.sql</span>.</p>`; return; }
+  if (!esJunta(ses)) return vistaNoEsJunta();
+  if (DB.MODE === 'local' && !DB.clave) { DB.setClave('admin'); sessionStorage.setItem('foro_rol_' + DB.SES, 'admin'); }   // práctica local: entra sin clave
+  esAdmin() ? arrancar() : vistaLogin();
+})();
+</script>
+</body>
+</html>

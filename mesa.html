@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="app-version" content="20260929a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>freaknerd_ · Mesa de la junta</title>
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<link href="vendor/fonts.css" rel="stylesheet">
+<script src="vendor/tailwind.js"></script>
+<link rel="stylesheet" href="vendor/fontawesome.min.css">
+<script src="vendor/supabase.min.js"></script>
+<style>
+  body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}[hidden]{display:none!important}
+  @media print{.no-print{display:none!important}body{background:#fff}.card{break-inside:avoid;box-shadow:none;border:1px solid #e5e7eb}}
+</style>
+<script src="js/config.js?v=20260929a"></script><script src="js/db.js?v=20260929a"></script><script src="js/common.js?v=20260929a"></script><script src="js/acciones.js?v=20260929a"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+<nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md no-print"></nav>
+<div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
+<main id="app" class="flex-1 p-4 max-w-2xl w-full mx-auto"></main>
+
+<script>
+/* Vista de los miembros de una mesa (destino del QR de la mesa): ven en vivo las acciones que escribe
+   el relator y las descargan (CSV para Excel o PDF desde el navegador). Solo lee: no pide clave. */
+let slug = mesaDeUrl(), filas = [], armado = '';
+const nuevas = Nuevas();
+renderNav('Mesa');
+
+function vistaElegir() {
+  $('app').innerHTML = `<div class="mt-6">
+    <div class="fn-mono text-[11px] uppercase tracking-widest text-gray-500">${esc(JUNTA.sesion ? JUNTA.sesion.nombre : 'Junta asesora')}</div>
+    <h1 class="text-2xl font-black mt-1">¿En qué mesa estás?</h1>
+    <div class="grid gap-2 mt-4">${JUNTA.mesas.map(m => `
+      <a href="${urlMesa('mesa.html', m.slug)}" class="press block bg-white rounded-xl shadow-sm border-l-4 ${col(m.color).border} px-4 py-3 font-bold">
+        <i class="fas ${esc(m.icono)} mr-2 ${col(m.color).text}"></i>${esc(m.nombre)}</a>`).join('')}</div>
+    <a href="${urlVista('tablero.html')}" class="inline-block mt-6 text-sm font-bold text-gray-600"><i class="fas fa-table-columns mr-1"></i>Ver todas las acciones de la junta</a>
+  </div>`;
+}
+
+function personas(m) {
+  const fila = (ico, rol, v) => v ? `<div class="flex gap-2"><i class="fas ${ico} w-4 mt-0.5 text-gray-400"></i><div><span class="text-gray-500">${rol}:</span> <b>${esc(v)}</b></div></div>` : '';
+  return fila('fa-microphone', 'Modera', m.modera) + fila('fa-pen', 'Relata', m.relata) + fila('fa-users', 'Miembros', (m.miembros || []).join(', '));
+}
+function armar() {
+  const m = mesaInfo(slug);
+  $('app').innerHTML = `
+    <header class="mt-4">
+      <div class="fn-mono text-[11px] uppercase tracking-widest text-gray-500">${esc(JUNTA.sesion ? JUNTA.sesion.nombre : 'Junta asesora')}</div>
+      <h1 class="text-2xl sm:text-3xl font-black mt-1"><i class="fas ${esc(m.icono)} mr-2 ${col(m.color).text}"></i>${esc(m.nombre)}</h1>
+      ${m.pregunta ? `<p class="text-gray-700 mt-2 leading-relaxed">${esc(m.pregunta)}</p>` : ''}
+      <div class="text-sm mt-3 space-y-1">${personas(m)}</div>
+    </header>
+
+    <div class="flex items-center justify-between mt-6 mb-2">
+      <h2 class="font-black">Acciones de la mesa</h2>
+      <span id="cuenta" class="fn-mono text-xs text-gray-500"></span>
+    </div>
+    <div id="lista" class="space-y-2" aria-live="polite"></div>
+
+    <div class="grid grid-cols-2 gap-2 mt-6 no-print">
+      <button onclick="bajarCsv()" class="press bg-fn text-white font-bold rounded-xl py-3"><i class="fas fa-file-csv mr-2"></i>Descargar CSV</button>
+      <button onclick="window.print()" class="press bg-white border-2 border-gray-200 font-bold rounded-xl py-3"><i class="fas fa-file-pdf mr-2"></i>Guardar PDF</button>
+    </div>
+    <p class="text-xs text-gray-500 mt-2 no-print">El CSV abre en Excel. Para el PDF, en el menú de imprimir elige “Guardar como PDF”. La lista se actualiza sola mientras el relator escribe.</p>
+
+    <div class="flex flex-wrap gap-x-3 gap-y-2 justify-center my-8 text-sm font-bold text-gray-600 no-print">
+      <a href="${urlVista('tablero.html')}" class="hover:text-black"><i class="fas fa-table-columns mr-1"></i>Todas las mesas</a>
+      <span class="text-gray-300">·</span>
+      <a href="${urlMesa('acciones.html', slug)}" class="hover:text-black"><i class="fas fa-pen mr-1"></i>Soy el relator</a>
+    </div>`;
+  pintar();
+}
+function pintar() {
+  if (!$('lista')) return;
+  const mias = filas.filter(f => f.mesa === slug), nv = nuevas(mias), listas = mias.filter(f => f.estado === 'confirmada').length;
+  $('cuenta').textContent = mias.length ? `${mias.length} ${mias.length === 1 ? 'acción' : 'acciones'} · ${listas} ${listas === 1 ? 'lista' : 'listas'}` : '';
+  $('lista').innerHTML = mias.length ? mias.map((f, i) => tarjetaAccion(f, { num: i + 1, nueva: nv.has(f.id) })).join('')
+    : `<div class="bg-white rounded-xl p-6 text-center text-gray-500"><i class="fas fa-hourglass-half text-gray-300 text-2xl"></i><p class="mt-2">Todavía no hay acciones. Aparecen aquí apenas el relator las escriba.</p></div>`;
+}
+function bajarCsv() {
+  const mias = filas.filter(f => f.mesa === slug);
+  if (!mias.length) return toast('Todavía no hay acciones', 'warn');
+  descargarCsv(nombreArchivo(slug), accionesCsv(mias));
+}
+async function refrescar() {
+  const [ses, acc] = await Promise.all([DB.getSesion(), DB.getAcciones()]);
+  JUNTA.leer(ses); filas = acc;
+  const k = JSON.stringify(ses && ses.config && ses.config.junta) + slug;
+  if (!slug || !JUNTA.mesas.some(m => m.slug === slug)) { slug = ''; if (armado !== 'elegir') { armado = 'elegir'; vistaElegir(); } return; }
+  if (k !== armado) { armado = k; document.title = 'freaknerd_ · ' + mesaInfo(slug).nombre; armar(); } else pintar();
+}
+Poll.start(refrescar, 4000); DB.onAccionesChange && DB.onAccionesChange(refrescar);
+</script>
+</body>
+</html>

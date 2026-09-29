@@ -36,21 +36,30 @@ js/config.js  js/db.js (supabase | local)  js/common.js (etapas, MECE)  js/mece-
 supabase/schema.sql  supabase/seed_impercap.sql
 ```
 
-## Tablero de acciones (wrap up)
+## Junta asesora (mesas de trabajo y tablero de acciones)
 
-Submódulo para el cierre de una junta: cada líder de mesa escribe las acciones que salieron y la
-sala las ve en una sola pantalla.
+La junta vive **aparte de la ideación**: es otra sesión, con `config.tipo = 'junta'`
+(para Impercap, `?s=impercap-junta-1`). Así las acciones de las mesas no se mezclan con las ideas
+del foro. Si alguien abre `admin.html`, `index.html` o `muro.html` con una sesión de junta, la app lo
+lleva a `junta.html`, `mesa.html` o `tablero.html`.
 
-- `acciones.html` — vista del líder de mesa. Entra con su mesa, su nombre y la **clave de líder**
-  (también sirve la de admin). Crea, edita, marca como lista y borra acciones. El formulario no se
-  redibuja solo: se puede escribir mientras la mesa conversa.
-- `tablero.html` — vista que se proyecta. Solo lee, se refresca cada 4 s, muestra cuántas acciones
-  tienen dueño y fecha, exporta **CSV para el acta**, imprime y muestra un **QR** con el enlace de
-  los líderes.
-- `js/acciones.js` — capa de datos (Supabase o localStorage), lista de mesas y CSV.
-- `supabase/acciones_2026-09-23.sql` — tabla `acciones` + RPC `acciones_op`. **Correr una vez** en el
-  SQL Editor antes de usarlo en producción. La escritura pasa siempre por el RPC con clave; la
-  lectura es abierta (el tablero se proyecta sin clave).
+**Puesta en marcha (una vez):** correr `supabase/junta_2026-09-29.sql` en el SQL Editor, después de
+`acciones_2026-09-23.sql`, **cambiando antes las dos claves** del `insert`. El script agrega la
+columna `acciones.extra`, actualiza el RPC `acciones_op` y crea la sesión `impercap-junta-1`.
 
-Las mesas se cambian en `MESAS`, en `js/acciones.js`. Con `?demo=1` todo funciona en el navegador
-sin base de datos: es el plan B si falla la red (los líderes escriben en el portátil del moderador).
+| Vista | Quién | Para qué |
+| --- | --- | --- |
+| `junta.html?s=…` | Administrador (clave admin) | **Mesas**: nombre, pregunta u objetivo, quién modera, quién relata, miembros, color, ícono y orden. **Campos**: qué se diligencia en cada acción y qué es obligatorio. **QR y pantallas**: QR de cada mesa, enlaces y hoja imprimible con un QR por mesa. **Acciones**: conteos por mesa, CSV y vaciar el tablero. |
+| `mesa.html?s=…&m=mesa` | Miembros de la mesa (sin clave; es el destino del QR) | Ven en vivo las acciones de su mesa y las descargan en CSV o PDF. Sin `m=`, eligen su mesa. |
+| `acciones.html?s=…&m=mesa` | Relator (clave de líder) | Escribe, edita, marca como lista y borra las acciones de su mesa. Con la clave de admin puede trabajar cualquier mesa y mover acciones entre mesas. |
+| `tablero.html?s=…&m=mesa` | Pantalla de una mesa | Tablero proyectado de esa mesa, en grande. |
+| `tablero.html?s=…` | Pantalla del cierre | Visualizador general: todas las acciones de todas las mesas, con CSV para el acta. |
+
+**Campos.** Acción es fijo; responsable, acompaña, fecha y señal de avance son columnas propias;
+prioridad, qué se necesita y notas van en `acciones.extra`. *Obligatorio* no impide guardar a
+medias: exige que la acción esté completa para marcarla como **lista**, y en los tableros la
+incompleta queda en ámbar con lo que le falta.
+
+La configuración se guarda en `sesiones.config.junta` y todas las pantallas la toman en el siguiente
+refresco. Con `?s=junta-demo&demo=1` todo funciona en el navegador, sin base de datos (clave
+`admin`): es para practicar y es el plan B si falla la red.
