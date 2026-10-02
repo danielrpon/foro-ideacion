@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20260929a">
+<meta name="app-version" content="20261002a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Relator de mesa</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
 <style>body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}[hidden]{display:none!important}</style>
-<script src="js/config.js?v=20260929a"></script><script src="js/db.js?v=20260929a"></script><script src="js/common.js?v=20260929a"></script><script src="js/acciones.js?v=20260929a"></script>
+<script src="js/config.js?v=20261002a"></script><script src="js/db.js?v=20261002a"></script><script src="js/common.js?v=20261002a"></script><script src="js/acciones.js?v=20261002a"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
 <nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md"></nav>
@@ -68,7 +68,7 @@ async function entrar() {
   yo = { mesa: mesaSel, nombre, admin: !!(r && r.admin) }; localStorage.setItem(KEY_YO, JSON.stringify(yo));
   arrancar();
 }
-function salir() { localStorage.removeItem(KEY_YO); location.href = urlVista('acciones.html'); }
+function salir() { localStorage.removeItem(KEY_YO); DB.setClaveMesa(''); location.href = urlVista('acciones.html'); }
 
 /* ---------- formulario armado con los campos activos ---------- */
 function campoHtml(c) {
@@ -202,6 +202,7 @@ function arrancar() { vistaMesa(); Poll.start(refrescar, 4000); DB.onAccionesCha
 (async () => {
   try { const ses = await DB.getSesion(); JUNTA.leer(ses); cfgKey = JSON.stringify(ses && ses.config && ses.config.junta); } catch (e) { toast(errMsg(e), 'err'); }
   if (yo && !JUNTA.mesas.some(m => m.slug === yo.mesa)) yo = null;
+  if (yo && !DB.claveMesa) { yo = null; }   // identidad sin clave (sesión vieja): pedirla de nuevo
   yo ? arrancar() : vistaEntrada();
 })();
 </script>

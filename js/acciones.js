@@ -107,9 +107,9 @@
     DB.onAccionesChange = (fn) => { chan && chan.addEventListener('message', fn); };
   }
 
-  /* Clave de mesa: la guarda el navegador del relator mientras dure la sesión */
-  DB.claveMesa = sessionStorage.getItem('acc_clave_' + SES) || '';
-  DB.setClaveMesa = (c) => { DB.claveMesa = c; sessionStorage.setItem('acc_clave_' + SES, c); };
+  /* Clave de mesa: se guarda junto con la identidad del relator (localStorage) para que sobreviva a recargas y pestañas nuevas */
+  DB.claveMesa = localStorage.getItem('acc_clave_' + SES) || sessionStorage.getItem('acc_clave_' + SES) || '';
+  DB.setClaveMesa = (c) => { DB.claveMesa = c; if (c) localStorage.setItem('acc_clave_' + SES, c); else localStorage.removeItem('acc_clave_' + SES); };
 
   /* CSV para el acta (Excel lo abre de una): mesa + campos activos + estado */
   window.accionesCsv = (filas) => {
