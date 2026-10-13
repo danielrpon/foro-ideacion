@@ -63,14 +63,17 @@ window.DEMO = {
   ],
   /* Carga todo. Requiere sesión de admin (cambia la etapa a Ideación si hace falta, porque la base
      solo acepta ideas nuevas en esa etapa). onProgress(texto) es opcional. */
+  /* Si la sesión tiene plantilla con demo propio (js/plantilla-*.js), se usa ese en vez del de Impercap */
+  _usar(snap) { if (!this._base) this._base = { participantes: this.participantes, ideas: this.ideas, titulos: this.titulos }; const pl = window.PLANTILLAS && window.PLANTILLAS[snap.sesion.id]; Object.assign(this, (pl && pl.demo) || this._base); },
   async cargar(snap, onProgress = () => {}) {
+    this._usar(snap);
     const byName = {}; snap.pilares.forEach(p => byName[p.nombre.trim().toLowerCase()] = p);
     const pil = (n) => byName[n.toLowerCase()] || byName['otros'] || snap.pilares[snap.pilares.length - 1];
     if (snap.sesion.etapa !== 'ideacion') { onProgress('Abriendo la etapa de ideación…'); await DB.admin('cambiar_etapa', { etapa: 'ideacion', minutos: 0 }); }
-    onProgress('Registrando 5 participantes…');
+    onProgress('Registrando ' + this.participantes.length + ' participantes…');
     const parts = []; for (const [nombre, perfil] of this.participantes) parts.push(await DB.registrar(nombre, perfil));
     const filas = this.ideas.map(([pn, sf, texto, w]) => { const p = pil(pn); return { pilar_id: p.id, subfrente: sf && (p.subfrentes || []).includes(sf) ? sf : null, participante_id: parts[w].id, participante_nombre: parts[w].nombre, texto }; });
-    onProgress('Enviando 50 ideas…');
+    onProgress('Enviando ' + this.ideas.length + ' ideas…');
     if (DB.crearIdeas) await DB.crearIdeas(filas); else for (const f of filas) await DB.crearIdea(f);
     return { participantes: parts.length, ideas: filas.length, parts };
   },

@@ -76,11 +76,49 @@ window.urlVista = (archivo) => {
 window.esJunta = (sesion) => !!(sesion && ((sesion.config && sesion.config.tipo === 'junta') || /junta/i.test(sesion.id || '')));
 window.saltarAJunta = (sesion, archivo) => { if (esJunta(sesion)) { location.replace(urlVista(archivo)); return true; } return false; };
 
+/* Marca por sesión: config.marca = 'propiman' | { id, nombre, logo, logo_claro, fondo, acento, acento_suave, acento_oscuro }.
+   Sin marca la herramienta se ve como siempre (casa Freaknerd). Con marca, el cliente ocupa el lugar principal
+   y Freaknerd queda como "facilitado por". Para un cliente nuevo: agregar su entrada aquí y sus logos en img/. */
+window.MARCAS = {
+  propiman: { id: 'propiman', nombre: 'Propiman', logo: 'img/propiman_logo_white.png', logo_claro: 'img/propiman_logo.png', icono: 'img/propiman_icon.png',
+    fondo: '#0D132D', acento: '#FF5B6E', acento_suave: '#FF8A97', acento_oscuro: '#D63A4E' }
+};
+window.marca = (sesion) => {
+  const m = sesion && sesion.config && sesion.config.marca; if (!m) return null;
+  const r = typeof m === 'string' ? MARCAS[m] : Object.assign({}, MARCAS[m.id] || {}, m);
+  return r && r.nombre ? r : null;
+};
+/* Título del evento (bienvenida, nav): config.titulo_evento, por defecto el nombre de la app */
+window.tituloEvento = (sesion) => (sesion && sesion.config && sesion.config.titulo_evento) || FORO_CONFIG.APP_NAME || 'Foro de ideación';
+window.facilitadoPor = (clase = '') => `<span class="fn-mono ${clase}">facilitado por <span class="normal-case">freaknerd<span style="color:#26E57C">_</span></span></span>`;
+window.aplicarMarca = (sesion) => {
+  const m = marca(sesion), root = document.documentElement;
+  const firma = m ? m.id + '|' + tituloEvento(sesion) : '';
+  if (root.dataset.marcaFirma === firma) return; root.dataset.marcaFirma = firma;
+  let st = document.getElementById('marcaCss');
+  if (!m) { if (st) st.remove(); delete root.dataset.marca; return; }
+  root.dataset.marca = m.id;
+  if (!st) { st = document.createElement('style'); st.id = 'marcaCss'; document.head.appendChild(st); }
+  /* Solo se remapea el acento de marca (verde casa / esmeralda sobre fondo oscuro). Los verdes con
+     significado (quick wins, guardado, semáforos) se quedan verdes. */
+  st.textContent = `html[data-marca] .bg-fn{background:${m.fondo}}
+html[data-marca] .fn-green{color:${m.acento}}
+html[data-marca] .bg-fn .text-emerald-400,html[data-marca] .bg-fn.text-emerald-400,html[data-marca] #tmr{color:${m.acento_suave}}
+html[data-marca] #navEtapa{background:${m.acento};color:#fff}
+html[data-marca] .border-emerald-500\\/30{border-color:${m.acento}4d}
+html[data-marca] .text-emerald-700.fn-mono,html[data-marca] .marca-txt{color:${m.acento_oscuro}}
+html[data-marca] .dotgrid{background-image:radial-gradient(${m.acento}33 1px,transparent 1px)}`;
+  document.querySelectorAll('[data-wordmark]').forEach(w => { w.innerHTML = `<img src="${esc(m.logo)}" alt="${esc(m.nombre)}" class="h-6 w-auto block">`; });
+  document.querySelectorAll('[data-appname]').forEach(a => { a.textContent = tituloEvento(sesion); });
+  document.title = document.title.replace(/^freaknerd_/, m.nombre);
+  if (m.icono) { let ic = document.querySelector('link[rel=icon]'); if (ic) { ic.type = 'image/png'; ic.href = m.icono; } }
+};
+
 /* Nav superior (igual en todas las vistas) */
 window.renderNav = (vista, extra = '', opts = {}) => {
   const nav = document.querySelector('nav[data-nav]'); if (!nav) return;
   nav.innerHTML = `
-    <div class="flex items-center gap-3 shrink-0"><span class="fn-mono font-bold text-base tracking-tight">freaknerd<span class="fn-green">_</span></span>${opts.app === false ? '' : `<span class="text-gray-600 hidden sm:inline">|</span><span class="font-bold text-sm hidden sm:inline text-gray-200">${esc(opts.nombre || FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span>`}</div>
+    <div class="flex items-center gap-3 shrink-0"><span data-wordmark class="fn-mono font-bold text-base tracking-tight">freaknerd<span class="fn-green">_</span></span>${opts.app === false ? '' : `<span class="text-gray-600 hidden sm:inline">|</span><span data-appname class="font-bold text-sm hidden sm:inline text-gray-200">${esc(opts.nombre || FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span>`}</div>
     <div class="text-sm flex items-center gap-2 min-w-0">
       ${DB.archivo ? `<span class="bg-sky-400 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap" title="Ejercicio guardado, cargado solo en este navegador. No toca la nube.">archivo · ${esc(new Date(DB.archivo.exportado).toLocaleDateString('es-CO'))}</span>` : DB.MODE === 'local' ? '<span class="bg-amber-500 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
       <span id="navEtapa" class="fn-mono bg-emerald-400 text-black px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider truncate max-w-[58vw] sm:max-w-none">${esc(vista)}</span>
@@ -88,7 +126,7 @@ window.renderNav = (vista, extra = '', opts = {}) => {
       <button onclick="window.location.reload()" class="bg-gray-700 hover:bg-gray-600 px-2.5 py-1 rounded text-xs shrink-0" title="Recargar"><i class="fas fa-sync"></i></button>
     </div>`;
 };
-window.setNavEtapa = (sesion) => { const e = $('navEtapa'); if (e && sesion) { const st = stageInfo(sesion.etapa); const corto = { ideacion: 'Ideación', consolidacion: 'Consolidación', matriz: 'Calificación', cierre: 'Matriz final', instrucciones: 'Instrucciones', bienvenida: 'Bienvenida', pausa: 'Pausa', resumen: 'Resumen', reporte: 'Reporte', votacion: 'Votación', resultados: 'Resultados' }[sesion.etapa]; e.textContent = st.n + ' · ' + (window.innerWidth < 640 && corto ? corto : st.label); } };
+window.setNavEtapa = (sesion) => { aplicarMarca(sesion); const e = $('navEtapa'); if (e && sesion) { const st = stageInfo(sesion.etapa); const corto = { ideacion: 'Ideación', consolidacion: 'Consolidación', matriz: 'Calificación', cierre: 'Matriz final', instrucciones: 'Instrucciones', bienvenida: 'Bienvenida', pausa: 'Pausa', resumen: 'Resumen', reporte: 'Reporte', votacion: 'Votación', resultados: 'Resultados' }[sesion.etapa]; e.textContent = st.n + ' · ' + (window.innerWidth < 640 && corto ? corto : st.label); } };
 
 /* Temporizador de etapa */
 window.timerText = (sesion) => {
@@ -188,6 +226,7 @@ window.MECE = {
     lineas.push(`Eres un consultor de estrategia facilitando un foro de ideación para la empresa ${sesion.empresa || sesion.nombre}.`);
     if (cfg.caso) lineas.push(`Contexto del caso: ${cfg.caso}`);
     if (cfg.restricciones && cfg.restricciones.length) lineas.push(`Restricciones conocidas: ${cfg.restricciones.join(' | ')}`);
+    if (cfg.instruccion_ia) lineas.push(cfg.instruccion_ia);
     lineas.push('');
     lineas.push('TAREA: consolidar las ideas de cada pilar con criterio MECE (mutuamente excluyentes, colectivamente exhaustivas).');
     lineas.push('');

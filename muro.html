@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20261002a">
+<meta name="app-version" content="20261013a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Muro</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -13,7 +13,7 @@
 <script src="vendor/chart.umd.min.js"></script>
 <script src="vendor/qrcode.min.js"></script>
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20261002a"></script><script src="js/db.js?v=20261002a"></script><script src="js/common.js?v=20261002a"></script>
+<script src="js/config.js?v=20261013a"></script><script src="js/db.js?v=20261013a"></script><script src="js/common.js?v=20261013a"></script><script src="js/plantilla-propiman.js?v=20261013a"></script>
 <style>
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:18px 18px}
   .postit{transition:transform .2s}.postit:hover{transform:scale(1.03);z-index:5}
@@ -61,6 +61,13 @@ function render() {
   if (key === viewKey) return; viewKey = key;
 
   if (et === 'bienvenida') {
+    const m = marca(s);
+    if (m) { app.innerHTML = `<div class="h-full bg-fn dotgrid flex flex-col items-center justify-center text-center fade-in px-16 py-8">
+      <img src="${esc(m.logo)}" alt="${esc(m.nombre)}" class="h-24 w-auto">
+      <p class="fn-mono text-base uppercase tracking-[.35em] text-emerald-400 mt-8">${esc(tituloEvento(s))}</p>
+      <h2 class="text-6xl font-black text-white mt-6 text-balance">${esc(s.empresa || s.nombre)}</h2>
+      <p class="text-xl text-gray-300 mt-10 max-w-4xl leading-relaxed text-pretty">${esc(s.config.caso || '')}</p>
+      <p class="mt-12 text-sm text-gray-400"><i class="fas fa-mug-hot mr-2"></i>Bienvenidos · en un momento arrancamos <span class="mx-3 text-gray-600">·</span>${facilitadoPor()}</p></div>`; return; }
     app.innerHTML = `<div class="h-full bg-fn dotgrid flex flex-col items-center justify-center text-center fade-in px-16 py-8">
       <div class="text-7xl font-black text-white tracking-tight leading-none">freaknerd<span class="fn-green">_</span></div>
       <p class="fn-mono text-base uppercase tracking-[.35em] text-emerald-400 mt-4">Foro de ideación</p>

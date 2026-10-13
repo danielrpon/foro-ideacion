@@ -63,3 +63,8 @@ incompleta queda en ámbar con lo que le falta.
 La configuración se guarda en `sesiones.config.junta` y todas las pantallas la toman en el siguiente
 refresco. Con `?s=junta-demo&demo=1` todo funciona en el navegador, sin base de datos (clave
 `admin`): es para practicar y es el plan B si falla la red.
+
+## Marca por sesión y plantillas (desde 13-oct-2026)
+- `sesiones.config.marca` = `'propiman'` (o un objeto `{ id, nombre, logo, logo_claro, fondo, acento, acento_suave, acento_oscuro }`). Con marca, el logo del cliente reemplaza el wordmark en nav, bienvenida (celular y muro) y reporte; Freaknerd queda como "facilitado por". Sin marca todo se ve como siempre. Las marcas disponibles viven en `MARCAS` (`js/common.js`) y sus logos en `img/`. También se elige en Admin › Configuración.
+- Otros campos opcionales de `config`: `titulo_evento`, `titulo_reporte`, `perfiles` (lista del registro), `afinidad` (`{ perfil: nombre del pilar }`, ordena el primer pilar que ve cada quien), `etiqueta_idea`, `ejemplo_idea`, `instruccion_ia` (línea extra para el prompt MECE).
+- **Plantillas**: `js/plantilla-propiman.js` es la fuente única del taller Propiman (sesión, pilares, frentes, enunciados y demo de ensayo). La usan el modo demo (`?s=propiman-sierraalta&demo=1`) y el generador `node supabase/gen_seed_propiman.js`, que escribe `supabase/seed_propiman_sierraalta.sql`. Para otra copropiedad: copiar la plantilla, cambiar `id`, `empresa` y `caso`, regenerar y correr el SQL.

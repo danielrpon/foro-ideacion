@@ -1,0 +1,30 @@
+// Genera supabase/seed_propiman_sierraalta.sql desde js/plantilla-propiman.js (fuente única del contenido).
+// Uso: node supabase/gen_seed_propiman.js
+const fs = require('fs'), path = require('path');
+const P = require('../js/plantilla-propiman.js');
+const q = (s) => "'" + String(s).replace(/'/g, "''") + "'";
+const out = [];
+out.push('-- ============================================================');
+out.push(`-- SESIÓN: ${P.nombre} · Propiman · jueves 15-oct-2026, 10:00–12:00`);
+out.push('-- Generado por supabase/gen_seed_propiman.js desde js/plantilla-propiman.js (no editar a mano).');
+out.push('-- ANTES DE CORRER: cambiar CAMBIAR_ADMIN y CAMBIAR_LIDER por claves reales.');
+out.push('-- Se corre en el SQL Editor del proyecto Supabase del foro (zccrvdytrmrloahnbajl).');
+out.push('-- Es idempotente: vuelve a dejar la sesión en bienvenida con sus pilares, sin ideas.');
+out.push('-- ============================================================');
+out.push(`insert into sesiones (id, nombre, empresa, facilitador, etapa, clave_admin, clave_lider, config) values`);
+out.push(`(${q(P.id)}, ${q(P.nombre)}, ${q(P.empresa)}, ${q(P.facilitador)}, 'bienvenida', 'CAMBIAR_ADMIN', 'CAMBIAR_LIDER',`);
+out.push(` ${q(JSON.stringify(P.config))}::jsonb)`);
+out.push(`on conflict (id) do update set nombre = excluded.nombre, empresa = excluded.empresa, facilitador = excluded.facilitador, config = excluded.config;`);
+out.push('');
+out.push(`delete from evaluaciones where idea_id in (select id from ideas where sesion_id = ${q(P.id)});`);
+out.push(`delete from votos where idea_id in (select id from ideas where sesion_id = ${q(P.id)});`);
+out.push(`update ideas set padre_id = null where sesion_id = ${q(P.id)};`);
+out.push(`delete from ideas where sesion_id = ${q(P.id)};`);
+out.push(`delete from participantes where sesion_id = ${q(P.id)};`);
+out.push(`delete from pilares where sesion_id = ${q(P.id)};`);
+out.push(`update sesiones set etapa = 'bienvenida', etapa_ts = now(), fin_etapa = null, proyectada_id = null where id = ${q(P.id)};`);
+out.push('');
+out.push(`insert into pilares (sesion_id, orden, nombre, icono, color, enunciado, subfrentes) values`);
+out.push(P.pilares.map(p => `(${q(P.id)}, ${p.orden}, ${q(p.nombre)}, ${q(p.icono)}, ${q(p.color)},\n ${q(p.enunciado)},\n ${q(JSON.stringify(p.subfrentes))})`).join(',\n') + ';');
+fs.writeFileSync(path.join(__dirname, 'seed_propiman_sierraalta.sql'), out.join('\n') + '\n');
+console.log('ok', path.join(__dirname, 'seed_propiman_sierraalta.sql'));
