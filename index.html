@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20261013a">
+<meta name="app-version" content="20261014a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>freaknerd_ · Foro de Ideación · Participante</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
@@ -11,7 +11,7 @@
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20261013a"></script><script src="js/db.js?v=20261013a"></script><script src="js/common.js?v=20261013a"></script><script src="js/plantilla-propiman.js?v=20261013a"></script>
+<script src="js/config.js?v=20261014a"></script><script src="js/db.js?v=20261014a"></script><script src="js/common.js?v=20261014a"></script><script src="js/plantilla-propiman.js?v=20261014a"></script>
 <style>
   .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:14px 14px}
@@ -120,7 +120,7 @@ function render() {
         <div class="bg-white rounded-xl shadow p-4 border-t-4 ${c.border}">
           <h2 class="font-black text-lg ${c.text}"><i class="fas ${p.icono} mr-1"></i>${esc(p.nombre)}</h2>
           <p class="text-[10px] font-mono uppercase tracking-widest text-gray-400 mt-2">De qué se trata este pilar</p><p class="text-sm text-gray-600 mt-0.5">${esc(p.enunciado || '')}</p>
-          ${(p.subfrentes && p.subfrentes.length) ? `<label class="block text-xs font-bold text-gray-600 mt-3 mb-1">Frente</label><select id="subfrente" class="w-full p-2 border rounded-lg bg-white text-sm" onchange="this.classList.remove('border-red-400')"><option value="" selected disabled>Elige el frente de tu idea…</option>${p.subfrentes.map(f => `<option>${esc(f)}</option>`).join('')}<option value="Otro / general">Otro / general</option></select>` : ''}
+          ${(p.subfrentes && p.subfrentes.length) ? `<label class="block text-xs font-bold text-gray-600 mt-3 mb-1">Tema dentro de ${esc(p.nombre)}</label><select id="subfrente" class="w-full p-2 border rounded-lg bg-white text-sm" onchange="this.classList.remove('border-red-400')"><option value="" selected disabled>Elige el tema de tu idea…</option>${p.subfrentes.map(f => `<option>${esc(f)}</option>`).join('')}<option value="Otro / general">Otro tema de ${esc(p.nombre)}</option></select><p class="text-[11px] text-gray-400 mt-1">¿Tu idea es de otro pilar? Cámbialo en las pestañas de arriba.</p>` : ''}
           <label class="block text-xs font-bold text-gray-600 mt-3 mb-1">${esc(s.config.etiqueta_idea || 'Tu idea (qué haría Mauricio, en una o dos frases)')}</label>
           <textarea id="txtIdea" rows="4" class="w-full p-3 border rounded-lg text-sm" placeholder="${esc(s.config.ejemplo_idea || 'Ej.: Contratar un vendedor de campo para Cali con fijo bajo y comisión alta…')}"></textarea>
           <button id="btnEnviar" onclick="enviarIdea()" class="mt-3 w-full ${c.solid} text-white font-bold py-3 rounded-lg"><i class="fas fa-paper-plane mr-2"></i>Enviar idea</button>
@@ -214,7 +214,7 @@ function setPilar(id) { pilarSel = id; viewKey = ''; render(); }
 async function enviarIdea() {
   const txt = $('txtIdea').value.trim(); if (txt.length < 5) return toast('Escribe tu idea (mínimo 5 letras)', 'warn');
   const sf = $('subfrente') ? $('subfrente').value : null; if ($('subfrente') && !sf) { $('subfrente').classList.add('border-red-400'); $('subfrente').focus(); return toast('Elige el frente de tu idea antes de enviar', 'warn'); } $('btnEnviar').disabled = true;
-  try { await DB.crearIdea({ pilar_id: pilarSel, subfrente: sf || null, participante_id: yo.id, participante_nombre: yo.nombre, texto: txt }); $('txtIdea').value = ''; toast('Idea enviada ✓'); vibrar(60); await cargar(); }
+  try { await DB.crearIdea({ pilar_id: pilarSel, subfrente: sf || null, participante_id: yo.id, participante_nombre: yo.nombre, texto: txt }); $('txtIdea').value = ''; toast('Idea enviada a ' + ((pilar(pilarSel) || {}).nombre || 'el pilar') + ' ✓'); vibrar(60); await cargar(); }
   catch (e) { toast(errMsg(e), 'err'); } finally { $('btnEnviar').disabled = false; }
 }
 async function toggleVoto(id) {

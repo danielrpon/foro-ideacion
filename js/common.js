@@ -211,8 +211,8 @@ window.puntaje = (g, nmax, max) => {
    copiar el prompt, correrlo en claude.ai y pegar el JSON.
    ============================================================ */
 window.MECE = {
-  MODELOS: [['claude-opus-5', 'Opus 5 · máxima calidad (~$0,05 por consolidación)'], ['claude-sonnet-5', 'Sonnet 5 · equilibrio (~$0,02)'], ['claude-haiku-4-5', 'Haiku 4.5 · mínimo costo (~$0,01)']],
-  get MODEL() { return localStorage.getItem('foro_ia_model') || (window.FORO_CONFIG && FORO_CONFIG.IA_MODEL) || 'claude-sonnet-5'; },
+  MODELOS: [['claude-haiku-5-5', 'Haiku 5.5 · mínimo costo (~$0,005 por consolidación)'], ['claude-sonnet-5-5', 'Sonnet 5.5 · equilibrio (~$0,02)'], ['claude-opus-5-5', 'Opus 5.5 · máxima calidad (~$0,04)']],
+  get MODEL() { const m = localStorage.getItem('foro_ia_model'); return (m && this.MODELOS.some(([id]) => id === m)) ? m : ((window.FORO_CONFIG && FORO_CONFIG.IA_MODEL) || 'claude-haiku-5-5'); },  /* un modelo guardado que ya no está en la lista (p. ej. haiku-4-5) se ignora */
   setModel(m) { localStorage.setItem('foro_ia_model', m); },
   keyName: 'foro_anthropic_key',
   getKey() { return localStorage.getItem(this.keyName) || sessionStorage.getItem(this.keyName) || ''; },

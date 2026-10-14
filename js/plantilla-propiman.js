@@ -15,7 +15,7 @@
       marca: 'propiman',
       titulo_evento: 'Taller de ideación',
       titulo_reporte: 'Backlog priorizado · Sierra Alta',
-      votos_por_pilar: 3, minutos_ideacion: 15, minutos_matriz: 10, minutos_pausa: 3, escala_max: 5, max_calificaciones: 20,
+      votos_por_pilar: 3, minutos_ideacion: 20, minutos_matriz: 10, minutos_pausa: 3, escala_max: 5, max_calificaciones: 20,
       caso: 'Sierra Alta empieza a administrarse con Propiman. Antes de terminar de configurarla queremos escuchar a quienes la administran todos los días: dónde se pierde tiempo, dónde se pierde información y qué le gustaría que la plataforma resolviera primero. Escriba ideas cortas, una por tarjeta: un dolor de hoy o algo que le gustaría que pasara. No hay ideas malas. Con lo que salga armamos la lista de prioridades de Propiman para Sierra Alta.',
       restricciones: [
         'Sierra Alta ya está cargada en Propiman y la salida en vivo es en noviembre',
