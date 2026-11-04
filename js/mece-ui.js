@@ -49,8 +49,8 @@ window.MeceUI = {
   async generar() {
     const key = $('meceKey').value.trim(); if (!key) return toast('Pega tu API key de Anthropic', 'warn'); MECE.setKey(key);
     const d = this.datos(); if (!d.ideas.length) return toast('No hay ideas para consolidar', 'warn');
-    const btn = $('meceGen'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Consolidando ' + d.ideas.length + ' ideas…'; $('meceStatus').textContent = 'Llamando a ' + MECE.MODEL + '…';
-    try { const txt = await MECE.call(MECE.buildPrompt(d), key); $('meceJson').value = txt; const obj = MECE.parse(txt); this.preview = MECE.validate(obj, d); $('meceStatus').textContent = obj.rescatado ? 'La respuesta llegó incompleta: se rescataron ' + obj.grupos.length + ' grupos; las ideas que faltaron quedaron en "Otras ideas" de su pilar. Revisa y aplica, o vuelve a generar.' : 'Listo: revisa y aplica.'; this.renderPreview(); }
+    const btn = $('meceGen'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Consolidando ' + d.ideas.length + ' ideas…'; $('meceStatus').textContent = 'Llamando a ' + MECE.MODEL + ' (un pilar por llamada, en paralelo)…';
+    try { const r = await MECE.consolidar(d, key, (n, tot, nom) => { $('meceStatus').textContent = 'Pilares listos: ' + n + ' de ' + tot + ' (último: ' + nom + ')…'; }); const txt = r.txt; $('meceJson').value = txt; const obj = r.obj; this.preview = MECE.validate(obj, d); $('meceStatus').textContent = obj.rescatado ? 'La respuesta llegó incompleta: se rescataron ' + obj.grupos.length + ' grupos; las ideas que faltaron quedaron en "Otras ideas" de su pilar. Revisa y aplica, o vuelve a generar.' : 'Listo (' + MECE.MODEL + (MECE.ultimoUso ? ' · ' + MECE.ultimoUso.input_tokens + ' tokens de entrada, ' + MECE.ultimoUso.output_tokens + ' de salida' : '') + '): revisa las alertas y aplica.'; this.renderPreview(); }
     catch (e) { $('meceStatus').textContent = 'Error: ' + e.message; toast('Error IA: ' + e.message, 'err'); }
     finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-robot mr-2"></i>Generar consolidación con IA'; }
   },
@@ -63,23 +63,45 @@ window.MeceUI = {
         <div><div class="font-black text-purple-900 text-lg">Previsualización · ${pv.grupos.length} consolidadas a partir de ${d.ideas.length} ideas</div>
           <div class="text-xs text-gray-600 mt-1">${porPilar.map(x => `<span class="inline-block mr-3"><b class="${col(x.p.color).text}">${esc(x.p.nombre)}</b>: ${x.ideas} → ${x.n}</span>`).join('')} · ${cubiertas.size === d.ideas.length ? '<span class="text-emerald-700 font-bold">todas las ideas cubiertas ✓</span>' : '<span class="text-red-700 font-bold">' + (d.ideas.length - cubiertas.size) + ' sin cubrir</span>'}</div></div>
         <div class="flex gap-2"><button onclick="MeceUI.aplicar(true)" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded font-bold text-sm"><i class="fas fa-check mr-1"></i>Aplicar (reemplaza la consolidación anterior)</button><button onclick="MeceUI.aplicar(false)" class="bg-white border px-4 py-2 rounded font-bold text-sm">Agregar sin reemplazar</button></div></div>
+      ${this.avisos(d, pv)}
       <p class="text-[11px] text-gray-500 mt-2"><i class="fas fa-pen mr-1"></i>Título, descripción y detalle son editables. Con el desplegable de cada idea original puedes moverla a otra consolidada del mismo pilar.</p>
       <div class="space-y-3 mt-3">${pv.grupos.map((g, k) => { const p = d.pilares.find(p => p.id === g.pilar_id) || {}; const c = col(p.color); const hermanos = pv.grupos.map((h, j) => [j, h]).filter(([j, h]) => h.pilar_id === g.pilar_id); return `<div class="bg-white rounded-lg border-l-4 ${c.border} shadow-sm grid md:grid-cols-2 gap-0">
         <div class="p-4"><div class="text-[10px] font-mono uppercase ${c.text}">${esc(p.nombre || 'Sin pilar')} · consolidada ${k + 1}</div>
           <input class="w-full font-black text-base mt-1 border-b border-dashed focus:border-purple-500 outline-none" value="${esc(g.titulo)}" onchange="MeceUI.preview.grupos[${k}].titulo=this.value">
           <input class="w-full text-sm text-gray-700 mt-2 border-b border-dashed outline-none" value="${esc(g.descripcion_corta)}" onchange="MeceUI.preview.grupos[${k}].descripcion_corta=this.value" placeholder="Descripción corta (muro)">
-          <textarea class="w-full text-xs text-gray-600 mt-2 border rounded p-2 outline-none" rows="4" onchange="MeceUI.preview.grupos[${k}].detalle=this.value" placeholder="Detalle: qué integra">${esc(g.detalle)}</textarea></div>
+          <textarea class="w-full text-xs text-gray-600 mt-2 border rounded p-2 outline-none" rows="4" onchange="MeceUI.preview.grupos[${k}].detalle=this.value" placeholder="Detalle: qué integra">${esc(g.detalle)}</textarea>${this.notasGrupo(g)}</div>
         <div class="p-4 bg-gray-50 rounded-r-lg"><div class="text-[10px] font-mono uppercase text-gray-500 mb-2"><i class="fas fa-layer-group mr-1"></i>Ideas originales que integra (${g.ideas.length})</div>
           <ul class="space-y-2">${g.ideas.map(id => { const i = d.ideas.find(x => x.id === id) || {}; return `<li class="text-xs text-gray-800 flex gap-2 items-start"><span class="font-mono text-gray-400 shrink-0">#${id}</span><div class="flex-1"><div>${esc(i.texto || '')}</div><div class="text-[10px] text-gray-400 mt-0.5">${esc(i.participante_nombre || '')}${i.subfrente ? ' · ' + esc(i.subfrente) : ''}</div></div>${hermanos.length > 1 ? `<select class="text-[10px] border rounded bg-white max-w-[120px]" onchange="MeceUI.mover(${id}, ${k}, Number(this.value))"><option value="${k}">mover a…</option>${hermanos.filter(([j]) => j !== k).map(([j, h]) => `<option value="${j}">${esc((h.titulo || ('grupo ' + (j + 1))).slice(0, 40))}</option>`).join('')}</select>` : ''}</li>`; }).join('') || '<li class="text-xs text-gray-400">Sin ideas: se eliminará al aplicar.</li>'}</ul></div></div>`; }).join('')}</div></div>`;
+  },
+  /* Bloque superior: alertas fuertes en total y posibles repetidos entre pilares (no se mueven solos) */
+  avisos(d, pv) {
+    const fuertes = pv.grupos.filter(g => (g.alertas || []).some(a => a.nivel === 'fuerte')).length;
+    const dup = (pv.duplicados || []);
+    const nom = (id) => { const i = d.ideas.find(x => x.id === id) || {}; const p = d.pilares.find(x => x.id === i.pilar_id) || {}; return `<span class="font-mono text-gray-400">#${id}</span> <b>${esc(p.nombre || '')}</b>: ${esc(i.texto || '')}`; };
+    let h = '';
+    if (fuertes) h += `<div class="mt-3 text-xs bg-red-50 border border-red-200 text-red-800 rounded p-2"><i class="fas fa-triangle-exclamation mr-1"></i><b>${fuertes} consolidada${fuertes === 1 ? '' : 's'} con alerta de fidelidad</b> (en rojo abajo): revisa que no digan algo que nadie escribió.</div>`;
+    if (dup.length) h += `<div class="mt-3 text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded p-2"><div class="font-bold mb-1"><i class="fas fa-clone mr-1"></i>Posibles repetidos entre pilares (${dup.length}). La IA no los movió: decide si marcas uno como repetido.</div>${dup.map(x => `<div class="mt-1 pl-2 border-l-2 border-amber-300">${x.ideas.map(nom).join('<br>')}<div class="text-[10px] text-amber-700 mt-0.5">${esc(x.motivo)}</div></div>`).join('')}</div>`;
+    return h;
+  },
+  notasGrupo(g) {
+    const al = (g.alertas || []).map(a => `<div class="text-[11px] mt-1 ${a.nivel === 'fuerte' ? 'text-red-700 font-bold' : 'text-gray-500'}"><i class="fas ${a.nivel === 'fuerte' ? 'fa-triangle-exclamation' : 'fa-circle-info'} mr-1"></i>${esc(a.texto)}</div>`).join('');
+    const dif = g.diferencia ? `<div class="text-[11px] text-purple-800 mt-1"><i class="fas fa-arrows-left-right mr-1"></i>${esc(g.diferencia)}</div>` : '';
+    const pk = (g.palabras_clave || []).length ? `<div class="mt-1 flex flex-wrap gap-1">${g.palabras_clave.map(w => `<span class="text-[10px] bg-gray-100 rounded px-1.5">${esc(w)}</span>`).join('')}</div>` : '';
+    return dif + pk + al;
   },
   mover(ideaId, desde, hacia) {
     if (desde === hacia) return; const g = this.preview.grupos;
     g[desde].ideas = g[desde].ideas.filter(x => x !== ideaId); g[hacia].ideas.push(ideaId);
+    const ap = (g[desde].aportes || []).find(a => a.id === ideaId);
+    if (g[desde].aportes) g[desde].aportes = g[desde].aportes.filter(a => a.id !== ideaId);
+    if (g[hacia].aportes || ap) g[hacia].aportes = (g[hacia].aportes || []).concat(ap ? [ap] : [{ id: ideaId, aporte: '' }]);
+    const ideas = this.datos().ideas;
+    [g[desde], g[hacia]].forEach(x => { if (x.aportes && x.aportes.length) x.detalle = `Integra ${x.ideas.length} idea${x.ideas.length === 1 ? '' : 's'}: ` + x.aportes.filter(a => a.aporte).map(a => a.aporte.replace(/\.?$/, '.')).join(' '); if (x.titulo && !/^Otras ideas/.test(x.titulo)) x.alertas = MECE.auditar(x, ideas); });
     this.preview.grupos = g.filter(x => x.ideas.length); this.renderPreview();
   },
   async aplicar(reemplazar) {
     if (!this.preview) return; const pid = this.opts.pilarId || (this.scope ? Number(this.scope) : null);
     if (reemplazar && !confirm('¿Reemplazar los grupos existentes ' + (pid ? 'de este pilar' : 'de todos los pilares') + ' por esta consolidación? Las ideas originales no se pierden.')) return;
-    try { await DB.admin('importar_consolidacion', { grupos: this.preview.grupos.filter(g => g.ideas.length), reemplazar, pilar_id: pid }); toast('Consolidación aplicada ✓'); this.preview = null; $('mecePreview').innerHTML = ''; this.opts.onApplied && this.opts.onApplied(); } catch (e) { toast(errMsg(e), 'err'); }
+    try { await DB.admin('importar_consolidacion', { grupos: this.preview.grupos.filter(g => g.ideas.length).map(g => ({ pilar_id: g.pilar_id, titulo: g.titulo, descripcion_corta: g.descripcion_corta, detalle: g.detalle, ideas: g.ideas, origen: g.origen || 'ia' })), reemplazar, pilar_id: pid }); toast('Consolidación aplicada ✓'); this.preview = null; $('mecePreview').innerHTML = ''; this.opts.onApplied && this.opts.onApplied(); } catch (e) { toast(errMsg(e), 'err'); }
   }
 };

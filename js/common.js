@@ -76,6 +76,10 @@ window.urlVista = (archivo) => {
 window.esJunta = (sesion) => !!(sesion && ((sesion.config && sesion.config.tipo === 'junta') || /junta/i.test(sesion.id || '')));
 window.saltarAJunta = (sesion, archivo) => { if (esJunta(sesion)) { location.replace(urlVista(archivo)); return true; } return false; };
 
+/* Logo del cliente en sesiones sin marca propia: config.logo_empresa; Impercap conserva el suyo por compatibilidad.
+   Sin logo se muestra el nombre de la empresa en texto (antes salía el de Impercap en cualquier sesión). */
+window.logoEmpresa = (s) => (s && s.config && s.config.logo_empresa) || (s && s.id === 'impercap' ? 'img/impercap_logo_solid.png' : '');
+
 /* Marca por sesión: config.marca = 'propiman' | { id, nombre, logo, logo_claro, fondo, acento, acento_suave, acento_oscuro }.
    Sin marca la herramienta se ve como siempre (casa Freaknerd). Con marca, el cliente ocupa el lugar principal
    y Freaknerd queda como "facilitado por". Para un cliente nuevo: agregar su entrada aquí y sus logos en img/. */
@@ -211,8 +215,9 @@ window.puntaje = (g, nmax, max) => {
    copiar el prompt, correrlo en claude.ai y pegar el JSON.
    ============================================================ */
 window.MECE = {
-  MODELOS: [['claude-haiku-5-5', 'Haiku 5.5 · mínimo costo (~$0,005 por consolidación)'], ['claude-sonnet-5-5', 'Sonnet 5.5 · equilibrio (~$0,02)'], ['claude-opus-5-5', 'Opus 5.5 · máxima calidad (~$0,04)']],
-  get MODEL() { const m = localStorage.getItem('foro_ia_model'); return (m && this.MODELOS.some(([id]) => id === m)) ? m : ((window.FORO_CONFIG && FORO_CONFIG.IA_MODEL) || 'claude-haiku-5-5'); },  /* un modelo guardado que ya no está en la lista (p. ej. haiku-4-5) se ignora */
+  VERSION: 'v2',
+  MODELOS: [['claude-sonnet-5-5', 'Sonnet 5.5 · recomendado (~$0,05 por consolidación)'], ['claude-opus-5-5', 'Opus 5.5 · máxima calidad (~$0,10)'], ['claude-haiku-5-5', 'Haiku 5.5 · mínimo costo, menos fino (~$0,005)']],
+  get MODEL() { const m = localStorage.getItem('foro_ia_model'); return (m && this.MODELOS.some(([id]) => id === m)) ? m : ((window.FORO_CONFIG && FORO_CONFIG.IA_MODEL) || 'claude-sonnet-5-5'); },  /* un modelo guardado que ya no está en la lista (p. ej. haiku-4-5) se ignora */
   setModel(m) { localStorage.setItem('foro_ia_model', m); },
   keyName: 'foro_anthropic_key',
   getKey() { return localStorage.getItem(this.keyName) || sessionStorage.getItem(this.keyName) || ''; },
@@ -220,52 +225,126 @@ window.MECE = {
   clearKey() { localStorage.removeItem(this.keyName); sessionStorage.removeItem(this.keyName); localStorage.removeItem('foro_anthropic_ws'); },
   getWs() { return localStorage.getItem('foro_anthropic_ws') || ''; },
   setWs(w) { localStorage.setItem('foro_anthropic_ws', w.trim()); },
-  buildPrompt({ sesion, pilares, ideas }) {
+  /* Esquema de la respuesta (salida estructurada de la API: el JSON siempre llega válido).
+     El orden de los campos guía el orden en que el modelo escribe: primero qué ideas y qué dice cada una,
+     después el título. Así el título sale de los aportes y no al revés. */
+  SCHEMA: {
+    type: 'object', additionalProperties: false, required: ['grupos', 'duplicados_entre_pilares'],
+    properties: {
+      grupos: { type: 'array', items: { type: 'object', additionalProperties: false,
+        required: ['pilar_id', 'ideas', 'aportes', 'palabras_clave', 'titulo', 'descripcion_corta', 'diferencia'],
+        properties: {
+          pilar_id: { type: 'integer' },
+          ideas: { type: 'array', items: { type: 'integer' } },
+          aportes: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['id', 'aporte'], properties: { id: { type: 'integer' }, aporte: { type: 'string' } } } },
+          palabras_clave: { type: 'array', items: { type: 'string' } },
+          titulo: { type: 'string' },
+          descripcion_corta: { type: 'string' },
+          diferencia: { type: 'string' }
+        } } },
+      duplicados_entre_pilares: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['ideas', 'motivo'], properties: { ideas: { type: 'array', items: { type: 'integer' } }, motivo: { type: 'string' } } } }
+    }
+  },
+  buildPrompt({ sesion, pilares, ideas, otras }) {
     const cfg = (sesion && sesion.config) || {};
-    const lineas = [];
-    lineas.push(`Eres un consultor de estrategia facilitando un foro de ideación para la empresa ${sesion.empresa || sesion.nombre}.`);
-    if (cfg.caso) lineas.push(`Contexto del caso: ${cfg.caso}`);
-    if (cfg.restricciones && cfg.restricciones.length) lineas.push(`Restricciones conocidas: ${cfg.restricciones.join(' | ')}`);
-    if (cfg.instruccion_ia) lineas.push(cfg.instruccion_ia);
-    lineas.push('');
-    lineas.push('TAREA: consolidar las ideas de cada pilar con criterio MECE (mutuamente excluyentes, colectivamente exhaustivas).');
-    lineas.push('');
-    lineas.push('REGLAS DE AGRUPACIÓN');
-    lineas.push('1. Agrupa SOLO ideas que proponen la misma acción o el mismo mecanismo. Si dos ideas se parecen en tema pero difieren en la acción concreta, van en grupos distintos. Una idea única puede ser un grupo sola.');
-    lineas.push('2. Cada idea original aparece EXACTAMENTE UNA VEZ en el campo "ideas" de un grupo de SU MISMO pilar. Ninguna se pierde, ninguna se repite.');
-    lineas.push('3. No inventes propuestas: todo lo que digas en un grupo debe salir de las ideas listadas. No agregues acciones, cifras ni supuestos que ningún participante escribió.');
-    lineas.push('4. Entre 3 y 7 grupos por pilar como orientación; con pocas ideas, menos. Prefiere más grupos antes que mezclar ideas distintas.');
-    lineas.push('');
-    lineas.push('REGLAS DE REDACCIÓN (para no perder la esencia)');
-    lineas.push('- "titulo": la acción concreta que proponen las ideas, en máximo 60 caracteres, con las palabras clave que usaron los participantes (lugares, clientes, productos, canales). Evita títulos genéricos como "Estrategia comercial".');
-    lineas.push('- "descripcion_corta": una frase de máximo 160 caracteres que resuma QUÉ haría la empresa, para proyectar en el muro.');
-    lineas.push('- "detalle": empieza con "Integra N ideas:" y luego UNA frase por cada idea original, en el mismo orden de la lista, conservando su mecanismo, matiz o ejemplo específico (por ejemplo: "vender en sitios turísticos como el Salto del Buey"). Si una idea añade un matiz distinto a las demás del grupo, dilo explícitamente.');
-    lineas.push('- Escribe en español de Colombia, directo, sin adjetivos de relleno.');
-    lineas.push('');
-    lineas.push('FORMATO: responde SOLO con JSON válido, sin texto adicional ni bloques de código, con esta forma exacta. Dentro de los textos NO uses comillas dobles ni saltos de línea (si citas algo, usa comillas simples):');
-    lineas.push('{"grupos":[{"pilar_id":1,"titulo":"...","descripcion_corta":"...","detalle":"Integra 2 ideas: ...","ideas":[12,15]}]}');
-    lineas.push('');
+    const L = [];
+    L.push(`Eres un consultor que facilita una sesión de ideación de ${sesion.empresa || sesion.nombre}. Tu trabajo es consolidar lo que escribieron los participantes, sin agregar nada propio: la sesión le pertenece a ellos y cada idea consolidada debe poder rastrearse hasta sus autores.`);
+    L.push('');
+    L.push('CONTEXTO (solo para entender de qué hablan; nunca es fuente de propuestas ni de datos)');
+    if (cfg.caso) L.push(`Caso: ${cfg.caso}`);
+    if (cfg.restricciones && cfg.restricciones.length) L.push(`Restricciones: ${cfg.restricciones.join(' | ')}`);
+    if (cfg.instruccion_ia) L.push(`Instrucción de esta sesión: ${cfg.instruccion_ia}`);
+    L.push('');
+    L.push('TAREA: consolidar las ideas de cada pilar con criterio MECE. Mutuamente excluyente: dos grupos del mismo pilar nunca hablan de lo mismo. Colectivamente exhaustivo: entre todos los grupos cubren todas las ideas.');
+    L.push('');
+    L.push('CÓMO TRABAJAR, EN ESTE ORDEN');
+    L.push('1. Núcleo. Para cada idea identifica su núcleo: qué acción o tarea, sobre qué información u objeto. Ignora la redacción, el tono, el nivel de detalle, los ejemplos y quién la escribió.');
+    L.push('2. Agrupa por núcleo dentro de cada pilar:');
+    L.push('   - Mismo núcleo dicho con otras palabras, con más o menos detalle o con otros ejemplos: MISMO grupo. Una paráfrasis o una repetición nunca queda en un grupo aparte.');
+    L.push('   - Una idea que es un caso particular, una parte o la consecuencia directa de otra del mismo pilar: MISMO grupo.');
+    L.push('   - Mismo tema, pero otra acción u otro objeto, que exigiría una solución distinta: grupos distintos.');
+    L.push('3. Prueba de exclusión. Compara cada par de grupos del mismo pilar. Si un directivo, leyendo los dos títulos, diría que es lo mismo, fusiónalos. En "diferencia" escribe en una frase qué distingue a ese grupo del grupo más parecido de su pilar; si no hay ninguno parecido, escribe: Único en su tema.');
+    L.push('4. Repetidos entre pilares. Si una idea tiene el mismo núcleo que una idea de OTRO pilar, no la muevas: queda en su pilar. Reporta el par (o el conjunto) en "duplicados_entre_pilares" con el motivo en una frase. El facilitador decide.');
+    L.push('5. Cobertura. Cada id aparece EXACTAMENTE UNA VEZ en "ideas", en un grupo de SU pilar ("pilar_id" = el número del pilar donde aparece la idea). Ninguna se pierde ni se repite. El número de grupos lo define el contenido: un grupo de una sola idea solo existe si ninguna otra idea de su pilar comparte el núcleo.');
+    L.push('');
+    L.push('FIDELIDAD: NO INVENTAR');
+    L.push('- Todo lo que escribas en un grupo sale de las ideas de ESE grupo. El contexto, las restricciones y los enunciados de los pilares no son fuente.');
+    L.push('- No agregues cifras, frecuencias, tiempos, herramientas, sistemas, nombres, áreas, beneficios ni soluciones que no estén escritos en las ideas del grupo. Si una idea es vaga, resúmela vaga: no la completes.');
+    L.push('- No le pongas destinatario, afectado, lugar ni causa tomados del enunciado del pilar o del caso. Si la idea dice solo «Errores en facturación», el título no puede decir «errores en la facturación a residentes»; dice «Errores en facturación».');
+    L.push('- "aportes": una entrada por cada idea del grupo, en el mismo orden de "ideas", con su id y una frase de máximo 25 palabras que diga lo que esa idea dice, conservando su matiz o ejemplo concreto. Paráfrasis fiel, no interpretación.');
+    L.push('- "palabras_clave": de 2 a 5 palabras o expresiones copiadas literalmente de las ideas del grupo.');
+    L.push('- "titulo": máximo 60 caracteres. La acción o tarea concreta, con las palabras de los participantes. Nada genérico como Mejorar procesos o Estrategia comercial.');
+    L.push('- "descripcion_corta": máximo 160 caracteres, para proyectar en el muro. Solo afirma lo que dicen los aportes.');
+    L.push('- Español de Colombia, directo, sin adjetivos de relleno. Dentro de los textos no uses comillas dobles ni saltos de línea (si citas algo, usa comillas simples).');
+    L.push('');
+    L.push('EJEMPLOS DE CRITERIO (de otra empresa, solo para ilustrar)');
+    L.push('- «Conciliar a mano el extracto del banco cada mes» y «cruzar los pagos con el extracto nos toma dos días»: mismo grupo (misma tarea, misma información; el segundo agrega el tiempo, que va en su aporte).');
+    L.push('- «Los clientes llaman a preguntar el saldo» y «responder uno por uno cuánto debe cada cliente»: mismo grupo (la misma consulta vista desde los dos lados).');
+    L.push('- «Mandar los recordatorios de pago uno por uno» y «los acuerdos de pago se llevan en Excel y se olvidan las cuotas»: grupos distintos (mismo tema, cobranza, pero otra tarea y otra solución).');
+    L.push('');
+    L.push('FORMATO: responde SOLO con JSON con esta forma:');
+    L.push('{"grupos":[{"pilar_id":1,"ideas":[12,15],"aportes":[{"id":12,"aporte":"..."},{"id":15,"aporte":"..."}],"palabras_clave":["...","..."],"titulo":"...","descripcion_corta":"...","diferencia":"..."}],"duplicados_entre_pilares":[{"ideas":[12,40],"motivo":"..."}]}');
+    L.push('');
+    L.push('IDEAS DE LOS PARTICIPANTES (estas son las que agrupas)');
     pilares.forEach(p => {
       const mias = ideas.filter(i => i.pilar_id === p.id);
       if (!mias.length) return;
-      lineas.push(`## PILAR ${p.id}: ${p.nombre}`);
-      if (p.enunciado) lineas.push(`Enunciado: ${p.enunciado}`);
-      mias.forEach(i => lineas.push(`- [id ${i.id}]${i.subfrente ? ' (' + i.subfrente + ')' : ''} ${String(i.texto).replace(/\s+/g, ' ').trim()}`));
-      lineas.push('');
+      L.push(`## PILAR ${p.id}: ${p.nombre}`);
+      if (p.enunciado) L.push(`Enunciado (contexto, no fuente): ${p.enunciado}`);
+      mias.forEach(i => L.push(`- [id ${i.id}]${i.subfrente ? ' (' + i.subfrente + ')' : ''} ${String(i.texto).replace(/\s+/g, ' ').trim()}`));
+      L.push('');
     });
-    return lineas.join('\n');
+    if (otras && otras.length) {
+      L.push('IDEAS DE OTROS PILARES (solo para detectar repetidos entre pilares: NO las agrupes ni las pongas en "ideas"; úsalas únicamente en "duplicados_entre_pilares", y solo si se repiten con una idea de arriba)');
+      otras.forEach(i => L.push(`- [id ${i.id}] (pilar ${i.pilar_nombre || i.pilar_id}) ${String(i.texto).replace(/\s+/g, ' ').trim()}`));
+      L.push('');
+    }
+    return L.join('\n');
+  },
+  /* Una llamada por pilar, en paralelo: cada respuesta es corta (no se agota el límite de salida con 60-80 ideas)
+     y la espera total es la del pilar más lento. Cada llamada ve las ideas de los otros pilares solo para
+     reportar repetidos entre pilares. Devuelve el objeto combinado, como si fuera una sola respuesta. */
+  async consolidar(d, apiKey, onProgreso = () => {}) {
+    const conIdeas = d.pilares.filter(p => d.ideas.some(i => i.pilar_id === p.id));
+    if (conIdeas.length <= 1) { const txt = await this.call(this.buildPrompt(d), apiKey); return { obj: this.parse(txt), txt, uso: this.ultimoUso }; }
+    let listos = 0; const uso = { input_tokens: 0, output_tokens: 0 }; this._acum = uso;
+    const enCola = conIdeas.slice(); const res = new Array(conIdeas.length);
+    const uno = async p => {
+      const sub = { sesion: d.sesion, pilares: [p], ideas: d.ideas.filter(i => i.pilar_id === p.id),
+        otras: d.ideas.filter(i => i.pilar_id !== p.id).map(i => Object.assign({}, i, { pilar_nombre: (d.pilares.find(x => x.id === i.pilar_id) || {}).nombre })) };
+      const txt = await this.call(this.buildPrompt(sub), apiKey);
+      onProgreso(++listos, conIdeas.length, p.nombre);
+      res[conIdeas.indexOf(p)] = { txt, obj: this.parse(txt) };
+    };
+    const trabajador = async () => { while (enCola.length) await uno(enCola.shift()); };
+    await Promise.all([trabajador(), trabajador(), trabajador()]).finally(() => { this._acum = null; });  /* máximo 3 llamadas simultáneas */
+    const obj = { grupos: res.flatMap(r => r.obj.grupos || []), duplicados_entre_pilares: res.flatMap(r => r.obj.duplicados_entre_pilares || []), rescatado: res.some(r => r.obj.rescatado) };
+    this.ultimoUso = uso;
+    return { obj, txt: JSON.stringify(obj), uso };
   },
   async call(prompt, apiKey) {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: Object.assign({ 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }, this.getWs() ? { 'anthropic-workspace-id': this.getWs() } : {}),
-      body: JSON.stringify({ model: this.MODEL, max_tokens: 32000, messages: [{ role: 'user', content: prompt }] })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error((data.error && data.error.message) || ('HTTP ' + res.status));
+    /* Reintenta lo transitorio: 429 (límite de frecuencia o de solicitudes simultáneas), 5xx/529 (API ocupada),
+       errores de red y respuestas que no son JSON (página de error de un intermediario). Los 4xx restantes no. */
+    const body = JSON.stringify({ model: this.MODEL, max_tokens: 32000, output_config: { effort: 'high', format: { type: 'json_schema', schema: this.SCHEMA } }, messages: [{ role: 'user', content: prompt }] });
+    const headers = Object.assign({ 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }, this.getWs() ? { 'anthropic-workspace-id': this.getWs() } : {});
+    let data, ultimo;
+    for (let intento = 1; intento <= 4; intento++) {
+      let res = null;
+      try { res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body }); data = await res.json(); }
+      catch (e) { ultimo = new Error(res ? 'Respuesta inválida de la API (HTTP ' + res.status + ')' : 'Sin conexión con la API: ' + e.message); data = null; }
+      if (res && res.ok && data) break;
+      const transitorio = !res || !data || res.status === 429 || res.status >= 500;
+      if (res && data && !res.ok) ultimo = new Error((data.error && data.error.message) || ('HTTP ' + res.status));
+      if (!transitorio || intento === 4) throw ultimo;
+      const espera = Number(res && res.headers.get('retry-after')) * 1000 || 4000 * intento;
+      console.warn('MECE: reintento ' + intento + ' en ' + Math.round(espera / 1000) + ' s · ' + ultimo.message);
+      await new Promise(r => setTimeout(r, espera));
+    }
     if (data.stop_reason === 'refusal') throw new Error('El modelo rechazó la solicitud.');
     const txt = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
     if (data.stop_reason === 'max_tokens') console.warn('MECE: respuesta cortada por límite de salida; se intentará rescatar los grupos completos');
+    this.ultimoUso = data.usage || null;
+    if (this._acum && data.usage) { this._acum.input_tokens += data.usage.input_tokens || 0; this._acum.output_tokens += data.usage.output_tokens || 0; }
     return txt;
   },
   parse(text) {
@@ -278,7 +357,7 @@ window.MECE = {
       console.warn('MECE: JSON incompleto; rescatados ' + grupos.length + ' grupos'); return { grupos, rescatado: true };
     }
   },
-  /* Recorre el texto y extrae cada objeto {...} balanceado que tenga "ideas" (tolera comillas y llaves dentro de cadenas) */
+  /* Recorre el texto y extrae cada objeto {...} balanceado que tenga "ideas" y "titulo" (tolera comillas y llaves dentro de cadenas) */
   rescatar(t) {
     const out = []; let i = t.indexOf('['); if (i < 0) return out;
     while (i < t.length) {
@@ -286,23 +365,69 @@ window.MECE = {
       let depth = 0, inStr = false, esc = false, e = -1;
       for (let k = s; k < t.length; k++) { const ch = t[k]; if (inStr) { if (esc) esc = false; else if (ch === '\\') esc = true; else if (ch === '"') inStr = false; continue; } if (ch === '"') inStr = true; else if (ch === '{') depth++; else if (ch === '}') { depth--; if (depth === 0) { e = k; break; } } }
       if (e < 0) break;
-      try { const g = JSON.parse(t.slice(s, e + 1)); if (g && Array.isArray(g.ideas)) out.push(g); } catch (x) {}
+      try { const g = JSON.parse(t.slice(s, e + 1)); if (g && Array.isArray(g.ideas) && 'titulo' in g) out.push(g); } catch (x) {}
       i = e + 1;
     }
     return out;
   },
-  /* Garantiza MECE: cada idea en un solo grupo; las que falten van a un grupo "Otras ideas" del pilar */
+  /* ---- Auditoría de fidelidad (determinista, sin IA): marca lo que el grupo dice y sus ideas no ----
+     Fuerte: cifras que no aparecen en las ideas originales del grupo, y nombres propios (palabras con
+     mayúscula que no están al inicio de una frase) que tampoco aparecen.
+     Suave: palabras de contenido del título o de la descripción que no comparten raíz con ninguna idea. */
+  _norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); },
+  _raiz(w) { return w.slice(0, 5); },
+  _vacias: new Set('para por con sin una uno unos unas los las del que como cada sobre entre desde hasta donde cuando cual cuales este esta estos estas ese esa esos esas todo toda todos todas otro otra otros otras mismo misma mas menos muy tambien solo sola porque pero hacer hace hacen tener tiene tienen poder puede pueden dejar deja sale salir manera forma tarea tareas idea ideas grupo integra hoy siempre nunca'.split(' ')),
+  _marco: new Set('autom conso centr unifi digit plant table repor infor segui regis gesti proce manua herra siste flujo asist gener alert'.split(' ')),
+  auditar(g, ideas) {
+    const orig = g.ideas.map(id => (ideas.find(x => x.id === id) || {}).texto || '').join(' \n ');
+    const on = this._norm(orig);
+    const raices = new Set((on.match(/[a-zñ]{4,}/g) || []).map(w => this._raiz(w)));
+    const nums = new Set(on.match(/\d+(?:[.,]\d+)?/g) || []);
+    const alertas = [];
+    const txtGen = [g.titulo, g.descripcion_corta, (g.aportes || []).map(a => a.aporte).join(' ')].join(' \n ');
+    const cifras = [...new Set((this._norm(txtGen).match(/\d+(?:[.,]\d+)?/g) || []))].filter(n => !nums.has(n));
+    if (cifras.length) alertas.push({ nivel: 'fuerte', texto: 'Cifras que no están en las ideas: ' + cifras.join(', ') });
+    const propios = [...new Set(txtGen.split(/[.:;!?¿¡\n]+/).flatMap(fr => fr.trim().split(/\s+/).slice(1)).map(w => w.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñü]/g, '')).filter(w => /^[A-ZÁÉÍÓÚÑ][a-záéíóúñü]{2,}$/.test(w)))].filter(w => !on.includes(this._norm(w)));
+    if (propios.length) alertas.push({ nivel: 'fuerte', texto: 'Nombres que no están en las ideas: ' + propios.join(', ') });
+    const palabras = (this._norm([g.titulo, g.descripcion_corta].join(' ')).match(/[a-zñ]{5,}/g) || []).filter(w => !this._vacias.has(w));
+    const nuevas = [...new Set(palabras.filter(w => !raices.has(this._raiz(w)) && !this._marco.has(this._raiz(w))))];
+    if (nuevas.length) alertas.push({ nivel: 'suave', texto: 'Palabras del título o la descripción que no usaron los participantes: ' + nuevas.join(', ') });
+    return alertas;
+  },
+  /* Garantiza MECE en los ids: cada idea en un solo grupo de su pilar; las que falten van a "Otras ideas".
+     Arma el "detalle" (lo que se guarda) desde los aportes, y adjunta alertas y repetidos entre pilares. */
   validate(obj, { pilares, ideas }) {
     const usados = new Set(); const grupos = [];
     obj.grupos.forEach(g => {
       const ids = [...new Set((g.ideas || []).map(Number))].filter(id => { const i = ideas.find(x => x.id === id); if (!i || usados.has(id)) return false; usados.add(id); return true; });
-      const pilar_id = (ids.length ? (ideas.find(x => x.id === ids[0]) || {}).pilar_id : null) || (pilares.some(p => p.id === Number(g.pilar_id)) ? Number(g.pilar_id) : null);
-      grupos.push({ pilar_id, titulo: String(g.titulo || '').slice(0, 80), descripcion_corta: String(g.descripcion_corta || '').slice(0, 160), detalle: String(g.detalle || ''), ideas: ids, origen: 'ia' });
+      if (!ids.length) return;
+      /* el pilar lo manda la primera idea; las de otro pilar se sacan y quedan para "Otras ideas" de su pilar */
+      const pilar_id = (ideas.find(x => x.id === ids[0]) || {}).pilar_id;
+      const propias = ids.filter(id => { const ok = (ideas.find(x => x.id === id) || {}).pilar_id === pilar_id; if (!ok) usados.delete(id); return ok; });
+      const ap = Array.isArray(g.aportes) ? g.aportes : [];
+      const aportes = propias.map(id => { const a = ap.find(x => Number(x.id) === id); return { id, aporte: String((a && a.aporte) || '').trim() }; });
+      const detalle = ap.length ? `Integra ${propias.length} idea${propias.length === 1 ? '' : 's'}: ` + aportes.map(a => a.aporte.replace(/\.?$/, '.')).filter(x => x !== '.').join(' ') : String(g.detalle || '');
+      const out = { pilar_id, titulo: String(g.titulo || '').slice(0, 80), descripcion_corta: String(g.descripcion_corta || '').slice(0, 160), detalle, ideas: propias, origen: 'ia',
+        aportes, palabras_clave: (g.palabras_clave || []).map(String), diferencia: String(g.diferencia || '') };
+      if (ap.length && aportes.some(a => !a.aporte)) out.sin_aporte = aportes.filter(a => !a.aporte).map(a => a.id);
+      out.alertas = this.auditar(out, ideas);
+      if (out.sin_aporte) out.alertas.unshift({ nivel: 'fuerte', texto: 'Ideas sin aporte propio en el detalle: #' + out.sin_aporte.join(', #') });
+      grupos.push(out);
     });
     pilares.forEach(p => {
       const faltan = ideas.filter(i => i.pilar_id === p.id && !usados.has(i.id)).map(i => i.id);
-      if (faltan.length) grupos.push({ pilar_id: p.id, titulo: 'Otras ideas · ' + p.nombre, descripcion_corta: 'Ideas que la IA no agrupó; revisar y reubicar.', detalle: '', ideas: faltan, origen: 'ia' });
+      if (faltan.length) grupos.push({ pilar_id: p.id, titulo: 'Otras ideas · ' + p.nombre, descripcion_corta: 'Ideas que la IA no agrupó; revisar y reubicar.', detalle: '', ideas: faltan, origen: 'ia', alertas: [{ nivel: 'fuerte', texto: 'La IA dejó estas ideas por fuera: reubicarlas a mano.' }] });
     });
-    return { grupos };
+    const duplicados = (obj.duplicados_entre_pilares || []).map(d => ({ ideas: [...new Set((d.ideas || []).map(Number))].filter(id => ideas.some(x => x.id === id)), motivo: String(d.motivo || '') }))
+      .filter(d => d.ideas.length > 1 && new Set(d.ideas.map(id => ideas.find(x => x.id === id).pilar_id)).size > 1)
+;
+    /* El mismo repetido llega reportado desde cada pilar con combinaciones distintas: se unen los conjuntos que comparten ideas */
+    const unidos = [];
+    duplicados.forEach(d => {
+      const tocan = unidos.filter(u => u.ideas.some(id => d.ideas.includes(id)));
+      const nuevo = { ideas: [...new Set(tocan.flatMap(u => u.ideas).concat(d.ideas))], motivo: (tocan[0] && tocan[0].motivo) || d.motivo };
+      tocan.forEach(u => unidos.splice(unidos.indexOf(u), 1)); unidos.push(nuevo);
+    });
+    return { grupos, duplicados: unidos };
   }
 };

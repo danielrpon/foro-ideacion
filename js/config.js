@@ -16,5 +16,5 @@ window.FORO_CONFIG = {
   SESION: 'impercap',          // id de la sesión (slug); se puede cambiar con ?s=otra
   POLL_MS: 3000,               // refresco de pantallas
   APP_NAME: 'Foro de Ideación',
-  IA_MODEL: 'claude-haiku-5-5'     // modelo para la consolidación MECE: 'claude-opus-5-5' (máxima calidad) | 'claude-sonnet-5-5' (equilibrio) | 'claude-haiku-5-5' (mínimo costo)
+  IA_MODEL: 'claude-sonnet-5-5'    // modelo para la consolidación MECE. Banco 4-nov-2026: Sonnet 5.5 ≈ Opus en calidad, más rápido y ~45 % más barato; Haiku no fusiona bien
 };
