@@ -216,7 +216,7 @@ window.puntaje = (g, nmax, max) => {
    ============================================================ */
 window.MECE = {
   VERSION: 'v2',
-  MODELOS: [['claude-sonnet-5-5', 'Sonnet 5.5 · recomendado (~$0,05 por consolidación)'], ['claude-opus-5-5', 'Opus 5.5 · máxima calidad (~$0,10)'], ['claude-haiku-5-5', 'Haiku 5.5 · mínimo costo, menos fino (~$0,005)']],
+  MODELOS: [['claude-sonnet-5-5', 'Sonnet 5.5 · recomendado (~US$0,3–0,6 por consolidación)'], ['claude-opus-5-5', 'Opus 5.5 · máxima calidad (más costoso)'], ['claude-haiku-5-5', 'Haiku 5.5 · no recomendado: no fusiona bien']],
   get MODEL() { const m = localStorage.getItem('foro_ia_model'); return (m && this.MODELOS.some(([id]) => id === m)) ? m : ((window.FORO_CONFIG && FORO_CONFIG.IA_MODEL) || 'claude-sonnet-5-5'); },  /* un modelo guardado que ya no está en la lista (p. ej. haiku-4-5) se ignora */
   setModel(m) { localStorage.setItem('foro_ia_model', m); },
   keyName: 'foro_anthropic_key',
