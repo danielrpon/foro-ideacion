@@ -28,14 +28,17 @@
       instruccion_ia: 'Las ideas son SÍNTOMAS: tareas manuales que le duelen a un área de Grupo MP (venta directa por catálogo con asesoras). Cada idea consolidada es una AUTOMATIZACIÓN CANDIDATA para el backlog: el título nombra la tarea que se automatizaría con las palabras de los participantes (por ejemplo: Resumen semanal de pedidos por zona para el comité). En descripcion_corta di qué tarea manual dejaría de hacerse y, solo si algún participante lo escribió, cada cuánto ocurre y cuánto tiempo toma. Nunca estimes frecuencias, horas, herramientas ni ahorros que nadie escribió. Dos síntomas son el mismo si describen la misma tarea manual sobre la misma información, aunque los escriban personas de áreas distintas o con otras palabras.',
       etiqueta_idea: 'Su síntoma: qué tarea manual le duele, cada cuánto y cuánto tiempo le toma',
       ejemplo_idea: 'Ej.: Cada lunes armo a mano el resumen de pedidos por zona para el comité: 3 horas',
-      perfiles: ['Gerencia general', 'Mercadeo', 'Diseño', 'Demanda', 'Comercial', 'Operación y servicio', 'Otra dirección'],
+      perfiles: ['Gerencia General', 'Comercial', 'Mercadeo', 'Cadena de Abastecimiento', 'Financiera', 'Operaciones', 'Desarrollo Humano y Organizacional', 'Tecnología'],
+      /* Rol → pilar que se abre primero (luego cada quien puede escribir en cualquier pilar) */
       afinidad: {
-        'Gerencia general': 'Dirección',
-        'Mercadeo': 'Mercadeo',
-        'Diseño': 'Diseño',
-        'Demanda': 'Demanda',
+        'Gerencia General': 'Dirección',
         'Comercial': 'Comercial',
-        'Operación y servicio': 'Operación y servicio'
+        'Mercadeo': 'Mercadeo',
+        'Cadena de Abastecimiento': 'Demanda',
+        'Financiera': 'Dirección',
+        'Operaciones': 'Operación y servicio',
+        'Desarrollo Humano y Organizacional': 'Dirección',
+        'Tecnología': 'Dirección'
       }
     },
     pilares: [
@@ -61,7 +64,7 @@
     /* Demo de ensayo (Admin › Control › Cargar demo). Ficticio. Trae a propósito síntomas repetidos con
        otras palabras y entre áreas, para ver que la consolidación los junte. */
     demo: {
-      participantes: [['Demo · Gerente', 'Gerencia general'], ['Demo · Mercadeo', 'Mercadeo'], ['Demo · Diseño', 'Diseño'], ['Demo · Demanda', 'Demanda'], ['Demo · Comercial', 'Comercial'], ['Demo · Servicio', 'Operación y servicio']],
+      participantes: [['Demo · Gerente', 'Gerencia General'], ['Demo · Mercadeo', 'Mercadeo'], ['Demo · Diseño', 'Mercadeo'], ['Demo · Abastecimiento', 'Cadena de Abastecimiento'], ['Demo · Comercial', 'Comercial'], ['Demo · Operaciones', 'Operaciones']],
       ideas: [
         ['Mercadeo', 'Catálogo', 'Cada campaña armamos a mano el listado de productos y precios del catálogo desde tres Excel', 1],
         ['Mercadeo', 'Catálogo', 'Revisar que los precios del catálogo coincidan con el sistema nos toma dos días por campaña', 1],
