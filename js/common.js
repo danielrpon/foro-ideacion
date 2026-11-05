@@ -27,6 +27,8 @@ window.COLORS = {
   amber:  { bg: 'bg-amber-100',  text: 'text-amber-800',  border: 'border-amber-400',  solid: 'bg-amber-500',  hex: '#f59e0b', postit: 'bg-amber-50' },
   rose:   { bg: 'bg-rose-100',   text: 'text-rose-800',   border: 'border-rose-400',   solid: 'bg-rose-600',   hex: '#e11d48', postit: 'bg-rose-50' },
   teal:   { bg: 'bg-teal-100',   text: 'text-teal-800',   border: 'border-teal-400',   solid: 'bg-teal-600',   hex: '#0d9488', postit: 'bg-teal-50' },
+  indigo: { bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-400', solid: 'bg-indigo-600', hex: '#4f46e5', postit: 'bg-indigo-50' },
+  orange: { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-400', solid: 'bg-orange-500', hex: '#f97316', postit: 'bg-orange-50' },
   gray:   { bg: 'bg-gray-100',   text: 'text-gray-800',   border: 'border-gray-400',   solid: 'bg-gray-600',   hex: '#4b5563', postit: 'bg-gray-50' }
 };
 window.col = (c) => COLORS[c] || COLORS.gray;
