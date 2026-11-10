@@ -1,0 +1,116 @@
+/* ============================================================
+   Identidad Freaknerd v1 · plataforma de ideación (manual de marca §11.6)
+   Fuente: Manual de marca Freaknerd v1 (10-nov-2026). Módulo 22 px.
+   Reglas duras: sin fondo negro, sin verde, sin degradados ni neón; el naranja solo para error o atención
+   y siempre con palabra; una sola celda seleccionada por vista.
+   ============================================================ */
+:root{
+  --fn-blanco:#FCFFFF; --fn-azul:#09318D; --fn-azul-texto2:#4B5C8C; --fn-azul-nota:#5A6B94;
+  --fn-azul-medio:#6F87BD; --fn-tinte:#D8E0EE; --fn-rosa:#EED2E2; --fn-rosa-print:#E8C4D8;
+  --fn-naranja:#FF4200; --fn-naranja-texto:#C23A00;
+  --fn-u:22px; --fn-font:"Montserrat",-apple-system,"Segoe UI",sans-serif;
+  --fn-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --fn-sel-borde:4px; --fn-tirador:11px;
+  --fn-ease:cubic-bezier(.2,.8,.2,1);
+}
+html{background:var(--fn-blanco)}
+body{background:var(--fn-blanco)!important;color:var(--fn-azul);font-family:var(--fn-font);font-weight:500;-webkit-font-smoothing:antialiased}
+body *::selection{background:var(--fn-rosa);color:var(--fn-azul)}
+h1,h2,h3{letter-spacing:-.02em;text-wrap:balance}
+h1{letter-spacing:-.035em}
+.font-black,.font-bold{font-weight:900}
+.font-semibold,.font-medium{font-weight:700}
+.fn-mono,.font-mono{font-family:var(--fn-mono)!important;font-weight:500}
+.fn-mono.uppercase,.font-mono.uppercase{letter-spacing:.14em}
+a{text-underline-offset:3px}
+button,input,select,textarea{font-family:inherit}
+[hidden]{display:none!important}
+
+/* --- Wordmark (§2.1): freaknerd + tirador de 0,20 em --- */
+.wm{font:900 1em/1 var(--fn-font);letter-spacing:-.035em;display:inline-flex;align-items:baseline;white-space:nowrap;color:var(--fn-azul)}
+.wm i{display:inline-block;width:.2em;height:.2em;background:currentColor;margin-left:.06em}
+
+/* --- Celda seleccionada (§7): una sola por vista --- */
+.fn-sel{position:relative;background:var(--fn-rosa)!important;color:var(--fn-azul)!important;box-shadow:inset 0 0 0 var(--fn-sel-borde) var(--fn-azul)!important;outline:0!important}
+.fn-sel::after{content:"";position:absolute;right:-6px;bottom:-6px;width:var(--fn-tirador);height:var(--fn-tirador);background:var(--fn-azul);box-shadow:0 0 0 2px var(--fn-blanco);z-index:3;pointer-events:none}
+.fn-sel-txt{display:inline-block;position:relative;background:var(--fn-rosa);padding:0 .14em;box-shadow:inset 0 0 0 4px var(--fn-azul);white-space:nowrap;color:var(--fn-azul)}
+.fn-sel-txt::after{content:"";position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:var(--fn-azul);box-shadow:0 0 0 2px var(--fn-blanco)}
+.fn-resalte{background:var(--fn-rosa);color:var(--fn-azul);padding:0 .2em}
+
+/* --- Flecha ›  (§8) --- */
+.chev{width:12px;height:16px;fill:currentColor;flex:none;display:inline-block;vertical-align:-2px}
+
+/* --- Navegación superior --- */
+nav[data-nav],nav.fn-nav{background:var(--fn-blanco)!important;color:var(--fn-azul)!important;border-bottom:1px solid var(--fn-tinte)!important;min-height:66px}
+nav[data-nav] .wm,nav.fn-nav .wm{font-size:22px}
+.fn-nav-et{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--fn-azul);border-bottom:2px solid var(--fn-rosa);padding:0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fn-nav-btn{height:44px;width:44px;display:inline-flex;align-items:center;justify-content:center;color:var(--fn-azul);border:1px solid var(--fn-tinte);background:var(--fn-blanco)}
+.fn-nav-btn:hover{background:var(--fn-tinte)}
+.fn-pill{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--fn-azul);color:var(--fn-azul);padding:0 8px;white-space:nowrap}
+
+/* --- Botones (§8): 44 px, azul, texto blanco 900, sin radio --- */
+.bg-fn{background:var(--fn-azul)!important;color:var(--fn-blanco)}
+button.bg-fn,a.bg-fn,.btn-fn{font-weight:900;min-height:44px;color:var(--fn-blanco)!important}
+button.bg-fn:hover,a.bg-fn:hover,.btn-fn:hover{background:#0B3FAE!important}
+.btn-fn{display:inline-flex;gap:14px;align-items:center;justify-content:center;height:44px;padding:0 20px;background:var(--fn-azul);font:900 15px var(--fn-font);cursor:pointer}
+.btn-fn .chev{color:var(--fn-rosa)}
+.btn-fn-2{font:700 15px var(--fn-font);color:var(--fn-azul);border-bottom:2px solid var(--fn-rosa);padding-bottom:3px;background:none;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--fn-azul);outline-offset:2px}
+
+/* --- Tarjetas: fondo blanco, filete tinte, sin sombra --- */
+.bg-white.rounded-xl,.bg-white.rounded-lg,.bg-white.rounded,.bg-white.rounded-2xl,.card{outline:1px solid var(--fn-tinte);outline-offset:-1px}
+.bg-white.border,.bg-white.border-t-4{outline:0}
+.bg-white{background:var(--fn-blanco)!important}
+.bg-gray-50,.bg-gray-100{background:#EEF2F9}
+input,select,textarea{border-color:var(--fn-tinte);color:var(--fn-azul);background:var(--fn-blanco)}
+input::placeholder,textarea::placeholder{color:var(--fn-azul-nota)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--fn-azul)!important;outline-offset:0;border-color:var(--fn-azul)}
+input.border,select.border,textarea.border,.border.p-3{border-width:1px;border-color:var(--fn-azul-medio)}
+
+/* --- Tablas (§8): encabezado mono 11 + filete azul de 2 px; filas de 44 px, filete tinte --- */
+thead,thead.bg-gray-800,thead.bg-gray-100,thead.bg-gray-50{background:transparent!important;color:var(--fn-azul-texto2)!important}
+thead th{font-family:var(--fn-mono)!important;font-weight:500!important;font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;border-bottom:2px solid var(--fn-azul)!important;background:transparent!important;color:var(--fn-azul-texto2)!important}
+tbody tr{border-bottom:1px solid var(--fn-tinte)}
+tbody td{border-bottom:1px solid var(--fn-tinte)}
+tbody tr:last-child td{border-bottom:0}
+table tr.border-b,table tr.border-t,table tr.divide-y>*{border-color:var(--fn-tinte)}
+td.font-mono,td .font-mono,td.num{font-variant-numeric:tabular-nums}
+
+/* --- Estados (§11.6): éxito en azul con ✓; error o alerta en naranja texto con palabra --- */
+#errBanner{background:var(--fn-blanco)!important;color:var(--fn-naranja-texto)!important;border-bottom:1px solid var(--fn-naranja-texto);font-weight:900;font-size:12px;line-height:22px;padding:11px 22px!important}
+#errBanner::before{content:"Atención: ";font-family:var(--fn-mono);text-transform:uppercase;letter-spacing:.14em;font-size:11px}
+#toast{background:var(--fn-azul)!important;color:var(--fn-blanco)!important;border-radius:0;box-shadow:none;font-size:14px!important;line-height:22px}
+#toast.t-err{background:var(--fn-blanco)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja-texto)}
+#toast.t-warn{background:var(--fn-blanco)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja-texto)}
+#toast.t-ok::before{content:"✓ ";font-weight:900}
+#toast.t-err::before{content:"Error: ";font-family:var(--fn-mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px}
+#toast.t-warn::before{content:"Atención: ";font-family:var(--fn-mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px}
+.text-red-600,.text-red-700,.text-red-500,.text-red-800,.text-amber-700,.text-amber-600,.text-amber-800{color:var(--fn-naranja-texto)}
+.bg-red-600:not(button),.bg-red-500:not(button){background:var(--fn-blanco)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja-texto)}
+.bg-amber-500:not(button),.bg-amber-400:not(button){background:var(--fn-blanco)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja-texto)}
+
+/* --- Sobre fondo azul (botones, paneles) los grises claros pasan a blanco translúcido --- */
+.bg-fn .text-gray-300,.bg-fn .text-gray-400,.bg-fn .text-gray-500,.bg-fn.text-gray-400{color:rgba(252,255,255,.82)}
+.bg-fn .fn-green,.fn-green{color:inherit}
+
+/* --- Campo de puntos (§6) --- */
+.dotgrid{background-image:none!important}
+canvas.fn-campo{display:block;width:100%;height:100%;pointer-events:none}
+.fn-leyenda{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--fn-azul-nota);display:flex;justify-content:space-between}
+
+/* --- Misceláneos --- */
+.fade-in{animation:fadeIn .4s var(--fn-ease)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--fn-azul-medio);border-radius:0}
+details>summary{list-style:none}
+details>summary::-webkit-details-marker{display:none}
+
+/* Botones solo de ícono o de acción destructiva: azul (el naranja queda para mensajes de atención con palabra) */
+button[class*="text-red-"],button[class*="text-amber-"],a[class*="text-red-"][class*="font-bold"]{color:var(--fn-azul)!important}
+button[class*="bg-red-"],button[class*="bg-amber-"]{background:var(--fn-blanco)!important;box-shadow:inset 0 0 0 1px var(--fn-tinte)!important}
+button[class*="hover:bg-red-"]:hover,button[class*="hover:bg-amber-"]:hover{background:var(--fn-tinte)!important;color:var(--fn-azul)!important}
+
+/* Logos de clientes en una tinta azul (manual §11.1): los claros pensados para fondo oscuro se tiñen a azul de marca */
+.logo-azul{filter:brightness(0) invert(14%) sepia(95%) saturate(4400%) hue-rotate(218deg) brightness(.92)}

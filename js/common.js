@@ -19,18 +19,8 @@ window.STAGES = [
 ];
 window.stageInfo = (k) => STAGES.find(s => s.key === k) || { key: k, n: '?', label: k };
 
-/* Colores por pilar (Tailwind) */
-window.COLORS = {
-  blue:   { bg: 'bg-blue-100',   text: 'text-blue-800',   border: 'border-blue-400',   solid: 'bg-blue-600',   hex: '#2563eb', postit: 'bg-blue-50' },
-  green:  { bg: 'bg-green-100',  text: 'text-green-800',  border: 'border-green-400',  solid: 'bg-green-600',  hex: '#16a34a', postit: 'bg-green-50' },
-  purple: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-400', solid: 'bg-purple-600', hex: '#9333ea', postit: 'bg-purple-50' },
-  amber:  { bg: 'bg-amber-100',  text: 'text-amber-800',  border: 'border-amber-400',  solid: 'bg-amber-500',  hex: '#f59e0b', postit: 'bg-amber-50' },
-  rose:   { bg: 'bg-rose-100',   text: 'text-rose-800',   border: 'border-rose-400',   solid: 'bg-rose-600',   hex: '#e11d48', postit: 'bg-rose-50' },
-  teal:   { bg: 'bg-teal-100',   text: 'text-teal-800',   border: 'border-teal-400',   solid: 'bg-teal-600',   hex: '#0d9488', postit: 'bg-teal-50' },
-  indigo: { bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-400', solid: 'bg-indigo-600', hex: '#4f46e5', postit: 'bg-indigo-50' },
-  orange: { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-400', solid: 'bg-orange-500', hex: '#f97316', postit: 'bg-orange-50' },
-  gray:   { bg: 'bg-gray-100',   text: 'text-gray-800',   border: 'border-gray-400',   solid: 'bg-gray-600',   hex: '#4b5563', postit: 'bg-gray-50' }
-};
+/* Colores por pilar: en la identidad v1 todo es azul (el pilar se distingue por nombre e ícono; manual §3) */
+window.COLORS = (() => { const c = { bg: 'bg-fn-soft', text: 'text-fn-azul', border: 'border-fn-azul', solid: 'bg-fn-azul', hex: '#09318D', postit: 'bg-white' }; const o = {}; ['blue', 'green', 'purple', 'amber', 'rose', 'teal', 'indigo', 'orange', 'gray'].forEach(k => o[k] = c); return o; })();
 window.col = (c) => COLORS[c] || COLORS.gray;
 
 /* Orden aleatorio pero estable por participante: baraja con una semilla derivada del id del
@@ -59,8 +49,9 @@ window.esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<
 window.fmtHora = (iso) => iso ? new Date(iso).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '';
 window.pct = (a, b) => b ? Math.round(100 * a / b) : 0;
 window.toast = (msg, tipo = 'ok') => {
-  let t = $('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl shadow-lg text-base font-bold text-white transition-opacity opacity-0 pointer-events-none whitespace-nowrap'; document.body.appendChild(t); }
-  t.textContent = msg; t.className = t.className.replace(/bg-\S+/g, '') + (tipo === 'err' ? ' bg-red-600' : tipo === 'warn' ? ' bg-amber-500' : ' bg-emerald-600');
+  let t = $('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 text-base font-bold transition-opacity opacity-0 pointer-events-none whitespace-nowrap'; document.body.appendChild(t); }
+  /* éxito en azul con ✓; error y atención en naranja texto con palabra (manual §11.6) */
+  t.textContent = msg; t.classList.remove('t-ok', 't-err', 't-warn'); t.classList.add(tipo === 'err' ? 't-err' : tipo === 'warn' ? 't-warn' : 't-ok');
   t.classList.remove('opacity-0'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('opacity-0'), 2600);
 };
 window.errMsg = (e) => { const m = String(e && e.message || e); if (/row-level security|violates/i.test(m)) return 'Esta etapa ya se cerró: el moderador pasó a la siguiente.'; if (/Failed to fetch|NetworkError|Load failed|network|timeout/i.test(m)) return 'Sin conexión. Revisa el Wi‑Fi o los datos y reintenta.'; if (/LIMITE_VOTOS/.test(m)) return 'Ya usaste tus votos en este pilar.'; if (/LIMITE_CALIFICACIONES/.test(m)) return 'Ya usaste todas tus calificaciones: quita una para calificar otra idea.'; if (/ETAPA_CERRADA/.test(m)) return 'Esta etapa ya se cerró.'; if (/CLAVE_INVALIDA/.test(m)) return 'Clave incorrecta.'; if (/SOLO_ADMIN/.test(m)) return 'Solo el administrador puede hacer esto.'; if (/duplicate|unique/i.test(m)) return 'Ya lo habías hecho.'; return m; };
@@ -96,27 +87,18 @@ window.marca = (sesion) => {
 };
 /* Título del evento (bienvenida, nav): config.titulo_evento, por defecto el nombre de la app */
 window.tituloEvento = (sesion) => (sesion && sesion.config && sesion.config.titulo_evento) || FORO_CONFIG.APP_NAME || 'Foro de ideación';
-window.facilitadoPor = (clase = '') => `<span class="fn-mono ${clase}">facilitado por <span class="normal-case">freaknerd<span style="color:#26E57C">_</span></span></span>`;
+window.facilitadoPor = (clase = '') => `<span class="fn-mono ${clase}">facilitado por <span class="normal-case font-bold">freaknerd</span></span>`;
 window.aplicarMarca = (sesion) => {
   const m = marca(sesion), root = document.documentElement;
   const firma = m ? m.id + '|' + tituloEvento(sesion) : '';
   if (root.dataset.marcaFirma === firma) return; root.dataset.marcaFirma = firma;
-  let st = document.getElementById('marcaCss');
-  if (!m) { if (st) st.remove(); delete root.dataset.marca; return; }
+  const st = document.getElementById('marcaCss'); if (st) st.remove();
+  if (!m) { delete root.dataset.marca; return; }
+  /* Sesión con marca de cliente: su logo (versión sobre claro) reemplaza el wordmark; el resto de la piel es la de Freaknerd v1 */
   root.dataset.marca = m.id;
-  if (!st) { st = document.createElement('style'); st.id = 'marcaCss'; document.head.appendChild(st); }
-  /* Solo se remapea el acento de marca (verde casa / esmeralda sobre fondo oscuro). Los verdes con
-     significado (quick wins, guardado, semáforos) se quedan verdes. */
-  st.textContent = `html[data-marca] .bg-fn{background:${m.fondo}}
-html[data-marca] .fn-green{color:${m.acento}}
-html[data-marca] .bg-fn .text-emerald-400,html[data-marca] .bg-fn.text-emerald-400,html[data-marca] #tmr{color:${m.acento_suave}}
-html[data-marca] #navEtapa{background:${m.acento};color:#fff}
-html[data-marca] .border-emerald-500\\/30{border-color:${m.acento}4d}
-html[data-marca] .text-emerald-700.fn-mono,html[data-marca] .marca-txt{color:${m.acento_oscuro}}
-html[data-marca] .dotgrid{background-image:radial-gradient(${m.acento}33 1px,transparent 1px)}`;
-  document.querySelectorAll('[data-wordmark]').forEach(w => { w.innerHTML = `<img src="${esc(m.logo)}" alt="${esc(m.nombre)}" class="h-6 w-auto block">`; });
+  document.querySelectorAll('[data-wordmark]').forEach(w => { w.innerHTML = `<img src="${esc(m.logo_claro || m.logo)}" alt="${esc(m.nombre)}" class="h-6 w-auto block">`; });
   document.querySelectorAll('[data-appname]').forEach(a => { a.textContent = tituloEvento(sesion); });
-  document.title = document.title.replace(/^freaknerd_/, m.nombre);
+  document.title = document.title.replace(/^freaknerd/, m.nombre);
   if (m.icono) { let ic = document.querySelector('link[rel=icon]'); if (ic) { ic.type = 'image/png'; ic.href = m.icono; } }
 };
 
@@ -124,12 +106,12 @@ html[data-marca] .dotgrid{background-image:radial-gradient(${m.acento}33 1px,tra
 window.renderNav = (vista, extra = '', opts = {}) => {
   const nav = document.querySelector('nav[data-nav]'); if (!nav) return;
   nav.innerHTML = `
-    <div class="flex items-center gap-3 shrink-0"><span data-wordmark class="fn-mono font-bold text-base tracking-tight">freaknerd<span class="fn-green">_</span></span>${opts.app === false ? '' : `<span class="text-gray-600 hidden sm:inline">|</span><span data-appname class="font-bold text-sm hidden sm:inline text-gray-200">${esc(opts.nombre || FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span>`}</div>
+    <div class="flex items-center gap-3 shrink-0"><span data-wordmark>${wordmark()}</span>${opts.app === false ? '' : `<span data-appname class="fn-mono text-[11px] uppercase tracking-[.14em] hidden sm:inline text-fn-texto2">${esc(opts.nombre || FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span>`}</div>
     <div class="text-sm flex items-center gap-2 min-w-0">
-      ${DB.archivo ? `<span class="bg-sky-400 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap" title="Ejercicio guardado, cargado solo en este navegador. No toca la nube.">archivo · ${esc(new Date(DB.archivo.exportado).toLocaleDateString('es-CO'))}</span>` : DB.MODE === 'local' ? '<span class="bg-amber-500 text-black px-2 py-0.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
-      <span id="navEtapa" class="fn-mono bg-emerald-400 text-black px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider truncate max-w-[58vw] sm:max-w-none">${esc(vista)}</span>
+      ${DB.archivo ? `<span class="fn-pill" title="Ejercicio guardado, cargado solo en este navegador. No toca la nube.">archivo · ${esc(new Date(DB.archivo.exportado).toLocaleDateString('es-CO'))}</span>` : DB.MODE === 'local' ? '<span class="fn-pill" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
+      <span id="navEtapa" class="fn-nav-et truncate max-w-[58vw] sm:max-w-none">${esc(vista)}</span>
       ${extra}
-      <button onclick="window.location.reload()" class="bg-gray-700 hover:bg-gray-600 px-2.5 py-1 rounded text-xs shrink-0" title="Recargar"><i class="fas fa-sync"></i></button>
+      <button onclick="window.location.reload()" class="fn-nav-btn shrink-0" title="Recargar" aria-label="Recargar"><i class="fas fa-sync"></i></button>
     </div>`;
 };
 window.setNavEtapa = (sesion) => { aplicarMarca(sesion); const e = $('navEtapa'); if (e && sesion) { const st = stageInfo(sesion.etapa); const corto = { ideacion: 'Ideación', consolidacion: 'Consolidación', matriz: 'Calificación', cierre: 'Matriz final', instrucciones: 'Instrucciones', bienvenida: 'Bienvenida', pausa: 'Pausa', resumen: 'Resumen', reporte: 'Reporte', votacion: 'Votación', resultados: 'Resultados' }[sesion.etapa]; e.textContent = st.n + ' · ' + (window.innerWidth < 640 && corto ? corto : st.label); } };
@@ -190,10 +172,10 @@ window.Yo = {
 /* Cuadrante de la matriz esfuerzo-impacto */
 window.cuadrante = (esf, imp, max = 5) => {
   const mid = max / 2 + 0.5; // 3 en escala 1-5, 5.5 en 1-10
-  if (imp >= mid && esf < mid) return { key: 'quick', label: 'QUICK WIN · Hacer ya', color: 'emerald' };
-  if (imp >= mid && esf >= mid) return { key: 'proyecto', label: 'PROYECTO · Planificar', color: 'blue' };
-  if (imp < mid && esf < mid) return { key: 'relleno', label: 'TAREA MENOR · Si sobra tiempo', color: 'amber' };
-  return { key: 'descartar', label: 'POSTERGAR', color: 'gray' };
+  if (imp >= mid && esf < mid) return { key: 'quick', label: 'Hacer ya', color: 'blue' };
+  if (imp >= mid && esf >= mid) return { key: 'proyecto', label: 'Planear', color: 'blue' };
+  if (imp < mid && esf < mid) return { key: 'relleno', label: 'Tarea menor', color: 'blue' };
+  return { key: 'descartar', label: 'Postergar', color: 'gray' };
 };
 
 /* Puntaje tridimensional para priorizar (impacto, esfuerzo y cuánta gente calificó).
