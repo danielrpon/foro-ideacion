@@ -132,6 +132,7 @@ function render() {
   const ev = lista.filter(g => g.conteo_eval > 0), qk = (g) => cuadrante(g.esfuerzo_prom, g.impacto_prom, max);
   const nCal = gs.reduce((a, g) => a + g.conteo_eval, 0), nAut = new Set(ideas.map(i => i.participante_nombre || i.participante_id)).size;
   const nQuick = ev.filter(g => qk(g).key === 'quick').length, nPost = ev.filter(g => qk(g).key === 'descartar').length;
+  const listaNum = (a) => { a = a.slice().sort((x, y) => x - y); return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1]; };
   const demo = ideas.length && ideas.every(i => /^Demo · /.test(i.participante_nombre || ''));
   const quienRaw = s.empresa || s.nombre || '';
   const quien = esc(quienRaw);
@@ -181,7 +182,7 @@ function render() {
     ${top6.map(g => `<tr${NUM[g.id] === 1 ? ' class="sel"' : ''}><td class="n">${String(NUM[g.id]).padStart(2, '0')}</td><td class="wr${NUM[g.id] === 1 ? ' tsel' : ''}" title="${txt(g)}">${txt(g)}</td><td class="num">${f1(g.impacto_prom)}</td><td class="num">${f1(g.esfuerzo_prom)}</td><td class="${qk(g).key === 'quick' ? 'b' : ''}">${qk(g).label}</td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--fn-piedra-osc)">Aún no hay ideas calificadas.</td></tr>'}</table>
     <div class="mx"><div class="q q1"><b>Hacer ya</b></div><div class="q q2"><b>Planear</b></div><div class="q q3"><b>Tarea menor</b></div><div class="q q4"><b>Postergar</b></div>
     ${pts.map(p => `<span class="d${p.at ? ' at' : ''}" style="left:${p.x.toFixed(0)}px;top:${p.y.toFixed(0)}px;width:${Math.round(p.w)}px">${p.lab}</span>`).join('')}
-    <span class="ax mono" style="left:-50px;top:121px;transform:rotate(-90deg)">Impacto ↑</span><span class="ax mono" style="right:0;top:268px">Esfuerzo →</span></div>${nPost ? `<div class="mono" style="position:absolute;left:35px;top:630px;width:594px;color:var(--fn-naranja-texto)">Atención: ${nPost === 1 ? 'una idea pide' : nPost + ' ideas piden'} mucho esfuerzo y ${nPost === 1 ? 'devuelve' : 'devuelven'} poco (marco naranja).</div>` : ''}
+    <span class="ax mono" style="left:-50px;top:121px;transform:rotate(-90deg)">Impacto ↑</span><span class="ax mono" style="right:0;top:268px">Esfuerzo →</span></div>${nPost ? `<div class="mono" style="position:absolute;left:35px;top:630px;width:594px;color:var(--fn-naranja-texto);text-transform:none;letter-spacing:0;font-family:var(--fn-font);font-weight:700;font-size:12px">Atención: ${nPost === 1 ? 'una idea pide' : nPost + ' ideas piden'} mucho esfuerzo y ${nPost === 1 ? 'devuelve' : 'devuelven'} poco (${listaNum(ev.filter(g => qk(g).key === 'descartar').map(g => NUM[g.id]))}).</div>` : ''}
     ${pie(3)}</section>`;
   /* --- 4… · ranking completo, 9 filas por lámina --- */
   const porPag = 9, pags = Math.max(1, Math.ceil(lista.length / porPag));

@@ -20,7 +20,7 @@
     const d0 = o.d0 == null ? 1 : o.d0, d1 = o.d1 == null ? 0 : o.d1;
     /* desde: fracción del lienzo donde empieza el campo (a su izquierda, o arriba en vertical, queda libre para el texto) */
     const ini = (vertical ? h : w) * (o.desde || 0), largo = (vertical ? h : w) - ini;
-    const disAt = (X, Y) => { let t = ((vertical ? Y : X) - ini) / largo; t = Math.max(0, Math.min(1, t / .7)); return d0 + (d1 - d0) * t; };
+    const disAt = (X, Y) => { let t = ((vertical ? Y : X) - ini) / largo; t = Math.max(0, Math.min(1, t / (o.orden || .7))); return d0 + (d1 - d0) * t; };
     const libre = (X, Y) => (vertical ? Y : X) < ini - 1;
     const pts = [], cand = [];
     for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
@@ -64,14 +64,14 @@
   window.CHEV = '<svg class="chev" viewBox="0 0 14 18" aria-hidden="true"><path d="M0 0H5.2L14 9L5.2 18H0L8.8 9Z"/></svg>';
   /* Pinta todo <canvas data-campo="v|h"> (también los que se crean después al renderizar).
      Atributos: data-seed, data-amb="piedra" (puntos crema), data-step (88 por defecto), data-grid (dibuja la retícula),
-     data-estatico (sin movimiento). El movimiento corre una sola vez por canvas y tamaño; los redibujados posteriores
+     data-estatico (sin movimiento), data-orden (fracción del alto o ancho donde el campo ya está ordenado; .7 por defecto). El movimiento corre una sola vez por canvas y tamaño; los redibujados posteriores
      (refresco cada 3 s) lo pintan ya en su sitio. */
   const vistos = new WeakSet();
   const pintarTodos = () => document.querySelectorAll('canvas[data-campo]').forEach(c => {
     const p = c.parentElement, k = p.clientWidth + 'x' + p.clientHeight; if (c.dataset.ok === k) return;
     const yaVisto = vistos.has(c) || c.dataset.ok != null; c.dataset.ok = k; vistos.add(c);
     const pequeno = p.clientWidth < 600 && c.dataset.campo !== 'v';
-    campoPuntos(c, { vertical: c.dataset.campo === 'v', seed: Number(c.dataset.seed) || 11, amb: c.dataset.amb, step: Number(c.dataset.step) || (p.clientWidth < 440 ? 66 : 88), grid: c.hasAttribute('data-grid'), estatico: c.hasAttribute('data-estatico'), yaVisto, desde: Number(c.dataset.desde) || 0, vivos: c.dataset.vivos == null ? 2 : Number(c.dataset.vivos) });
+    campoPuntos(c, { vertical: c.dataset.campo === 'v', seed: Number(c.dataset.seed) || 11, amb: c.dataset.amb, step: Number(c.dataset.step) || (p.clientWidth < 440 ? 66 : 88), grid: c.hasAttribute('data-grid'), estatico: c.hasAttribute('data-estatico'), yaVisto, desde: Number(c.dataset.desde) || 0, vivos: c.dataset.vivos == null ? 2 : Number(c.dataset.vivos), orden: Number(c.dataset.orden) || 0 });
   });
   let tm; const pedir = () => { clearTimeout(tm); tm = setTimeout(pintarTodos, 30); };
   window.addEventListener('resize', pedir); window.pintarCampos = pintarTodos;

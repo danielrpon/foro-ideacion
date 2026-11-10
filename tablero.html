@@ -102,7 +102,7 @@ function render() {
   /* Un solo aviso naranja por pantalla, con palabra; el detalle de lo que falta va en azul nota dentro de cada tarjeta */
   const inc = vis.filter(f => f.estado !== 'confirmada' && JUNTA.faltan(f).length).length, ob = JUNTA.campos.filter(c => c.activo && c.obligatorio && !c.fijo).map(c => c.etiqueta.toLowerCase());
   $('aviso').hidden = !inc;
-  $('aviso').innerHTML = inc ? `<p class="fn-mono text-[12px] uppercase tracking-[.14em] text-fn-naranja-texto"><i class="fas fa-triangle-exclamation mr-2"></i>Atención: ${inc} ${inc === 1 ? 'acción' : 'acciones'} sin ${ob.join(' o ')}</p>` : '';
+  $('aviso').innerHTML = inc ? `<p class="fn-mono text-[12px] uppercase tracking-[.14em] text-fn-naranja-texto">Atención: ${inc} ${inc === 1 ? 'acción' : 'acciones'} sin ${ob.join(' o ')}</p>` : '';
   $('kListasPie').title = 'Con todos los campos obligatorios: ' + JUNTA.campos.filter(c => c.obligatorio).map(c => c.etiqueta.toLowerCase()).join(', ');
   const chip = (href, txt, on) => `<a href="${href}" class="px-2.5 py-1 rounded ${on ? 'bg-fn' : 'border border-fn-regla hover:bg-fn-crema-2'}">${esc(txt)}</a>`;
   $('vistas').innerHTML = chip(urlVista('tablero.html'), 'General', !sola) + JUNTA.mesas.map(m => chip(urlMesa('tablero.html', m.slug), m.nombre, slug === m.slug)).join('');

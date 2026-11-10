@@ -106,10 +106,10 @@ window.aplicarMarca = (sesion) => {
 window.renderNav = (vista, extra = '', opts = {}) => {
   const nav = document.querySelector('nav[data-nav]'); if (!nav) return;
   nav.innerHTML = `
-    <div class="flex items-center gap-3 shrink-0"><span data-wordmark>${wordmark()}</span>${opts.app === false ? '' : `<span data-appname class="fn-mono text-[11px] uppercase tracking-[.14em] hidden sm:inline text-fn-piedra-osc">${esc(opts.nombre || FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span>`}</div>
-    <div class="text-sm flex items-center gap-2 min-w-0">
+    <div class="fn-nav-marca flex items-center shrink-0"><span data-wordmark>${wordmark()}</span>${opts.app === false ? '' : `<span data-appname class="fn-mono text-[11px] uppercase tracking-[.14em] hidden sm:inline text-fn-piedra-osc">${esc(opts.nombre || FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span>`}</div>
+    <div class="fn-nav-der text-sm flex items-center gap-2 min-w-0">
       ${DB.archivo ? `<span class="fn-pill" title="Ejercicio guardado, cargado solo en este navegador. No toca la nube.">archivo · ${esc(new Date(DB.archivo.exportado).toLocaleDateString('es-CO'))}</span>` : DB.MODE === 'local' ? '<span class="fn-pill" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
-      <span id="navEtapa" class="fn-nav-et truncate max-w-[58vw] sm:max-w-none">${esc(vista)}</span>
+      <span id="navEtapa" class="fn-nav-et truncate">${esc(vista)}</span>
       ${extra}
       <button onclick="window.location.reload()" class="fn-nav-btn shrink-0" title="Recargar" aria-label="Recargar"><i class="fas fa-sync"></i></button>
     </div>`;

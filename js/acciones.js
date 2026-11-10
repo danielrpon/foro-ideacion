@@ -140,7 +140,8 @@
     const sub = osc ? 'text-gray-300' : 'text-gray-600', ico = 'text-gray-400', aviso = osc ? 'text-fn-crema' : 'text-fn-piedra-osc';
     const det = JUNTA.detalle().filter(c => c.tipo !== 'textarea');
     const largos = JUNTA.detalle().filter(c => c.tipo === 'textarea');
-    return `<div class="card ${opts.nueva ? 'acc-in' : ''} rounded-xl ${fondo} p-3">
+    const incompleta = !lista && faltan.length > 0;
+    return `<div class="card ${opts.nueva ? 'acc-in' : ''} ${incompleta ? 'fn-aten' : ''} rounded-xl ${fondo} p-3">
       <div class="flex justify-between gap-3">
         <p class="font-bold leading-snug ${opts.grande ? 'text-[17px]' : ''}">${opts.num ? `<span class="fn-mono ${ico} mr-1">${opts.num}.</span>` : ''}${esc(f.titulo)}</p>
         ${opts.acciones || (lista ? `<i class="fas fa-circle-check text-emerald-500 mt-1" title="Lista"></i>` : '')}
@@ -149,6 +150,7 @@
         ${det.map(c => { const v = JUNTA.val(f, c.k); return v ? `<span><i class="fas ${c.icono || 'fa-circle'} mr-1 ${ico}"></i>${esc(v)}</span>` : (c.obligatorio ? `<span class="${aviso}"><i class="far fa-circle mr-1"></i>falta ${esc(c.etiqueta.toLowerCase())}</span>` : ''); }).join('')}
       </div>
       ${largos.map(c => { const v = JUNTA.val(f, c.k); return v ? `<p class="text-[12px] ${ico} mt-1 whitespace-pre-line"><i class="fas ${c.icono} mr-1"></i>${esc(v)}</p>` : ''; }).join('')}
+      ${incompleta && !osc ? `<p class="mt-2 text-[12px] leading-[22px]"><span class="fn-aten-et" style="font-size:12px;letter-spacing:.1em"></span><span class="text-fn-naranja-texto font-bold"> · falta ${faltan.map(k => { const c = JUNTA.campos.find(x => x.k === k || x.etiqueta === k); return esc(((c && c.etiqueta) || k).toLowerCase()); }).join(' y ')}</span></p>` : ''}
     </div>`;
   };
 })();

@@ -72,6 +72,12 @@ nav[data-nav] .wm,nav.fn-nav .wm{font-size:22px}
 .fn-nav-btn:hover{background:var(--fn-crema-2)}
 .fn-pill{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--fn-piedra);color:var(--fn-piedra-osc);padding:0 8px;white-space:nowrap}
 
+/* Zona de protección del wordmark (§3.2): al menos 22 px tras el tirador. Bajo 480 px la etiqueta de modo se oculta y la etapa usa el ancho libre */
+.fn-nav-marca{gap:22px}
+.fn-nav-der{margin-left:22px;flex:1 1 auto;justify-content:flex-end}
+.fn-nav-der .fn-nav-et{min-width:0;flex:0 1 auto}
+@media (max-width:479px){.fn-nav-der .fn-pill{display:none}.fn-nav-der{gap:11px}}
+
 /* --- Botones (§7.9): 44 px, sin radio. Primario: pizarra con texto crema y flecha naranja --- */
 .bg-fn{background:var(--fn-pizarra)!important;color:var(--fn-crema)}
 button.bg-fn,a.bg-fn,.btn-fn{font-weight:900;min-height:44px;color:var(--fn-crema)!important}

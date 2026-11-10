@@ -80,7 +80,7 @@ function render() {
           <div class="fn-mono text-[11px] uppercase tracking-[.14em] text-fn-piedra-osc leading-[22px]">${esc(tituloEvento(s))} · ${esc(s.empresa || s.nombre)}</div>
           <h1 class="text-[40px] leading-[44px] font-black mt-[11px]">Regístrate para <span class="fn-sel-txt">participar</span></h1>
           ${!m && logoEmpresa(s) ? `<img src="${esc(logoEmpresa(s))}" class="logo-azul h-8 w-auto mt-[22px]" onerror="this.style.display='none'">` : ''}
-          <div class="mt-[11px] h-[143px] -mx-[22px]"><canvas class="fn-campo" data-campo="v"></canvas></div>
+          <div class="mt-[11px] h-[220px] min-[440px]:h-[198px] -mx-[22px]"><canvas class="fn-campo" data-campo="v" data-orden=".45"></canvas></div>
           <div class="fn-leyenda"><span>↑ Así llega</span><span>Así queda ↓</span></div>
         </div>
         <div class="p-[22px]">
