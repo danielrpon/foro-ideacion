@@ -2,16 +2,24 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20261105a">
+<meta name="app-version" content="20261110a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>freaknerd_ · Foro de Ideación · Admin</title>
+<title>freaknerd · Foro de Ideación · Admin</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
+<link href="vendor/fonts-mono.css" rel="stylesheet">
+<meta name="theme-color" content="#FCFFFF">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
 <script src="vendor/tailwind.js"></script>
-<style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
+<script src="js/marca-tw.js"></script>
+<link rel="stylesheet" href="css/marca.css">
+<style>summary{list-style:none}summary::-webkit-details-marker{display:none}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20261105a"></script><script src="js/db.js?v=20261105a"></script><script src="js/common.js?v=20261105a"></script><script src="js/plantilla-propiman.js?v=20261105a"></script><script src="js/plantilla-mp.js?v=20261105a"></script><script src="js/mece-ui.js?v=20261105a"></script><script src="js/demo-data.js?v=20261105a"></script><script src="js/archivo.js?v=20261105a"></script>
+<script src="js/campo-puntos.js"></script>
+<script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/plantilla-propiman.js?v=20261110a"></script><script src="js/plantilla-mp.js?v=20261110a"></script><script src="js/mece-ui.js?v=20261110a"></script><script src="js/demo-data.js?v=20261110a"></script><script src="js/archivo.js?v=20261110a"></script>
 <style>.fade-in{animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}} .tab{display:none}.tab.on{display:block}</style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col">
@@ -41,7 +49,7 @@ async function cargar() { snap = await DB.snapshot(); if (saltarAJunta(snap.sesi
 const grupos = () => calificables(snap.ideas);
 const ideas = () => snap.ideas.filter(i => i.tipo === 'idea');
 async function op(o, p, msg) { try { const r = await DB.admin(o, p); if (msg) toast(msg); await cargar(); return r; } catch (e) { toast(errMsg(e), 'err'); } }
-function semaforo(p) { return p >= 80 ? 'text-emerald-600' : p >= 40 ? 'text-amber-500' : 'text-red-500'; }
+function semaforo(p) { return 'text-fn-azul'; }
 
 function render() {
   const app = $('app'), s = snap.sesion;
@@ -73,8 +81,8 @@ function render() {
       <div class="bg-white rounded-xl shadow p-4"><div class="text-xs font-bold uppercase text-gray-500">Progreso matriz</div><div class="text-3xl font-black ${semaforo(pEval)}">${pEval}%</div><div class="text-xs text-gray-400">${kpi.evalTot} de ${kpi.evalMax} posibles (${maxCalif(s, gs.length)} × ${np} personas) · ${kpi.votos} votos</div></div></div>
     <div class="grid lg:grid-cols-3 gap-4">
       <div class="lg:col-span-2 bg-white rounded-xl shadow p-4"><div class="flex justify-between items-center mb-3"><h3 class="font-black"><i class="fas fa-list-ol mr-1"></i>Etapa actual: <span class="text-blue-700">${st.n} · ${st.label}</span></h3><span class="font-mono text-2xl font-black ${timerVencido(s) ? 'text-red-600' : ''}" id="tmrA">${(s.fin_etapa || ['ideacion', 'matriz'].includes(s.etapa)) ? timerText(s) : ''}</span></div>
-        <div class="grid md:grid-cols-2 gap-2">${STAGES.filter(x => !x.opcional).map(x => `<button onclick="cambiarEtapa('${x.key}')" class="w-full p-3 text-left rounded-lg text-sm font-semibold border ${s.etapa === x.key ? 'bg-blue-600 text-white ring-2 ring-blue-300' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'}"><span class="font-mono text-xs opacity-70 mr-2">${x.n}</span>${x.label}${x.timer ? ` <span class="text-[10px] opacity-60">⏱ ${s.config[x.timer] || ''} min</span>` : ''}</button>`).join('')}</div>
-        <details class="mt-3" ${abiertos.opc ? 'open' : ''} ontoggle="abiertos.opc=this.open"><summary class="text-xs text-gray-500 cursor-pointer">Etapas opcionales (votación por votos, pantallas de instrucciones extra)</summary><div class="grid md:grid-cols-2 gap-2 mt-2">${STAGES.filter(x => x.opcional).map(x => `<button onclick="cambiarEtapa('${x.key}')" class="w-full p-2 text-left rounded-lg text-xs font-semibold border ${s.etapa === x.key ? 'bg-blue-600 text-white ring-2 ring-blue-300' : 'bg-white hover:bg-gray-100 border-gray-200 text-gray-500'}"><span class="font-mono opacity-70 mr-2">${x.n}</span>${x.label}</button>`).join('')}</div></details></div>
+        <div class="grid md:grid-cols-2 gap-2">${STAGES.filter(x => !x.opcional).map(x => `<button onclick="cambiarEtapa('${x.key}')" class="w-full p-3 text-left rounded-lg text-sm font-semibold border ${s.etapa === x.key ? 'fn-sel' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'}"><span class="font-mono text-xs opacity-70 mr-2">${x.n}</span>${x.label}${x.timer ? ` <span class="text-[10px] opacity-60">⏱ ${s.config[x.timer] || ''} min</span>` : ''}</button>`).join('')}</div>
+        <details class="mt-3" ${abiertos.opc ? 'open' : ''} ontoggle="abiertos.opc=this.open"><summary class="text-xs text-gray-500 cursor-pointer">Etapas opcionales (votación por votos, pantallas de instrucciones extra)</summary><div class="grid md:grid-cols-2 gap-2 mt-2">${STAGES.filter(x => x.opcional).map(x => `<button onclick="cambiarEtapa('${x.key}')" class="w-full p-2 text-left rounded-lg text-xs font-semibold border ${s.etapa === x.key ? 'fn-sel' : 'bg-white hover:bg-gray-100 border-gray-200 text-gray-500'}"><span class="font-mono opacity-70 mr-2">${x.n}</span>${x.label}</button>`).join('')}</div></details></div>
       <div class="space-y-4"><div class="bg-white rounded-xl shadow p-4"><h3 class="font-black mb-2"><i class="fas fa-stopwatch mr-1"></i>Temporizador</h3><div class="flex gap-2"><input id="tmMin" type="number" value="${tmVal}" min="1" class="w-20 p-2 border rounded" oninput="this.dataset.user='1'" data-user="${tmPrev && tmPrev.dataset.user === '1' ? '1' : '0'}"><button onclick="$('tmMin').dataset.user='0';op('temporizador',{minutos:Number($('tmMin').value)},'Temporizador iniciado')" class="flex-1 bg-gray-800 text-white rounded text-sm font-bold">Iniciar</button></div><div class="flex gap-1 mt-2">${[3, 5, 8, 10].map(m => `<button onclick="op('temporizador',{minutos:${m}},'Temporizador: ${m} min')" class="flex-1 bg-gray-100 hover:bg-gray-200 rounded py-1.5 text-xs font-bold">${m}'</button>`).join('')}</div><div class="flex gap-2 mt-2"><button onclick="op('temporizador',{minutos:5,extender:true},'+5 minutos')" class="flex-1 bg-amber-500 text-white rounded py-2 text-sm font-bold">+5 min</button><button onclick="op('temporizador',{minutos:0},'Temporizador apagado')" class="flex-1 bg-gray-200 rounded py-2 text-sm">Apagar</button></div></div>
         <div class="bg-white rounded-xl shadow p-4"><h3 class="font-black mb-2"><i class="fas fa-chart-pie mr-1"></i>Ideas por pilar</h3>${snap.pilares.map(p => { const n = ids.filter(i => i.pilar_id === p.id).length, c = col(p.color); return `<div class="flex items-center gap-2 text-sm mb-1"><span class="w-40 truncate ${c.text} font-bold">${esc(p.nombre)}</span><div class="flex-1 h-3 bg-gray-100 rounded"><div class="h-3 rounded ${c.solid}" style="width:${pct(n, Math.max(...snap.pilares.map(q => ids.filter(i => i.pilar_id === q.id).length), 1))}%"></div></div><span class="font-mono w-8 text-right">${n}</span></div>`; }).join('')}<div class="text-xs text-gray-500 mt-2">Top consolidadas por votos: ${gs.slice().sort((a, b) => b.votos - a.votos).slice(0, 3).map(g => esc(g.titulo) + ' (' + g.votos + ')').join(' · ') || '—'}</div></div>
         <div class="bg-white rounded-xl shadow p-4"><h3 class="font-black mb-2"><i class="fas fa-flask mr-1"></i>Práctica</h3><button id="btnDemo" onclick="cargarDemo(false)" class="w-full bg-fn text-emerald-400 rounded py-2 text-sm font-bold"><i class="fas fa-download mr-1"></i>Cargar demo · ideas de práctica</button><button id="btnDemo2" onclick="cargarDemo(true)" class="w-full bg-gray-800 text-white rounded py-2 text-sm font-bold mt-2"><i class="fas fa-forward mr-1"></i>Cargar demo completo · hasta la matriz final</button><p class="text-[11px] text-gray-500 mt-2">El primero deja las ideas en Ideación para ensayar el flujo real (IA, calificación). El segundo además consolida por frente y califica con los 5 participantes demo en cantidades distintas por idea, para ver tamaños y prioridades en la matriz. Para borrar: Reiniciar tablero.</p></div>

@@ -2,28 +2,33 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20261105a">
+<meta name="app-version" content="20261110a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>freaknerd_ · Tablero de acciones</title>
+<title>freaknerd · Tablero de acciones</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
+<link href="vendor/fonts-mono.css" rel="stylesheet">
+<meta name="theme-color" content="#FCFFFF">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
 <script src="vendor/tailwind.js"></script>
+<script src="js/marca-tw.js"></script>
+<link rel="stylesheet" href="css/marca.css">
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/qrcode.min.js"></script>
 <script src="vendor/supabase.min.js"></script>
+<script src="js/campo-puntos.js"></script>
 <style>
-  body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}
-  .fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}
-  .dotgrid{background-image:radial-gradient(rgba(38,229,124,.18) 1px,transparent 1px);background-size:20px 20px}
   [hidden]{display:none !important}
   #qrBox{transition:opacity 180ms ease-out}#qrBox>div{transition:transform 200ms cubic-bezier(.23,1,.32,1)}
   #qrBox.off{opacity:0;pointer-events:none}#qrBox.off>div{transform:scale(.96)}
   @media (prefers-reduced-motion:reduce){#qrBox>div{transition:none}}
-  @media print{.no-print{display:none!important}body{background:#fff;color:#111}.card{break-inside:avoid}}
+  @media print{.no-print{display:none!important}body{background:#fff;color:#09318D}.card{break-inside:avoid}}
 </style>
-<script src="js/config.js?v=20261105a"></script><script src="js/db.js?v=20261105a"></script><script src="js/common.js?v=20261105a"></script><script src="js/acciones.js?v=20261105a"></script>
+<script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/acciones.js?v=20261110a"></script>
 </head>
-<body class="bg-fn text-white min-h-screen flex flex-col">
+<body class="text-fn-azul min-h-screen flex flex-col">
 <nav data-nav class="bg-fn text-white p-3 flex justify-between items-center border-b border-emerald-500/30 no-print"></nav>
 <div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
 
@@ -41,17 +46,17 @@
 
 <main id="mesas" class="flex-1 px-4 sm:px-8 pb-4 grid gap-5 content-start"></main>
 
-<footer class="px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 no-print">
+<footer class="px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 border-t border-fn-tinte no-print">
   <div id="vistas" class="flex flex-wrap items-center gap-1 text-xs font-bold"></div>
   <div class="flex items-center gap-2">
-    <button onclick="exportar()" class="press bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold"><i class="fas fa-file-csv mr-1"></i>CSV para el acta</button>
-    <button onclick="window.print()" class="press bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold"><i class="fas fa-print mr-1"></i>Imprimir</button>
-    <button onclick="toggleQr()" class="press bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold"><i class="fas fa-qrcode mr-1"></i>QR</button>
+    <button onclick="exportar()" class="press border border-fn-tinte hover:bg-fn-tinte px-3 py-1.5 h-11 text-xs font-bold"><i class="fas fa-file-csv mr-1"></i>CSV para el acta</button>
+    <button onclick="window.print()" class="press border border-fn-tinte hover:bg-fn-tinte px-3 py-1.5 h-11 text-xs font-bold"><i class="fas fa-print mr-1"></i>Imprimir</button>
+    <button onclick="toggleQr()" class="press border border-fn-tinte hover:bg-fn-tinte px-3 py-1.5 h-11 text-xs font-bold"><i class="fas fa-qrcode mr-1"></i>QR</button>
   </div>
 </footer>
 
-<div id="qrBox" class="off fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center no-print" onclick="toggleQr()">
-  <div class="bg-white p-6 rounded-2xl text-center"><div id="qr"></div><p id="qrTit" class="text-black font-black mt-3"></p></div>
+<div id="qrBox" class="off fixed inset-0 bg-fn-blanco/95 z-50 flex flex-col items-center justify-center no-print" onclick="toggleQr()">
+  <div class="bg-white p-6 text-center border border-fn-tinte"><div id="qr"></div><p id="qrTit" class="font-black mt-3"></p></div>
   <p id="qrPie" class="text-gray-300 text-sm mt-4 text-center max-w-sm"></p>
 </div>
 
@@ -65,11 +70,11 @@ renderNav('Tablero', '', { app: false });
 
 function columna(m, f, nv, sola) {
   return `<section>
-    ${sola ? '' : `<div class="flex items-baseline justify-between border-b border-white/15 pb-2 mb-3">
+    ${sola ? '' : `<div class="flex items-baseline justify-between border-b border-fn-tinte pb-2 mb-3">
       <h2 class="text-xl font-black"><i class="fas ${esc(m.icono)} mr-2 fn-green"></i>${esc(m.nombre)}</h2>
       <span class="fn-mono text-xs text-gray-400">${f.length} ${f.length === 1 ? 'acción' : 'acciones'}</span>
     </div>`}
-    <div class="${sola ? 'grid lg:grid-cols-2 gap-3' : 'space-y-2'}">${f.length ? f.map((x, i) => tarjetaAccion(x, { oscuro: true, grande: true, num: i + 1, nueva: nv.has(x.id) })).join('') : '<p class="text-gray-400 text-sm py-6 text-center">Esperando a la mesa…</p>'}</div>
+    <div class="${sola ? 'grid lg:grid-cols-2 gap-3' : 'space-y-2'}">${f.length ? f.map((x, i) => tarjetaAccion(x, { oscuro: false, grande: true, num: i + 1, nueva: nv.has(x.id) })).join('') : '<p class="text-gray-400 text-sm py-6 text-center">Esperando a la mesa…</p>'}</div>
   </section>`;
 }
 function render() {
@@ -94,7 +99,7 @@ function render() {
   $('kListas').textContent = vis.filter(f => JUNTA.completa(f)).length;
   $('kListasPie').textContent = 'completas';
   $('kListasPie').title = 'Con todos los campos obligatorios: ' + JUNTA.campos.filter(c => c.obligatorio).map(c => c.etiqueta.toLowerCase()).join(', ');
-  const chip = (href, txt, on) => `<a href="${href}" class="px-2.5 py-1 rounded ${on ? 'bg-emerald-400 text-black' : 'bg-white/10 hover:bg-white/20'}">${esc(txt)}</a>`;
+  const chip = (href, txt, on) => `<a href="${href}" class="px-2.5 py-1 rounded ${on ? 'bg-fn' : 'border border-fn-tinte hover:bg-fn-tinte'}">${esc(txt)}</a>`;
   $('vistas').innerHTML = chip(urlVista('tablero.html'), 'General', !sola) + JUNTA.mesas.map(m => chip(urlMesa('tablero.html', m.slug), m.nombre, slug === m.slug)).join('');
   qrHecho = '';
 }

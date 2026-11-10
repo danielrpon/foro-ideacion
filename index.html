@@ -2,19 +2,26 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20261105a">
+<meta name="app-version" content="20261110a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>freaknerd_ · Foro de Ideación · Participante</title>
+<title>freaknerd · Foro de Ideación · Participante</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
+<link href="vendor/fonts-mono.css" rel="stylesheet">
+<meta name="theme-color" content="#FCFFFF">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
 <script src="vendor/tailwind.js"></script>
-<style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
+<script src="js/marca-tw.js"></script>
+<link rel="stylesheet" href="css/marca.css">
+<style>summary{list-style:none}summary::-webkit-details-marker{display:none}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20261105a"></script><script src="js/db.js?v=20261105a"></script><script src="js/common.js?v=20261105a"></script><script src="js/plantilla-propiman.js?v=20261105a"></script><script src="js/plantilla-mp.js?v=20261105a"></script>
+<script src="js/campo-puntos.js"></script>
+<script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/plantilla-propiman.js?v=20261110a"></script><script src="js/plantilla-mp.js?v=20261110a"></script>
 <style>
   .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:14px 14px}
   .pick{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
   .sticky-top{position:sticky;top:56px;z-index:20}
   [id^=card]{scroll-margin-top:170px}
@@ -69,23 +76,21 @@ function render() {
   if (!yo) {
     if (viewKey !== 'reg') { viewKey = 'reg'; app.innerHTML = `
       <div class="bg-white rounded-xl shadow overflow-hidden mt-4 fade-in">
-        ${m ? `<div class="bg-fn dotgrid text-center px-6 pt-8 pb-6">
-          <img src="${esc(m.logo)}" alt="${esc(m.nombre)}" class="h-11 w-auto mx-auto">
-          <div class="fn-mono text-[11px] uppercase tracking-[.3em] text-emerald-400 mt-4">${esc(tituloEvento(s))}</div>
-          <h1 class="text-2xl font-black text-white mt-3 text-balance">${esc(s.empresa || s.nombre)}</h1>
-          <div class="text-[10px] text-gray-400 mt-4">${facilitadoPor()}</div>
-        </div>` : `<div class="bg-fn dotgrid text-center px-6 pt-7 pb-6">
-          <div class="text-4xl font-black text-white tracking-tight leading-none">freaknerd<span class="fn-green">_</span></div>
-          <div class="fn-mono text-[11px] uppercase tracking-[.3em] text-emerald-400 mt-3">${esc(s.config.titulo_evento || 'Foro de ideación')}</div>
-          ${logoEmpresa(s) ? `<img src="${esc(logoEmpresa(s))}" class="w-28 mx-auto mt-5" onerror="this.style.display='none';$('regEmpresa').classList.remove('hidden')">` : ''}<h1 id="regEmpresa" class="${logoEmpresa(s) ? 'hidden ' : ''}text-2xl font-black text-white mt-5">${esc(s.empresa || s.nombre)}</h1>
-        </div>`}
-        <div class="p-6">
-        <p class="text-sm font-bold text-gray-700 mb-4 text-center">Regístrate para participar</p>
+        <div class="px-[22px] pt-[22px]">
+          ${m ? `<img src="${esc(m.logo_claro || m.logo)}" alt="${esc(m.nombre)}" class="h-11 w-auto mb-[22px]">` : ''}
+          <div class="fn-mono text-[11px] uppercase tracking-[.14em] text-fn-texto2 leading-[22px]">${esc(tituloEvento(s))} · ${esc(s.empresa || s.nombre)}</div>
+          <h1 class="text-[40px] leading-[44px] font-black mt-[11px]">Regístrate para <span class="fn-sel-txt">participar</span></h1>
+          ${!m && logoEmpresa(s) ? `<img src="${esc(logoEmpresa(s))}" class="logo-azul h-8 w-auto mt-[22px]" onerror="this.style.display='none'">` : ''}
+          <div class="mt-[11px] h-[132px] -mx-[22px]"><canvas class="fn-campo" data-campo="v"></canvas></div>
+          <div class="fn-leyenda"><span>↑ Así llega</span><span>Así queda ↓</span></div>
+        </div>
+        <div class="p-[22px]">
+        <p class="text-sm font-bold text-fn-texto2 mb-[22px]">Cuéntanos quién eres para empezar.</p>
         <label class="block text-xs font-bold text-gray-600 mb-1">Tu nombre</label>
         <input id="regNombre" class="w-full p-3 border rounded-lg mb-3" placeholder="Nombre y apellido" autocomplete="name">
         <label class="block text-xs font-bold text-gray-600 mb-1">${s.config.perfiles ? 'Tu rol' : 'Tu perfil (para autosegmentarte)'}</label>
         <select id="regPerfil" class="w-full p-3 border rounded-lg mb-4 bg-white" onchange="this.classList.remove('border-red-400')"><option value="" selected disabled>${s.config.perfiles ? 'Selecciona tu rol…' : 'Selecciona tu área de expertiz…'}</option>${perfiles().map(p => `<option>${esc(p)}</option>`).join('')}</select>
-        <button onclick="registrar()" class="w-full bg-fn hover:bg-gray-800 text-emerald-400 font-bold py-3 rounded-lg">${m ? 'Entrar' : 'Entrar al foro'} <i class="fas fa-arrow-right ml-1"></i></button>
+        <button onclick="registrar()" class="btn-fn w-full">${m ? 'Entrar' : 'Entrar al foro'} ${CHEV}</button>
         <p class="text-[11px] text-gray-400 mt-3 text-center">Tu registro queda guardado en este celular.</p>
         </div>
       </div>`; }
@@ -99,8 +104,8 @@ function render() {
   if (['bienvenida', 'instrucciones'].includes(et)) {
     if (!full) return;
     app.innerHTML = `<div class="bg-white rounded-xl shadow p-6 mt-2 fade-in">
-      <p class="text-xs font-mono text-emerald-700 uppercase tracking-widest"><span class="normal-case">${m ? esc(m.nombre) : 'freaknerd_'}</span> · Bienvenido</p>
-      <h1 class="text-2xl font-black mt-1">Hola, ${esc(yo.nombre.split(' ')[0])} 👋</h1>
+      <p class="text-xs font-mono text-emerald-700 uppercase tracking-widest"><span class="normal-case">${m ? esc(m.nombre) : 'freaknerd'}</span> · Bienvenido</p>
+      <h1 class="text-2xl font-black mt-1">Hola, ${esc(yo.nombre.split(' ')[0])}</h1>
       <p class="text-sm text-gray-600 mt-2">${esc(s.config.caso || '')}</p>
       <p class="text-[11px] font-mono uppercase tracking-widest text-gray-400 mt-4">Los pilares · toca uno para ver de qué se trata</p>
       <div class="mt-2 space-y-2">${snap.pilares.map(p => { const c = col(p.color); return `<details class="rounded-lg ${c.bg} overflow-hidden"><summary class="flex items-center gap-3 p-2.5 cursor-pointer"><i class="fas ${p.icono} ${c.text}"></i><span class="text-sm font-bold ${c.text} flex-1">${esc(p.nombre)}</span><i class="fas fa-chevron-down text-xs ${c.text} opacity-60"></i></summary><div class="px-3 pb-3 text-xs text-gray-700">${esc(p.enunciado || '')}${(p.subfrentes && p.subfrentes.length) ? `<div class="mt-2 flex flex-wrap gap-1">${p.subfrentes.map(f => `<span class="px-2 py-0.5 rounded-full bg-white/70 ${c.text} text-[10px] font-bold">${esc(f)}</span>`).join('')}</div>` : ''}</div></details>`; }).join('')}</div>

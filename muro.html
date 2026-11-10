@@ -2,20 +2,27 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20261105a">
+<meta name="app-version" content="20261110a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>freaknerd_ · Foro de Ideación · Muro</title>
+<title>freaknerd · Foro de Ideación · Muro</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
+<link href="vendor/fonts-mono.css" rel="stylesheet">
+<meta name="theme-color" content="#FCFFFF">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
 <script src="vendor/tailwind.js"></script>
-<style>summary{list-style:none}summary::-webkit-details-marker{display:none}body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
+<script src="js/marca-tw.js"></script>
+<link rel="stylesheet" href="css/marca.css">
+<style>summary{list-style:none}summary::-webkit-details-marker{display:none}</style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/chart.umd.min.js"></script>
 <script src="vendor/qrcode.min.js"></script>
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20261105a"></script><script src="js/db.js?v=20261105a"></script><script src="js/common.js?v=20261105a"></script><script src="js/plantilla-propiman.js?v=20261105a"></script><script src="js/plantilla-mp.js?v=20261105a"></script>
+<script src="js/campo-puntos.js"></script>
+<script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/plantilla-propiman.js?v=20261110a"></script><script src="js/plantilla-mp.js?v=20261110a"></script>
 <style>
-  .dotgrid{background-image:radial-gradient(rgba(38,229,124,.22) 1px,transparent 1px);background-size:18px 18px}
   .postit{transition:transform .2s}.postit:hover{transform:scale(1.03);z-index:5}
   .fade-in{animation:fadeIn .5s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:#999;border-radius:4px}
@@ -24,12 +31,12 @@
   .colbody{overflow-y:auto;flex:1;min-height:0}
 </style>
 </head>
-<body class="bg-gray-200 font-sans text-gray-800 h-screen flex flex-col overflow-hidden">
+<body class="font-sans text-gray-800 h-screen flex flex-col overflow-hidden">
 <nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md flex-shrink-0 z-50 border-b border-emerald-500/30"></nav>
 <div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
-<div class="bg-fn text-white py-2 px-6 flex items-center justify-between flex-shrink-0">
-  <h1 id="titulo" class="text-2xl font-black uppercase tracking-widest fn-green"></h1>
-  <div class="flex items-center gap-6"><span id="conectados" class="text-sm text-gray-300"><i class="fas fa-users mr-1"></i>0 conectados</span><span id="tmr" class="font-mono text-3xl font-black text-emerald-400"></span></div>
+<div class="py-[11px] px-6 flex items-center justify-between flex-shrink-0 border-b border-fn-tinte">
+  <h1 id="titulo" class="text-[32px] leading-[44px] font-black"></h1>
+  <div class="flex items-center gap-6"><span id="conectados" class="fn-mono text-[12px] uppercase tracking-[.14em] text-fn-texto2"><i class="fas fa-users mr-1"></i>0 conectados</span><span id="tmr" class="fn-mono text-[32px] leading-[44px] font-medium text-fn-azul"></span></div>
 </div>
 <main id="app" class="flex-1 min-h-0 p-6 overflow-hidden"></main>
 <script>
@@ -50,7 +57,7 @@ function instr(titulo, pasos, icono = 'fa-circle-info') {
 }
 
 /* Portada a sangre: en bienvenida toda la pantalla es oscura (sin franja gris ni tarjeta flotante) */
-function modoPortada(on) { document.body.classList.toggle('bg-fn', on); document.body.classList.toggle('bg-gray-200', !on); const a = $('app'); a.classList.toggle('p-6', !on); a.classList.toggle('p-0', on); }
+function modoPortada(on) { const a = $('app'); a.classList.toggle('p-6', !on); a.classList.toggle('p-0', on); }
 function render() {
   const s = snap.sesion, et = s.etapa, app = $('app'), gs = grupos();
   modoPortada(et === 'bienvenida');
@@ -62,18 +69,9 @@ function render() {
 
   if (et === 'bienvenida') {
     const m = marca(s);
-    if (m) { app.innerHTML = `<div class="h-full bg-fn dotgrid flex flex-col items-center justify-center text-center fade-in px-16 py-8">
-      <img src="${esc(m.logo)}" alt="${esc(m.nombre)}" class="h-24 w-auto">
-      <p class="fn-mono text-base uppercase tracking-[.35em] text-emerald-400 mt-8">${esc(tituloEvento(s))}</p>
-      <h2 class="text-6xl font-black text-white mt-6 text-balance">${esc(s.empresa || s.nombre)}</h2>
-      <p class="text-xl text-gray-300 mt-10 max-w-4xl leading-relaxed text-pretty">${esc(s.config.caso || '')}</p>
-      <p class="mt-12 text-sm text-gray-400"><i class="fas fa-mug-hot mr-2"></i>Bienvenidos · en un momento arrancamos <span class="mx-3 text-gray-600">·</span>${facilitadoPor()}</p></div>`; return; }
-    app.innerHTML = `<div class="h-full bg-fn dotgrid flex flex-col items-center justify-center text-center fade-in px-16 py-8">
-      <div class="text-7xl font-black text-white tracking-tight leading-none">freaknerd<span class="fn-green">_</span></div>
-      <p class="fn-mono text-base uppercase tracking-[.35em] text-emerald-400 mt-4">${esc(s.config.titulo_evento || 'Foro de ideación')}</p>
-      ${logoEmpresa(s) ? `<img src="${esc(logoEmpresa(s))}" class="w-52 mt-12" onerror="this.style.display='none';$('muroEmpresa').classList.remove('hidden')">` : ''}<h2 id="muroEmpresa" class="${logoEmpresa(s) ? 'hidden ' : ''}text-5xl font-black text-white mt-12">${esc(s.empresa || s.nombre)}</h2>
-      <p class="text-lg text-gray-300 mt-10 max-w-4xl leading-relaxed">${esc(s.config.caso || '')}</p>
-      <p class="mt-10 fn-mono text-sm text-gray-500"><i class="fas fa-mug-hot mr-2"></i>Bienvenidos · en un momento arrancamos</p></div>`; return;
+    const portada = (logo, kicker, titulo, caso, pie) => { app.innerHTML = `<div class="h-full relative fade-in overflow-hidden"><div class="absolute inset-y-0 right-0 w-[46%] hidden md:block"><canvas class="fn-campo" data-campo="h" data-seed="7"></canvas></div><div class="absolute inset-x-0 bottom-0 h-[132px] md:hidden"><canvas class="fn-campo" data-campo="v" data-seed="7"></canvas></div><div class="absolute left-[22px] right-[22px] top-[22px] bottom-[154px] md:left-[88px] md:right-auto md:top-[66px] md:bottom-[66px] md:w-[52%] flex flex-col justify-start md:justify-center overflow-hidden">${logo}<p class="fn-mono text-[11px] md:text-[12px] uppercase tracking-[.14em] text-fn-texto2 mt-[22px] md:mt-[44px] leading-[22px]">${kicker}</p><h2 class="text-[40px] leading-[44px] md:text-[76px] md:leading-[88px] font-black mt-[11px]" style="letter-spacing:-.035em">${titulo}</h2><p class="text-[14px] leading-[22px] md:text-[18px] md:leading-[33px] text-fn-texto2 mt-[22px] md:max-w-[594px] text-pretty">${caso}</p><p class="mt-[22px] md:mt-[44px] fn-mono text-[11px] uppercase tracking-[.14em] text-fn-nota leading-[22px]">${pie}</p></div><div class="absolute right-[88px] bottom-[22px] w-[40%] fn-leyenda hidden md:flex"><span>← Así llega</span><span>Así queda →</span></div></div>`; };
+    if (m) { portada(`<img src="${esc(m.logo_claro || m.logo)}" alt="${esc(m.nombre)}" class="h-24 w-auto self-start">`, esc(tituloEvento(s)), esc(s.empresa || s.nombre), esc(s.config.caso || ''), `Bienvenidos · en un momento arrancamos · ${facilitadoPor()}`); return; }
+    portada(wordmark('text-[44px] self-start') + (logoEmpresa(s) ? `<img src="${esc(logoEmpresa(s))}" class="logo-azul h-12 w-auto mt-[22px] self-start" onerror="this.style.display='none'">` : ''), esc(s.config.titulo_evento || 'Foro de ideación'), esc(s.empresa || s.nombre), esc(s.config.caso || ''), 'Bienvenidos · en un momento arrancamos'); return;
   }
   if (et === 'instrucciones') {
     app.innerHTML = `<div class="h-full grid grid-cols-2 gap-10 items-center"><div class="bg-white rounded-2xl shadow-xl p-10 flex flex-col items-center"><div id="qr"></div><p class="mt-4 font-mono text-lg text-gray-600 break-all text-center" id="qrUrl"></p></div>
@@ -87,11 +85,11 @@ function render() {
   if (et === 'instrucciones_consolidacion') { app.innerHTML = instr('Consolidación MECE', ['Cerramos la ideación: gracias por las ideas.', 'La IA agrupa las ideas similares sin perder ninguna: cada idea queda en un solo grupo.', 'Luego cada uno califica las consolidadas en esfuerzo e impacto.', 'Mientras tanto: cafecito ☕'], 'fa-wand-magic-sparkles'); return; }
   if (et === 'consolidacion') {
     const ideas = ideasOK(), agrup = ideas.filter(i => i.estado === 'agrupada').length;
-    if (!gs.length) { app.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center"><i class="fas fa-wand-magic-sparkles text-7xl text-purple-400 mb-6 animate-pulse"></i><h2 class="text-5xl font-black">La IA está consolidando…</h2><p class="text-2xl text-gray-500 mt-4">${ideas.length} ideas del foro · criterio MECE</p></div>`; return; }
+    if (!gs.length) { app.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center"><i class="fas fa-wand-magic-sparkles text-7xl text-fn-medio mb-6 animate-pulse"></i><h2 class="text-5xl font-black">La IA está consolidando…</h2><p class="text-2xl text-gray-500 mt-4">${ideas.length} ideas del foro · criterio MECE</p></div>`; return; }
     app.innerHTML = `<div class="flex justify-between items-end mb-3"><h2 class="text-2xl font-black">Ideas consolidadas <span class="text-gray-400 font-normal text-lg">· ${gs.length} consolidadas a partir de ${ideas.length} ideas (${pct(agrup, ideas.length)}% cubiertas)</span></h2><button onclick="toggleTodos()" class="text-xs font-bold px-3 py-1.5 rounded-full border ${todosAbiertos ? 'bg-gray-800 text-white' : 'bg-white text-gray-600'}"><i class="fas fa-list-ul mr-1"></i>${todosAbiertos ? 'Ocultar ideas originales' : 'Mostrar ideas originales'}</button></div>
       <div class="cols" style="grid-template-columns:repeat(${snap.pilares.length},1fr);height:calc(100% - 44px)">${snap.pilares.map(p => { const c = col(p.color), mios = gs.filter(g => g.pilar_id === p.id); return `<div class="colwrap bg-white rounded-xl shadow border-t-8 ${c.border}"><div class="p-3 border-b flex justify-between"><h3 class="font-black ${c.text}">${esc(p.nombre)}</h3><span class="text-sm text-gray-400">${mios.length}</span></div><div class="colbody p-3 space-y-2">${mios.map(g => `<div class="p-3 rounded-lg border ${c.border} ${c.bg}"><div class="font-bold text-base leading-snug">${esc(g.titulo || g.texto)}</div><p class="text-sm text-gray-700 mt-1">${esc(g.descripcion_corta || '')}</p>${hijasHtml(g, 'text-xs')}</div>`).join('')}</div></div>`; }).join('')}</div>`; return;
   }
-  if (et === 'pausa') { app.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center"><i class="fas fa-mug-hot text-8xl text-amber-500 mb-6"></i><h2 class="text-6xl font-black">Pausa · cafecito</h2>${s.fin_etapa ? `<div id="tmrPausa" class="font-mono text-8xl font-black text-emerald-600 mt-6">${timerText(s)}</div><p class="text-2xl text-gray-500 mt-4">Volvemos con las ideas consolidadas.</p>` : `<p class="text-2xl text-gray-500 mt-4">Volvemos en unos minutos con las ideas consolidadas.</p>`}</div>`; return; }
+  if (et === 'pausa') { app.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center"><i class="fas fa-mug-hot text-8xl text-fn-azul mb-6"></i><h2 class="text-6xl font-black">Pausa · cafecito</h2>${s.fin_etapa ? `<div id="tmrPausa" class="fn-mono text-8xl font-black text-fn-azul mt-6">${timerText(s)}</div><p class="text-2xl text-gray-500 mt-4">Volvemos con las ideas consolidadas.</p>` : `<p class="text-2xl text-gray-500 mt-4">Volvemos en unos minutos con las ideas consolidadas.</p>`}</div>`; return; }
   if (et === 'resumen') { renderResumen(); return; }
   if (et === 'instrucciones_votacion') { app.innerHTML = instr('Votación', [`Cada uno tiene <b>${s.config.votos_por_pilar || 3} votos por pilar</b>.`, 'Vota las ideas consolidadas que más valgan la pena discutir.', 'Puedes quitar un voto y moverlo mientras la etapa esté abierta.'], 'fa-check-to-slot'); return; }
   if (et === 'votacion' || et === 'resultados') {
@@ -125,13 +123,13 @@ function render() {
     const rank = ev.slice().sort((a, b) => (PT[b.id] - PT[a.id]) || (b.impacto_prom - a.impacto_prom) || (b.conteo_eval - a.conteo_eval));
     NUM = {}; rank.forEach((g, i) => NUM[g.id] = i + 1);
     const porPrioridad = (a, b) => NUM[a.id] - NUM[b.id]; qw.sort(porPrioridad); pr.sort(porPrioridad); ds.sort(porPrioridad);
-    const item = (g) => { const c = col(g.pilar_color); return `<li class="flex items-start gap-2 cursor-pointer rounded px-1 -mx-1 hover:bg-white/70" onmouseenter="mostrarDetalle(${g.id})" onclick="fijarDetalle(${g.id})"><span class="shrink-0 w-7 h-7 rounded-full ${c.solid} text-white font-black text-sm flex items-center justify-center">${NUM[g.id]}</span><span class="flex-1 leading-tight"><b>${esc(g.titulo || g.texto)}</b> <span class="text-xs font-mono text-gray-500 whitespace-nowrap">P ${PT[g.id]} · I ${g.impacto_prom} · E ${g.esfuerzo_prom} · ${g.conteo_eval} calif.</span></span></li>`; };
+    const item = (g) => { const c = col(g.pilar_color); return `<li class="flex items-start gap-2 cursor-pointer rounded px-1 -mx-1 hover:bg-white/70" onmouseenter="mostrarDetalle(${g.id})" onclick="fijarDetalle(${g.id})"><span class="shrink-0 w-7 h-7 ${c.solid} text-white font-black text-sm flex items-center justify-center">${NUM[g.id]}</span><span class="flex-1 leading-tight"><b>${esc(g.titulo || g.texto)}</b> <span class="text-xs font-mono text-gray-500 whitespace-nowrap">P ${PT[g.id]} · I ${g.impacto_prom} · E ${g.esfuerzo_prom} · ${g.conteo_eval} calif.</span></span></li>`; };
     app.innerHTML = `<div class="h-full grid gap-4" style="grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)"><div class="bg-white rounded-xl shadow p-4 flex flex-col min-h-0 min-w-0"><h2 class="text-xl font-black mb-1">Matriz esfuerzo · impacto <span class="text-sm font-normal text-gray-400">· tamaño = cuántos la calificaron · número = prioridad (impacto − esfuerzo, ponderado por cuánta gente calificó)</span></h2><div class="flex-1 min-h-0 relative"><canvas id="chart"></canvas></div></div>
       <div class="flex flex-col gap-3 min-h-0 overflow-y-auto">
-      <div id="detalle" class="shrink-0 bg-white border-2 border-gray-900 rounded-xl p-5 min-h-[110px]"><p class="text-sm text-gray-400"><i class="fas fa-hand-pointer mr-1"></i>Pasa el mouse o haz clic sobre un punto o un título para ver la idea completa.</p></div>
-      <div class="shrink-0 bg-emerald-50 border border-emerald-300 rounded-xl p-4"><h3 class="font-black text-emerald-800 text-lg"><i class="fas fa-bolt mr-1"></i>QUICK WINS · hacer ya (${qw.length})</h3><ul class="mt-3 space-y-2">${qw.map(item).join('') || '<li class="text-sm text-gray-400">Ninguna todavía</li>'}</ul></div>
-      <div class="shrink-0 bg-blue-50 border border-blue-300 rounded-xl p-4"><h3 class="font-black text-blue-800"><i class="fas fa-diagram-project mr-1"></i>PROYECTOS · planificar (${pr.length})</h3><ul class="mt-3 space-y-2 text-sm">${pr.map(item).join('') || '<li class="text-gray-400">Ninguno</li>'}</ul></div>
-      <div class="shrink-0 bg-gray-50 border border-gray-300 rounded-xl p-4"><h3 class="font-bold text-gray-600 text-sm">TAREAS MENORES · si sobra tiempo / POSTERGAR (${ds.length})</h3><ul class="mt-3 space-y-2 text-xs">${ds.map(item).join('') || '<li class="text-gray-400">—</li>'}</ul></div></div></div>`;
+      <div id="detalle" class="shrink-0 bg-white border border-fn-azul rounded-xl p-5 min-h-[110px]"><p class="text-sm text-gray-400"><i class="fas fa-hand-pointer mr-1"></i>Pasa el mouse o haz clic sobre un punto o un título para ver la idea completa.</p></div>
+      <div class="shrink-0 bg-white border border-fn-tinte rounded-xl p-4"><h3 class="font-black text-lg">Hacer ya (${qw.length})</h3><ul class="mt-3 space-y-2">${qw.map(item).join('') || '<li class="text-sm text-gray-400">Ninguna todavía</li>'}</ul></div>
+      <div class="shrink-0 bg-white border border-fn-tinte rounded-xl p-4"><h3 class="font-black text-lg">Planear (${pr.length})</h3><ul class="mt-3 space-y-2 text-sm">${pr.map(item).join('') || '<li class="text-gray-400">Ninguno</li>'}</ul></div>
+      <div class="shrink-0 bg-white border border-fn-tinte rounded-xl p-4"><h3 class="font-black text-sm">Tareas menores y postergar (${ds.length})</h3><ul class="mt-3 space-y-2 text-xs">${ds.map(item).join('') || '<li class="text-gray-400">—</li>'}</ul></div></div></div>`;
     dibujarChart(ev, max); if (fijado && ev.some(g => g.id === fijado)) mostrarDetalle(fijado); return;
   }
   app.innerHTML = `<div class="h-full flex items-center justify-center text-3xl text-gray-400">${esc(stageInfo(et).label)}</div>`;
@@ -149,7 +147,7 @@ async function renderResumen() {
     <div class="grid grid-cols-2 gap-4 flex-1 min-h-0">
       <div class="bg-white rounded-xl shadow p-6 min-h-0 overflow-y-auto"><h3 class="font-black text-lg mb-1">Ideas por pilar</h3><p class="text-xs text-gray-400 mb-4">Porcentaje de las ${r.ideas} ideas originales · a la derecha, cuántas consolidadas salieron</p>${r.porPilar.map(p => { const c = col(p.color), pc = pct(p.ideas, r.ideas); return `<div class="mb-4"><div class="flex justify-between items-baseline"><span class="font-bold text-lg ${c.text}">${esc(p.nombre)}</span><span class="font-mono"><b class="text-2xl">${pc}%</b> <span class="text-gray-400 text-sm">· ${p.consolidadas} consolidada${p.consolidadas === 1 ? '' : 's'}</span></span></div><div class="h-4 bg-gray-100 rounded mt-1"><div class="h-4 rounded ${c.solid}" style="width:${pc}%"></div></div></div>`; }).join('')}</div>
       <div class="flex flex-col gap-4 min-h-0"><div class="bg-white rounded-xl shadow p-5"><h3 class="font-black text-lg mb-3">Matriz</h3><div class="grid grid-cols-2 gap-2 text-center"><div class="bg-emerald-50 rounded-lg p-3"><div class="text-3xl font-black text-emerald-700">${r.cuad.quick}</div><div class="text-[10px] font-mono uppercase text-emerald-700">quick wins</div></div><div class="bg-blue-50 rounded-lg p-3"><div class="text-3xl font-black text-blue-700">${r.cuad.proyecto}</div><div class="text-[10px] font-mono uppercase text-blue-700">proyectos</div></div><div class="bg-amber-50 rounded-lg p-3"><div class="text-3xl font-black text-amber-700">${r.cuad.relleno}</div><div class="text-[10px] font-mono uppercase text-amber-700">tareas menores</div></div><div class="bg-gray-100 rounded-lg p-3"><div class="text-3xl font-black text-gray-600">${r.cuad.descartar}</div><div class="text-[10px] font-mono uppercase text-gray-600">postergar</div></div></div></div>
-        <div class="bg-fn text-white rounded-xl shadow p-5 flex-1"><h3 class="font-black text-lg mb-3 text-emerald-400">Top 3 por puntaje</h3>${r.top.map((g, i) => `<div class="flex items-start gap-3 mb-3"><span class="shrink-0 w-8 h-8 rounded-full bg-emerald-400 text-black font-black flex items-center justify-center">${i + 1}</span><div><div class="font-bold leading-tight">${esc(g.titulo || g.texto)}</div><div class="font-mono text-xs text-gray-400 mt-1">P ${puntaje(g, r.nmax)} · I ${g.impacto_prom} · E ${g.esfuerzo_prom} · ${g.conteo_eval} calif.</div></div></div>`).join('') || '<p class="text-gray-400 text-sm">Aún sin calificaciones</p>'}</div></div>
+        <div class="bg-white rounded-xl shadow p-5 flex-1"><h3 class="font-black text-lg mb-3">Top 3 por puntaje</h3>${r.top.map((g, i) => `<div class="flex items-start gap-3 mb-3"><span class="shrink-0 w-8 h-8 bg-fn-azul text-white font-black flex items-center justify-center">${i + 1}</span><div><div class="font-bold leading-tight">${esc(g.titulo || g.texto)}</div><div class="font-mono text-xs text-fn-nota mt-1">P ${puntaje(g, r.nmax)} · I ${g.impacto_prom} · E ${g.esfuerzo_prom} · ${g.conteo_eval} calif.</div></div></div>`).join('') || '<p class="text-gray-400 text-sm">Aún sin calificaciones</p>'}</div></div>
     </div></div>`;
 }
 
@@ -157,7 +155,7 @@ async function renderResumen() {
 let NUM = {}, PT = {}, fijado = null;
 function mostrarDetalle(id) {
   const g = snap.ideas.find(x => x.id === id); const box = $('detalle'); if (!g || !box) return; const c = col(g.pilar_color), q = cuadrante(g.esfuerzo_prom, g.impacto_prom, escalaMax(snap.sesion));
-  box.innerHTML = `<div class="flex items-start gap-3"><span class="shrink-0 w-10 h-10 rounded-full ${c.solid} text-white font-black text-lg flex items-center justify-center">${NUM[g.id] || ''}</span><div class="min-w-0 flex-1"><div class="text-[10px] font-mono uppercase ${c.text}">${esc(g.pilar_nombre || '')} · ${q.label}${fijado === g.id ? ' · <span class="text-gray-400">fijada (clic para soltar)</span>' : ''}</div><div class="font-black text-lg leading-tight">${esc(g.titulo || g.texto)}</div><p class="text-sm text-gray-700 mt-1">${esc(g.descripcion_corta || '')}</p>${g.detalle ? `<p class="text-xs text-gray-500 mt-1">${esc(g.detalle)}</p>` : ''}<div class="font-mono text-xs mt-2"><b>Puntaje ${PT[g.id] ?? ''}</b> · <span class="text-blue-700">Impacto ${g.impacto_prom}</span> · <span class="text-purple-700">Esfuerzo ${g.esfuerzo_prom}</span> · ${g.conteo_eval} calificaciones</div></div></div>`;
+  box.innerHTML = `<div class="flex items-start gap-3"><span class="shrink-0 w-10 h-10 ${c.solid} text-white font-black text-lg flex items-center justify-center">${NUM[g.id] || ''}</span><div class="min-w-0 flex-1"><div class="text-[10px] font-mono uppercase ${c.text}">${esc(g.pilar_nombre || '')} · ${q.label}${fijado === g.id ? ' · <span class="text-gray-400">fijada (clic para soltar)</span>' : ''}</div><div class="font-black text-lg leading-tight">${esc(g.titulo || g.texto)}</div><p class="text-sm text-gray-700 mt-1">${esc(g.descripcion_corta || '')}</p>${g.detalle ? `<p class="text-xs text-gray-500 mt-1">${esc(g.detalle)}</p>` : ''}<div class="font-mono text-xs mt-2"><b>Puntaje ${PT[g.id] ?? ''}</b> · <span class="text-blue-700">Impacto ${g.impacto_prom}</span> · <span class="text-purple-700">Esfuerzo ${g.esfuerzo_prom}</span> · ${g.conteo_eval} calificaciones</div></div></div>`;
 }
 function fijarDetalle(id) { fijado = (fijado === id) ? null : id; mostrarDetalle(id); }
 
@@ -173,15 +171,17 @@ function dibujarChart(ev, max) {
   const PX = 150; for (let it = 0; it < 40; it++) { let moved = false; for (let i = 0; i < puntos.length; i++) for (let j = i + 1; j < puntos.length; j++) { const a = puntos[i], b = puntos[j]; const dx = b.x - a.x, dy = b.y - a.y; const d = Math.hypot(dx, dy) || 0.001; const min = (radio(a.g) + radio(b.g) + 4) / PX; if (d < min) { const push = (min - d) / 2, ux = dx / d, uy = dy / d; a.x -= ux * push; a.y -= uy * push; b.x += ux * push; b.y += uy * push; moved = true; } } if (!moved) break; }
   puntos.forEach(p => { p.x = Math.min(max + 0.3, Math.max(0.7, p.x)); p.y = Math.min(max + 0.3, Math.max(0.7, p.y)); });   // 13 px con 1 calificación → 24 px con el máximo (cabe el número)
   const tick = (v) => Number.isInteger(v) ? v : '';
-  chart = new Chart(ctx, { type: 'scatter', data: { datasets: [{ data: puntos, pointRadius: puntos.map(p => radio(p.g)), pointHoverRadius: puntos.map(p => radio(p.g) + 3), pointBackgroundColor: puntos.map(p => col(p.g.pilar_color).hex), pointBorderColor: '#fff', pointBorderWidth: 2, clip: false }] },
+  chart = new Chart(ctx, { type: 'scatter', data: { datasets: [{ data: puntos, pointRadius: puntos.map(p => radio(p.g)), pointHoverRadius: puntos.map(p => radio(p.g) + 3), pointBackgroundColor: '#09318D', pointBorderColor: '#FCFFFF', pointBorderWidth: 2, clip: false }] },
     options: { responsive: true, maintainAspectRatio: false, layout: { padding: { left: 8, right: 16, top: 16, bottom: 8 } },
       onClick: (e, els) => { if (els.length) fijarDetalle(puntos[els[0].index].g.id); },
       onHover: (e, els) => { if (els.length && !fijado) mostrarDetalle(puntos[els[0].index].g.id); },
       plugins: { legend: { display: false }, tooltip: { displayColors: false, titleFont: { size: 15, weight: 'bold' }, bodyFont: { size: 13 }, padding: 10, callbacks: { title: (c) => `#${NUM[c[0].raw.g.id]} · ${c[0].raw.g.titulo || c[0].raw.g.texto}`, label: (c) => { const g = c.raw.g; const d = (g.descripcion_corta || '').match(/.{1,60}(\s|$)/g) || []; return [...d, `Puntaje ${PT[g.id]} · Impacto ${g.impacto_prom} · Esfuerzo ${g.esfuerzo_prom} · ${g.conteo_eval} calificaciones`]; } } } },
-      scales: { x: { min: 0.6, max: max + 0.4, ticks: { stepSize: 0.5, callback: tick, font: { family: 'monospace' } }, title: { display: true, text: 'ESFUERZO →', font: { family: 'monospace' } }, grid: { color: (c) => c.tick.value === mid ? '#111' : (Number.isInteger(c.tick.value) ? '#eee' : 'transparent') } },
-                y: { min: 0.6, max: max + 0.4, ticks: { stepSize: 0.5, callback: tick, font: { family: 'monospace' } }, title: { display: true, text: 'IMPACTO ↑', font: { family: 'monospace' } }, grid: { color: (c) => c.tick.value === mid ? '#111' : (Number.isInteger(c.tick.value) ? '#eee' : 'transparent') } } } },
-    plugins: [{ id: 'quad', beforeDraw(ch) { const { ctx, chartArea: a, scales: { x, y } } = ch; const mx = x.getPixelForValue(mid), my = y.getPixelForValue(mid); ctx.save(); ctx.fillStyle = 'rgba(16,185,129,.10)'; ctx.fillRect(a.left, a.top, mx - a.left, my - a.top); ctx.fillStyle = 'rgba(37,99,235,.07)'; ctx.fillRect(mx, a.top, a.right - mx, my - a.top); ctx.fillStyle = 'rgba(245,158,11,.08)'; ctx.fillRect(a.left, my, mx - a.left, a.bottom - my); ctx.fillStyle = 'rgba(107,114,128,.08)'; ctx.fillRect(mx, my, a.right - mx, a.bottom - my); ctx.font = 'bold 14px monospace'; ctx.globalAlpha = 0.55; ctx.fillStyle = '#047857'; ctx.fillText('QUICK WINS', a.left + 10, a.top + 20); ctx.fillStyle = '#1d4ed8'; ctx.fillText('PROYECTOS', mx + 10, a.top + 20); ctx.fillStyle = '#b45309'; ctx.fillText('TAREAS MENORES', a.left + 10, a.bottom - 10); ctx.fillStyle = '#4b5563'; ctx.fillText('POSTERGAR', mx + 10, a.bottom - 10); ctx.restore(); },
-      afterDatasetsDraw(ch) { const { ctx } = ch; ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ch.getDatasetMeta(0).data.forEach((pt, i) => { const g = puntos[i].g; ctx.font = `bold ${Math.max(11, Math.round(radio(g) * 0.9))}px sans-serif`; ctx.fillText(String(NUM[g.id] || ''), pt.x, pt.y + 1); }); ctx.restore(); } }] });
+      scales: { x: { min: 0.6, max: max + 0.4, ticks: { stepSize: 0.5, callback: tick, color: '#5A6B94', font: { family: 'JetBrains Mono', size: 11 } }, title: { display: true, text: 'ESFUERZO →', color: '#5A6B94', font: { family: 'JetBrains Mono', size: 11, weight: 500 } }, grid: { color: (c) => c.tick.value === mid ? '#09318D' : (Number.isInteger(c.tick.value) ? '#D8E0EE' : 'transparent') } },
+                y: { min: 0.6, max: max + 0.4, ticks: { stepSize: 0.5, callback: tick, color: '#5A6B94', font: { family: 'JetBrains Mono', size: 11 } }, title: { display: true, text: 'IMPACTO ↑', color: '#5A6B94', font: { family: 'JetBrains Mono', size: 11, weight: 500 } }, grid: { color: (c) => c.tick.value === mid ? '#09318D' : (Number.isInteger(c.tick.value) ? '#D8E0EE' : 'transparent') } } } },
+    plugins: [{ id: 'quad', beforeDraw(ch) { const { ctx, chartArea: a, scales: { x, y } } = ch; const mx = x.getPixelForValue(mid), my = y.getPixelForValue(mid); ctx.save(); ctx.fillStyle = '#EED2E2'; ctx.fillRect(a.left, a.top, mx - a.left, my - a.top); ctx.font = '900 12px Montserrat'; ctx.fillStyle = '#09318D'; ctx.fillText('HACER YA', a.left + 11, a.top + 22); ctx.fillText('PLANEAR', mx + 11, a.top + 22); ctx.fillText('TAREAS MENORES', a.left + 11, a.bottom - 11); ctx.fillText('POSTERGAR', mx + 11, a.bottom - 11); ctx.restore(); },
+      /* La celda seleccionada de la vista: el cuadrante «Hacer ya» (borde azul de 4 px + tirador de 11 px) */
+      beforeDatasetsDraw(ch) { const { ctx, chartArea: a, scales: { x, y } } = ch; const mx = x.getPixelForValue(mid), my = y.getPixelForValue(mid); ctx.save(); ctx.strokeStyle = '#09318D'; ctx.lineWidth = 4; ctx.strokeRect(a.left + 2, a.top + 2, mx - a.left - 4, my - a.top - 4); ctx.fillStyle = '#FCFFFF'; ctx.fillRect(mx - 6 - 2, my - 6 - 2, 15, 15); ctx.fillStyle = '#09318D'; ctx.fillRect(mx - 6, my - 6, 11, 11); ctx.restore(); },
+      afterDatasetsDraw(ch) { const { ctx } = ch; ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#FCFFFF'; ch.getDatasetMeta(0).data.forEach((pt, i) => { const g = puntos[i].g; ctx.font = `bold ${Math.max(11, Math.round(radio(g) * 0.9))}px JetBrains Mono`; ctx.fillText(String(NUM[g.id] || ''), pt.x, pt.y + 1); }); ctx.restore(); } }] });
 }
 Poll.start(cargar, 4000);
 </script>

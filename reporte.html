@@ -2,43 +2,183 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20261105a">
+<meta name="app-version" content="20261110a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>freaknerd_ · Foro de Ideación · Reporte final</title>
+<title>freaknerd · Foro de Ideación · Reporte final</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
+<link href="vendor/fonts-mono.css" rel="stylesheet">
+<meta name="theme-color" content="#FCFFFF">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
 <script src="vendor/tailwind.js"></script>
-<style>body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}</style>
+<script src="js/marca-tw.js"></script>
+<link rel="stylesheet" href="css/marca.css">
+<style></style>
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/supabase.min.js"></script>
-<script src="js/config.js?v=20261105a"></script><script src="js/db.js?v=20261105a"></script><script src="js/common.js?v=20261105a"></script><script src="js/plantilla-propiman.js?v=20261105a"></script><script src="js/plantilla-mp.js?v=20261105a"></script>
-<style>@media print{.noprint{display:none!important}body{background:#fff}.card{box-shadow:none!important;border:1px solid #ddd}} input.inl{border:0;border-bottom:1px dashed #bbb;background:transparent;width:100%;font-size:12px}</style>
+<script src="js/campo-puntos.js"></script>
+<script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/plantilla-propiman.js?v=20261110a"></script><script src="js/plantilla-mp.js?v=20261110a"></script>
+<style>
+/* ===== Reporte final · láminas 1280×720 en retícula de 22 px (manual §11.2 y §11.6) ===== */
+body{background:var(--fn-blanco)}
+.pantalla{padding:22px 0 66px}
+.lamina{position:relative;width:1280px;height:720px;margin:0 auto 22px;background:var(--fn-blanco);overflow:hidden;outline:1px solid var(--fn-tinte);outline-offset:-1px;page-break-after:always;break-after:page;color:var(--fn-azul)}
+.lamina.azul{background:var(--fn-azul);color:var(--fn-blanco);outline:0}
+.lamina *{box-sizing:border-box}
+.top{position:absolute;left:35px;right:35px;top:33px;height:22px;display:flex;justify-content:space-between;align-items:center}
+.top .wm{font-size:22px}
+.mono{font-family:var(--fn-mono);font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:11px;line-height:22px}
+.t2{color:var(--fn-azul-texto2)} .tn{color:var(--fn-azul-nota)}
+.lamina .hd{position:absolute;left:35px;top:88px;width:594px}
+.lamina .hd h2{position:static;width:auto}
+.lamina .hd .sub{position:static;margin-top:22px}
+.lamina h2{position:absolute;left:35px;top:88px;width:594px;font:900 40px/44px var(--fn-font);letter-spacing:-.03em;text-wrap:balance}
+.lamina .sub{position:absolute;left:35px;top:198px;width:528px;font:500 16px/22px var(--fn-font);color:var(--fn-azul-texto2)}
+.foot{position:absolute;left:35px;right:35px;top:660px;display:flex;justify-content:space-between;gap:22px;color:var(--fn-azul-nota)}
+.foot span:first-child{max-width:900px}
+/* tablas: encabezado mono 11 + filete azul 2 px; filas de 44 px con filete tinte; cifras mono a la derecha */
+table.rk{position:absolute;border-collapse:collapse;table-layout:fixed}
+table.rk th,table.rk td{height:44px;padding:0 8px;border-bottom:1px solid var(--fn-tinte);text-align:left;vertical-align:middle;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+table.rk th{border-bottom:2px solid var(--fn-azul)!important;color:var(--fn-azul-texto2)!important;font-family:var(--fn-mono)!important}
+table.rk td{font:500 14px/22px var(--fn-font);color:var(--fn-azul)}
+table.rk td.n{font:500 11px var(--fn-mono);color:var(--fn-azul-nota)}
+table.rk td.num{font:500 13px var(--fn-mono);text-align:right}
+table.rk th.r{text-align:right}
+table.rk td.b{font-weight:900}
+table.rk td.tsel{font-weight:900}
+table.rk tr.sel td.tsel{position:relative;background:var(--fn-rosa);box-shadow:inset 0 0 0 4px var(--fn-azul);border-bottom-color:transparent}
+table.rk tr.sel td.tsel::after{content:"";position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:var(--fn-azul);box-shadow:0 0 0 2px var(--fn-blanco);z-index:3}
+table.rk td.tsel{overflow:visible}
+input.inl{border:0;border-bottom:1px solid var(--fn-azul-medio);background:transparent;width:100%;font:500 13px var(--fn-font);color:var(--fn-azul);height:22px;padding:0}
+input.inl:focus{outline:0;border-bottom:2px solid var(--fn-azul)}
+/* matriz impacto × esfuerzo (referencias/lamina.png) */
+.mx{position:absolute;left:651px;top:352px;width:594px;height:264px;border-left:2px solid var(--fn-azul);border-bottom:2px solid var(--fn-azul)}
+.mx .q{position:absolute;width:297px;height:132px;padding:0 11px;border:1px solid var(--fn-tinte)}
+.mx .q b{display:block;font:900 12px/33px var(--fn-font);letter-spacing:.04em;text-transform:uppercase}
+.mx .q1{left:0;top:0;background:var(--fn-rosa);box-shadow:inset 0 0 0 3px var(--fn-azul);border:0}
+.mx .q1::after{content:"";position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:var(--fn-azul);box-shadow:0 0 0 2px var(--fn-blanco);z-index:3}
+.mx .q2{left:297px;top:0}.mx .q3{left:0;top:132px}.mx .q4{left:297px;top:132px}
+.mx .d{position:absolute;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;background:var(--fn-azul);color:var(--fn-blanco);font:500 10px/24px var(--fn-mono);text-align:center;z-index:2}
+.mx .ax{position:absolute;color:var(--fn-azul-nota)}
+/* cifras y barras */
+.kp{position:absolute;width:264px;height:132px;border-top:2px solid var(--fn-azul)}
+.kp .v{font:900 66px/66px var(--fn-font);letter-spacing:-.035em;margin-top:11px}
+.kp .l{margin-top:11px}
+.bar{position:absolute;left:651px;width:594px;height:44px;display:grid;grid-template-columns:232px 1fr 44px;align-items:center;gap:11px;border-bottom:1px solid var(--fn-tinte);font:500 14px/22px var(--fn-font)}
+.bar .tr{height:11px;background:var(--fn-tinte)} .bar .tr i{display:block;height:11px;background:var(--fn-azul)}
+.bar .c{text-align:right;font:500 13px var(--fn-mono)}
+/* portada */
+.lamina.azul .wm{color:var(--fn-blanco)}
+.portada .tt{position:absolute;left:35px;top:154px;width:700px}
+.portada h1{position:static;width:auto;font:900 var(--tt,76px)/var(--ttl,88px) var(--fn-font);letter-spacing:-.035em;color:var(--fn-blanco);text-wrap:balance}
+.portada .lead{margin-top:22px;width:594px;font:500 18px/33px var(--fn-font);color:var(--fn-tinte)}
+.portada canvas{position:absolute;right:0;top:0;width:520px;height:720px}
+.portada .cli{position:absolute;left:35px;bottom:33px;height:44px;filter:brightness(0) invert(1)}
+/* anexos: texto corrido, dos columnas */
+.anexo{page:anexo;width:1280px;margin:0 auto;padding:33px 35px 66px;columns:2;column-gap:22px;font-size:12px;line-height:22px}
+.anexo h2{position:static;width:auto;column-span:all;font:900 32px/44px var(--fn-font);margin:0 0 22px}
+.anexo h3{font:900 14px/22px var(--fn-font);margin:22px 0 0;break-after:avoid}
+.anexo .blq{break-inside:avoid;border-top:1px solid var(--fn-tinte);padding:11px 0}
+.anexo ul{margin:0;padding-left:16px;color:var(--fn-azul-texto2)} .anexo li{margin:0}
+.anexo .au{color:var(--fn-azul-nota)}
+.anexo.b ol{margin:0;padding-left:22px;color:var(--fn-azul-texto2)}
+.anexo .tach{text-decoration:line-through;color:var(--fn-azul-nota)}
+.barra-pantalla{max-width:1280px;margin:0 auto 22px;padding:0 22px;display:flex;justify-content:space-between;align-items:center;gap:22px}
+@page{size:1280px 720px;margin:0}
+@page anexo{size:1280px 720px;margin:33px 0 44px}
+@media print{
+  .noprint{display:none!important}
+  html,body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pantalla{padding:0;zoom:1!important}
+  .lamina{margin:0;outline:0}
+  .anexo{margin:0;padding:0 35px}
+  input.inl{border-bottom-color:var(--fn-tinte)}
+  .fn-rosa-print,.lamina .q1,table.rk tr.sel td.tsel{background:var(--fn-rosa-print)!important}
+  .mx .q1{background:var(--fn-rosa-print)}
+}
+</style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800 min-h-screen">
-<nav data-nav class="noprint bg-fn text-white p-3 flex justify-between items-center shadow-md border-b border-emerald-500/30"></nav>
-<div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
-<main class="p-6"><div id="app" class="max-w-6xl mx-auto"></div></main>
+<body>
+<nav data-nav class="noprint"></nav>
+<div id="errBanner" hidden></div>
+<main class="pantalla"><div id="app"></div></main>
 <script>
 let snap = null, rendered = false;
 renderNav('reporte');
 async function cargar() { snap = await DB.snapshot(); setNavEtapa(snap.sesion); if (!rendered) { rendered = true; render(); } }
+/* Zoom de pantalla: las láminas miden 1280 px; en pantallas angostas se reducen (al imprimir vuelven a 1:1) */
+function ajustar() { const z = Math.min(1, (window.innerWidth - 22) / 1280); document.querySelector('.pantalla').style.zoom = z; }
+window.addEventListener('resize', ajustar);
+/* Antes de imprimir se esperan las fuentes (si no, el PDF sale con la tipografía de reemplazo) */
+async function imprimir() { try { await document.fonts.load('900 16px Montserrat'); await document.fonts.load('500 16px Montserrat'); await document.fonts.load('500 11px "JetBrains Mono"'); await document.fonts.ready; } catch (e) {} window.print(); }
+window.addEventListener('beforeprint', () => { document.querySelector('.pantalla').style.zoom = 1; });
+window.addEventListener('afterprint', ajustar);
 function render() {
   const s = snap.sesion, max = escalaMax(s), editable = !!DB.clave && sessionStorage.getItem('foro_rol_' + DB.SES);
+  const m = marca(s), fecha = new Date().toLocaleDateString('es-CO', { dateStyle: 'long' });
   const gs = calificables(snap.ideas); const ideas = snap.ideas.filter(i => i.tipo === 'idea');
-  const orden = { quick: 0, proyecto: 1, relleno: 2, descartar: 3 };
   const nmax = Math.max(...gs.map(g => g.conteo_eval), 1);
   const lista = gs.slice().sort((a, b) => (b.conteo_eval > 0) - (a.conteo_eval > 0) || (puntaje(b, nmax) - puntaje(a, nmax)) || (b.impacto_prom - a.impacto_prom));
   const NUM = {}; lista.filter(g => g.conteo_eval > 0).forEach((g, i) => NUM[g.id] = i + 1);
-  $('app').innerHTML = `<div class="card bg-white rounded-xl shadow p-8">
-    <div class="flex justify-between items-start border-b pb-4 mb-4"><div>${marca(s) ? `<img src="${esc(marca(s).logo_claro)}" alt="${esc(marca(s).nombre)}" class="h-8 w-auto mb-4">` : ''}<h1 class="text-3xl font-black">${esc(s.config.titulo_reporte || 'Reporte consolidado final')}</h1><div class="text-sm text-gray-500 mt-1"><b>${esc(s.nombre)}</b> · Facilitador: ${esc(s.facilitador || '')} · ${new Date().toLocaleDateString('es-CO', { dateStyle: 'long' })}</div><div class="text-xs text-gray-400 mt-1">${ideas.length} ideas de ${snap.conectados}+ participantes · ${gs.length} ideas consolidadas · ${gs.reduce((a, g) => a + g.conteo_eval, 0)} calificaciones</div></div><div class="noprint flex gap-2"><button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded"><i class="fas fa-print mr-2"></i>Imprimir / PDF</button></div></div>
-    ${editable ? '<p class="noprint text-xs text-emerald-700 mb-2"><i class="fas fa-pen mr-1"></i>Puedes escribir responsable y tiempo directamente en la tabla (se guardan al salir del campo).</p>' : '<p class="noprint text-xs text-gray-400 mb-2">Para asignar responsables y tiempos, entra primero como administrador o líder.</p>'}
-    <div class="overflow-x-auto rounded-lg border"><table class="w-full text-sm"><thead class="text-xs uppercase bg-gray-800 text-white"><tr><th class="px-3 py-2 text-left">Prioridad</th><th class="px-3 py-2 text-left">Pilar</th><th class="px-3 py-2 text-left">Idea consolidada</th><th class="px-3 py-2 text-left">Ideas originales</th><th class="px-3 py-2 text-center">Punt.</th><th class="px-3 py-2 text-center">Imp.</th><th class="px-3 py-2 text-center">Esf.</th><th class="px-3 py-2 text-left">Cuadrante</th><th class="px-3 py-2 text-left" style="min-width:130px">Responsable</th><th class="px-3 py-2 text-left" style="min-width:100px">Tiempo</th></tr></thead><tbody>
-    ${lista.map(g => { const q = g.conteo_eval ? cuadrante(g.esfuerzo_prom, g.impacto_prom, max) : null; const hijas = ideas.filter(i => i.padre_id === g.id); return `<tr class="border-b align-top ${q && q.key === 'quick' ? 'bg-emerald-50' : ''}"><td class="px-3 py-3 font-mono text-xs"><b class="text-base">${NUM[g.id] || '–'}</b><div class="text-gray-400">id ${g.id}</div></td><td class="px-3 py-3 text-xs font-bold ${col(g.pilar_color).text}">${esc(g.pilar_nombre || '')}</td><td class="px-3 py-3"><b class="text-indigo-800">${esc(g.titulo || g.texto)}</b><div class="text-xs text-gray-600">${esc(g.descripcion_corta || '')}</div>${g.detalle ? `<div class="text-xs text-gray-500 mt-1">${esc(g.detalle)}</div>` : ''}</td><td class="px-3 py-3 text-xs text-gray-600"><ul class="list-disc pl-4">${hijas.map(h => `<li>${esc(h.texto)} <span class="text-gray-400">(${esc(h.participante_nombre || '')})</span></li>`).join('')}</ul></td><td class="px-3 py-3 text-center font-mono font-black">${g.conteo_eval ? puntaje(g, nmax) : '–'}</td><td class="px-3 py-3 text-center font-bold text-blue-600">${g.conteo_eval ? g.impacto_prom : '–'}</td><td class="px-3 py-3 text-center font-bold text-purple-600">${g.conteo_eval ? g.esfuerzo_prom : '–'}</td><td class="px-3 py-3 text-xs font-bold ${q ? 'text-' + q.color + '-700' : 'text-gray-400'}">${q ? q.label : 'sin calificar'}<div class="font-normal text-gray-400">${g.conteo_eval} calif. · ${g.votos} votos</div></td>
-      <td class="px-3 py-3">${editable ? `<input class="inl" value="${esc(g.responsable || '')}" onchange="meta(${g.id},'responsable',this.value)">` : esc(g.responsable || '')}</td><td class="px-3 py-3">${editable ? `<input class="inl" value="${esc(g.tiempo_ejecucion || '')}" onchange="meta(${g.id},'tiempo_ejecucion',this.value)">` : esc(g.tiempo_ejecucion || '')}</td></tr>`; }).join('') || '<tr><td colspan="10" class="p-6 text-center text-gray-400">Aún no hay ideas consolidadas.</td></tr>'}
-    </tbody></table></div>
-    <h2 class="text-xl font-black mt-8 mb-2">Anexo · todas las ideas del foro (${ideas.length})</h2>
-    ${snap.pilares.map(p => { const mias = ideas.filter(i => i.pilar_id === p.id); return `<h3 class="font-bold mt-4 ${col(p.color).text}">${esc(p.nombre)} (${mias.length})</h3><ol class="list-decimal pl-6 text-xs text-gray-700 mt-1 space-y-0.5">${mias.map(i => `<li class="${i.estado === 'repetida' ? 'line-through text-gray-400' : ''}">${esc(i.texto)} <span class="text-gray-400">· ${esc(i.participante_nombre || '')}${i.subfrente ? ' · ' + esc(i.subfrente) : ''}</span></li>`).join('')}</ol>`; }).join('')}
-    <div class="text-[10px] text-gray-400 mt-8 border-t pt-2 font-mono flex items-center gap-3">${marca(s) ? `<img src="${esc(marca(s).logo_claro)}" alt="${esc(marca(s).nombre)}" class="h-4 w-auto"><span>${esc(tituloEvento(s))} · facilitado por freaknerd_</span>` : '<span>freaknerd_ · Foro de ideación</span>'}<span>· generado ${new Date().toLocaleString('es-CO')}</span></div></div>`;
+  const ev = lista.filter(g => g.conteo_eval > 0), qk = (g) => cuadrante(g.esfuerzo_prom, g.impacto_prom, max);
+  const nCal = gs.reduce((a, g) => a + g.conteo_eval, 0), nAut = new Set(ideas.map(i => i.participante_nombre || i.participante_id)).size;
+  const nQuick = ev.filter(g => qk(g).key === 'quick').length;
+  const demo = ideas.length && ideas.every(i => /^Demo · /.test(i.participante_nombre || ''));
+  const quien = esc(s.empresa || s.nombre), titulo = esc(s.config.titulo_reporte || 'Reporte consolidado final');
+  const pie = (n, sec) => `<div class="foot mono"><span>${demo ? 'Ejemplo ilustrativo · ' : ''}Calificado por el equipo de ${quien} · ${nCal} calificaciones · ${fecha}</span><span>${String(n).padStart(2, '0')}</span></div>`;
+  const top = (sec) => `<div class="top"><span class="wm">freaknerd<i></i></span><div class="mono t2">${titulo.length > 60 ? 'Reporte final' : titulo} · ${sec}</div></div>`;
+  const f1 = (v) => Number(v).toFixed(1).replace('.', ',');
+  const txt = (g) => esc(g.titulo || g.texto);
+  const fila = (g, i0) => { const q = g.conteo_eval ? qk(g) : null; const a = g.conteo_eval > 0 && NUM[g.id] === 1; return `<tr${a ? ' class="sel"' : ''}><td class="n">${String(NUM[g.id] || '–').padStart(2, '0')}</td><td class="${a ? 'tsel' : ''}" title="${txt(g)}">${txt(g)}</td><td class="n" style="width:auto">${esc(g.pilar_nombre || '')}</td><td class="num">${g.conteo_eval ? f1(g.impacto_prom) : '–'}</td><td class="num">${g.conteo_eval ? f1(g.esfuerzo_prom) : '–'}</td><td class="num">${g.conteo_eval ? f1(puntaje(g, nmax)) : '–'}</td><td class="${q && q.key === 'quick' ? 'b' : ''}">${q ? q.label : 'Sin calificar'}</td><td>${editable ? `<input class="inl" value="${esc(g.responsable || '')}" aria-label="Responsable" onchange="meta(${g.id},'responsable',this.value)">` : esc(g.responsable || '')}</td><td>${editable ? `<input class="inl" value="${esc(g.tiempo_ejecucion || '')}" aria-label="Tiempo" onchange="meta(${g.id},'tiempo_ejecucion',this.value)">` : esc(g.tiempo_ejecucion || '')}</td></tr>`; };
+  const cols = '<colgroup><col style="width:44px"><col style="width:396px"><col style="width:176px"><col style="width:55px"><col style="width:55px"><col style="width:66px"><col style="width:110px"><col style="width:198px"><col style="width:110px"></colgroup>';
+  const ths = '<tr><th class="mono"></th><th class="mono">Idea consolidada</th><th class="mono">Pilar</th><th class="mono r">Imp.</th><th class="mono r">Esf.</th><th class="mono r">Punt.</th><th class="mono">Prioridad</th><th class="mono">Responsable</th><th class="mono">Tiempo</th></tr>';
+  /* --- 1 · portada --- */
+  const logoCli = m ? (m.logo || '') : (logoEmpresa(s) || '');
+  let h = `<section class="lamina azul portada"><div class="top"><span class="wm">freaknerd<i></i></span><div class="mono" style="color:var(--fn-tinte)">Reporte final · ${fecha}</div></div><canvas data-fn-campo-blanco></canvas>
+    <div class="tt" style="${(s.config.titulo_reporte || '').length > 28 ? '--tt:54px;--ttl:66px' : ''}"><div class="mono" style="color:var(--fn-tinte);margin-bottom:11px">${esc(tituloEvento(s))} · ${quien}</div><h1>${titulo}</h1>
+    <p class="lead">Facilitado por ${esc(s.facilitador || 'freaknerd')}</p></div>${logoCli ? `<img class="cli" src="${esc(logoCli)}" alt="${quien}" onerror="this.style.display='none'">` : ''}</section>`;
+  /* --- 2 · resumen --- */
+  const orig = ideas.length;
+  h += `<section class="lamina">${top('Resumen')}<div class="hd"><h2>${gs.length} ideas consolidadas. ${nQuick} para empezar ya.</h2><p class="sub">${orig} ideas de ${nAut} participantes se agruparon sin perder ninguna y el equipo las calificó en esfuerzo e impacto.</p></div>
+    <div class="kp" style="left:35px;top:286px"><div class="v">${orig}</div><div class="l mono t2">Ideas del foro</div></div><div class="kp" style="left:329px;top:286px"><div class="v">${gs.length}</div><div class="l mono t2">Consolidadas</div></div>
+    <div class="kp" style="left:35px;top:440px"><div class="v">${nCal}</div><div class="l mono t2">Calificaciones</div></div><div class="kp" style="left:329px;top:440px"><div class="v">${nQuick}</div><div class="l mono t2">Hacer ya</div></div>
+    <div class="mono tn" style="position:absolute;left:651px;top:242px;width:594px">Ideas por pilar · originales → consolidadas</div>
+    ${snap.pilares.slice(0, 9).map((p, k) => { const n = ideas.filter(i => i.pilar_id === p.id).length, c = gs.filter(g => g.pilar_id === p.id).length, mx = Math.max(...snap.pilares.map(q => ideas.filter(i => i.pilar_id === q.id).length), 1); return `<div class="bar" style="top:${264 + 44 * k}px"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nombre)}</span><div class="tr"><i style="width:${pct(n, mx)}%"></i></div><span class="c">${n}→${c}</span></div>`; }).join('')}
+    ${pie(2)}</section>`;
+  /* --- 3 · priorización (como lamina.png): tabla de las 6 primeras + matriz --- */
+  const top6 = ev.slice(0, 6), mid = max / 2 + 0.5, lo = 0.6, span = max - 0.2;
+  const pts = ev.map(g => ({ g, x: (g.esfuerzo_prom - lo) / span * 594, y: 264 - (g.impacto_prom - lo) / span * 264 }));
+  for (let it = 0; it < 60; it++) { let mv = false; for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) { const a = pts[i], b = pts[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || .01; if (d < 27) { const k = (27 - d) / 2; a.x -= dx / d * k; a.y -= dy / d * k; b.x += dx / d * k; b.y += dy / d * k; mv = true; } } if (!mv) break; }
+  pts.forEach(p => { const qt = p.y < 132 ? 0 : 132, ql = p.x < 297 ? 0 : 297, w = p.x < 297 ? 150 : 110; if (p.y - qt < 40 && p.x - ql < w) p.y = qt + 44; });
+  pts.forEach(p => { p.x = Math.min(582, Math.max(12, p.x)); p.y = Math.min(252, Math.max(12, p.y)); });
+  h += `<section class="lamina">${top('Priorización')}<div class="hd"><h2>${nQuick} ideas para empezar ya.</h2><p class="sub">La matriz usa el promedio del equipo. El número de cada punto es su prioridad: impacto menos esfuerzo, ponderado por cuánta gente calificó.</p></div>
+    <table class="rk" style="left:35px;top:308px;width:594px"><colgroup><col style="width:30px"><col style="width:324px"><col style="width:54px"><col style="width:54px"><col style="width:132px"></colgroup><tr><th class="mono s"></th><th class="mono">Idea consolidada</th><th class="mono r">Imp.</th><th class="mono r">Esf.</th><th class="mono">Prioridad</th></tr>
+    ${top6.map(g => `<tr><td class="n">${String(NUM[g.id]).padStart(2, '0')}</td><td title="${txt(g)}">${txt(g)}</td><td class="num">${f1(g.impacto_prom)}</td><td class="num">${f1(g.esfuerzo_prom)}</td><td class="${qk(g).key === 'quick' ? 'b' : ''}">${qk(g).label}</td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--fn-azul-nota)">Aún no hay ideas calificadas.</td></tr>'}</table>
+    <div class="mx"><div class="q q1"><b>Hacer ya</b></div><div class="q q2"><b>Planear</b></div><div class="q q3"><b>Tarea menor</b></div><div class="q q4"><b>Postergar</b></div>
+    ${pts.map(p => `<span class="d" style="left:${p.x.toFixed(0)}px;top:${p.y.toFixed(0)}px">${String(NUM[p.g.id]).padStart(2, '0')}</span>`).join('')}
+    <span class="ax mono" style="left:-50px;top:121px;transform:rotate(-90deg)">Impacto ↑</span><span class="ax mono" style="right:0;top:268px">Esfuerzo →</span></div>
+    ${pie(3)}</section>`;
+  /* --- 4… · ranking completo, 9 filas por lámina --- */
+  const porPag = 9, pags = Math.max(1, Math.ceil(lista.length / porPag));
+  for (let k = 0; k < pags; k++) {
+    h += `<section class="lamina">${top('Ranking')}<h2 style="width:1000px;font-size:32px">Ranking completo${pags > 1 ? ` · ${k + 1} de ${pags}` : ''}</h2>
+      <table class="rk" style="left:35px;top:154px;width:1210px">${cols}${ths}${lista.slice(k * porPag, (k + 1) * porPag).map(fila).join('') || '<tr><td colspan="9" style="color:var(--fn-azul-nota)">Aún no hay ideas consolidadas.</td></tr>'}</table>
+      <div class="foot mono"><span>${editable ? 'Escribe responsable y tiempo en la tabla: se guardan al salir del campo.' : (demo ? 'Ejemplo ilustrativo · ' : '') + 'Calificado por el equipo de ' + quien + ' · ' + nCal + ' calificaciones'}</span><span>${String(4 + k).padStart(2, '0')}</span></div></section>`;
+  }
+  /* --- anexos --- */
+  h += `<section class="anexo"><h2>Anexo A · ideas originales detrás de cada consolidada</h2>${lista.map(g => { const hs = ideas.filter(i => i.padre_id === g.id); return `<div class="blq"><div><span class="mono tn">${String(NUM[g.id] || '–').padStart(2, '0')} · ${esc(g.pilar_nombre || '')}</span></div><b>${txt(g)}</b>${g.descripcion_corta ? `<div class="t2">${esc(g.descripcion_corta)}</div>` : ''}${hs.length ? `<ul>${hs.map(x => `<li>${esc(x.texto)} <span class="au">· ${esc(x.participante_nombre || '')}</span></li>`).join('')}</ul>` : ''}</div>`; }).join('')}</section>`;
+  h += `<section class="anexo b"><h2>Anexo B · todas las ideas del foro (${ideas.length})</h2>${snap.pilares.map(p => { const mi = ideas.filter(i => i.pilar_id === p.id); return `<h3>${esc(p.nombre)} (${mi.length})</h3><ol>${mi.map(i => `<li class="${i.estado === 'repetida' ? 'tach' : ''}">${esc(i.texto)} <span class="au">· ${esc(i.participante_nombre || '')}${i.subfrente ? ' · ' + esc(i.subfrente) : ''}</span></li>`).join('')}</ol>`; }).join('')}<p class="mono tn" style="margin-top:22px">${m ? esc(tituloEvento(s)) + ' · facilitado por freaknerd' : 'freaknerd · Foro de ideación'} · generado ${new Date().toLocaleString('es-CO')}</p></section>`;
+  $('app').innerHTML = `<div class="barra-pantalla noprint"><p class="text-xs text-fn-texto2">${editable ? 'Puedes escribir responsable y tiempo directamente en el ranking (se guardan al salir del campo).' : 'Para asignar responsables y tiempos, entra primero como administrador o líder.'}</p><button onclick="imprimir()" class="btn-fn">Imprimir / PDF ${CHEV}</button></div>${h}`;
+  const cv = document.querySelector('canvas[data-fn-campo-blanco]'); if (cv) puntosBlancos(cv);
+  ajustar(); window.__reporteListo = true;
+}
+/* Campo de puntos sobre azul (portada): mismos puntos, en blanco, de disperso (izquierda) a ordenado (derecha) */
+function puntosBlancos(c) {
+  const w = 520, h = 720, dpr = 2; c.width = w * dpr; c.height = h * dpr; const x = c.getContext('2d'); x.scale(dpr, dpr);
+  let sd = 5; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647, G = 22;
+  for (let gx = 11; gx <= w; gx += G) for (let gy = 11; gy <= h; gy += G) { const t = Math.min(1, gx / (w * .85)), e = t * t * (3 - 2 * t), j = (1 - e) * 14; if (r() > .2 + .8 * e) continue; x.globalAlpha = .15 + .7 * e; x.fillStyle = '#FCFFFF'; x.beginPath(); x.arc(gx + (r() - .5) * 2 * j, gy + (r() - .5) * 2 * j, 1.2 + 1.1 * e, 0, 7); x.fill(); }
 }
 async function meta(id, campo, valor) { try { await DB.admin('editar_idea', { id, [campo]: valor }); toast('Guardado'); } catch (e) { toast(errMsg(e), 'err'); } }
 Poll.start(cargar, 15000);

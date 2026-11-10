@@ -2,32 +2,40 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20261105a">
+<meta name="app-version" content="20261110a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>freaknerd_ · Junta asesora · Admin</title>
+<title>freaknerd · Junta asesora · Admin</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
+<link href="vendor/fonts-mono.css" rel="stylesheet">
+<meta name="theme-color" content="#FCFFFF">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
 <script src="vendor/tailwind.js"></script>
+<script src="js/marca-tw.js"></script>
+<link rel="stylesheet" href="css/marca.css">
 <link rel="stylesheet" href="vendor/fontawesome.min.css">
 <script src="vendor/qrcode.min.js"></script>
 <script src="vendor/supabase.min.js"></script>
+<script src="js/campo-puntos.js"></script>
 <style>
-  body{font-family:Montserrat,ui-sans-serif,system-ui,sans-serif}.fn-mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}.fn-green{color:#26E57C}.bg-fn{background:#0A0B0D}[hidden]{display:none!important}
-  .inp{width:100%;border:2px solid #e5e7eb;border-radius:.6rem;padding:.45rem .7rem;background:#fff;outline:none;transition:border-color 150ms ease}.inp:focus{border-color:#10b981}
-  .lab{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:.25rem}
+  [hidden]{display:none!important}
+  .inp{width:100%;border:1px solid #D8E0EE;border-radius:0;padding:.45rem .7rem;background:#fff;outline:none;transition:border-color 150ms ease}.inp:focus{border-color:#09318D}
+  .lab{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4B5C8C;margin-bottom:.25rem}
   .sw{position:relative;width:40px;height:24px;border-radius:999px;background:#d1d5db;transition:background-color 160ms ease;flex-shrink:0}
   .sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform 180ms cubic-bezier(.23,1,.32,1)}
-  .sw[aria-checked="true"]{background:#10b981}.sw[aria-checked="true"]::after{transform:translateX(16px)}
+  .sw[aria-checked="true"]{background:#09318D}.sw[aria-checked="true"]::after{transform:translateX(16px)}
   .sw:disabled{opacity:.35;cursor:not-allowed}
   @media (prefers-reduced-motion:reduce){.sw::after{transition:none}}
   .qr-print{display:none}
   @media print{
     body.imprimir-qr > *:not(#qrPrint){display:none!important}
     body.imprimir-qr #qrPrint{display:block}
-    .qr-page{break-after:page;height:95vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#111}
+    .qr-page{break-after:page;height:95vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#09318D}
   }
 </style>
-<script src="js/config.js?v=20261105a"></script><script src="js/db.js?v=20261105a"></script><script src="js/common.js?v=20261105a"></script><script src="js/acciones.js?v=20261105a"></script>
+<script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/acciones.js?v=20261110a"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
 <nav data-nav class="bg-fn text-white p-3 flex justify-between items-center shadow-md sticky top-0 z-50 border-b border-emerald-500/30"></nav>
@@ -130,7 +138,7 @@ function pMesas() {
           <div><label class="lab">Modera</label><input class="inp" value="${esc(m.modera)}" oninput="upd(${i},'modera',this.value)"></div>
           <div><label class="lab">Relata (escribe las acciones)</label><input class="inp" value="${esc(m.relata)}" oninput="upd(${i},'relata',this.value)"></div>
           <div class="sm:col-span-2"><label class="lab">Miembros · uno por línea</label><textarea rows="3" class="inp" oninput="upd(${i},'miembros',this.value.split('\\n').map(s=>s.trim()).filter(Boolean))">${esc((m.miembros || []).join('\n'))}</textarea></div>
-          <div><label class="lab">Color</label><div class="flex flex-wrap gap-1.5">${Object.keys(COLORS).map(c => `<button onclick="upd(${i},'color','${c}',true)" aria-label="${c}" class="press w-7 h-7 rounded-full ${COLORS[c].solid} ${m.color === c ? 'ring-2 ring-offset-2 ring-gray-800' : ''}"></button>`).join('')}</div></div>
+          <div style="display:none"><label class="lab">Color</label><div class="flex flex-wrap gap-1.5">${Object.keys(COLORS).map(c => `<button onclick="upd(${i},'color','${c}',true)" aria-label="${c}" class="press w-7 h-7 rounded-full ${COLORS[c].solid} ${m.color === c ? 'ring-2 ring-offset-2 ring-gray-800' : ''}"></button>`).join('')}</div></div>
           <div><label class="lab">Ícono</label><div class="flex flex-wrap gap-1">${ICONOS_MESA.map(ic => `<button onclick="upd(${i},'icono','${ic}',true)" aria-label="${ic}" class="press w-8 h-8 rounded-lg border ${m.icono === ic ? 'border-gray-800 bg-gray-100' : 'border-gray-200 text-gray-400'}"><i class="fas ${ic} text-xs"></i></button>`).join('')}</div></div>
         </div>
       </div>`).join('')}
@@ -222,13 +230,13 @@ function pQr() {
 }
 function imprimirQr() {
   $('qrPrint').innerHTML = JUNTA.mesas.map(m => `<div class="qr-page">
-    <div style="font:700 14px ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;color:#555">${esc(ses.nombre)}</div>
+    <div style="font:700 14px ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;color:#4B5C8C">${esc(ses.nombre)}</div>
     <div style="font:900 44px Montserrat,sans-serif;margin:12px 0 4px">${esc(m.nombre)}</div>
-    ${m.pregunta ? `<div style="font:500 18px Montserrat,sans-serif;max-width:640px;color:#333">${esc(m.pregunta)}</div>` : ''}
+    ${m.pregunta ? `<div style="font:500 18px Montserrat,sans-serif;max-width:640px;color:#09318D">${esc(m.pregunta)}</div>` : ''}
     <div class="qp" data-url="${esc(urlMesa('mesa.html', m.slug))}" style="margin:28px 0"></div>
     <div style="font:600 18px Montserrat,sans-serif">Escanea para ver y descargar las acciones de esta mesa</div>
-    <div style="font:500 14px Montserrat,sans-serif;color:#555;margin-top:6px">${[m.modera && 'Modera: ' + esc(m.modera), m.relata && 'Relata: ' + esc(m.relata)].filter(Boolean).join(' · ')}</div>
-    <div style="font:700 13px ui-monospace,Menlo,monospace;margin-top:24px">freaknerd_</div>
+    <div style="font:500 14px Montserrat,sans-serif;color:#4B5C8C;margin-top:6px">${[m.modera && 'Modera: ' + esc(m.modera), m.relata && 'Relata: ' + esc(m.relata)].filter(Boolean).join(' · ')}</div>
+    <div style="font:700 13px Montserrat,sans-serif;margin-top:24px;letter-spacing:-.035em;font-weight:900">freaknerd</div>
   </div>`).join('');
   document.querySelectorAll('#qrPrint .qp').forEach(el => new QRCode(el, { text: el.dataset.url, width: 360, height: 360 }));
   document.body.classList.add('imprimir-qr');
