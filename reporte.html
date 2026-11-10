@@ -63,7 +63,7 @@ input.inl:focus{outline:0;border-bottom:2px solid var(--fn-pizarra)}
 .mx .q1{left:0;top:0;background:var(--fn-naranja);border:0}
 .mx .q1::after{content:"";position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:var(--fn-pizarra);box-shadow:0 0 0 2px var(--fn-crema);z-index:3}
 .mx .q2{left:297px;top:0}.mx .q3{left:0;top:132px}.mx .q4{left:297px;top:132px}
-.mx .d{position:absolute;height:24px;transform:translate(-50%,-50%);background:var(--fn-pizarra);color:var(--fn-crema);font:500 10px/24px var(--fn-mono);text-align:center;white-space:nowrap;z-index:2}
+.mx .d{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:var(--fn-pizarra);color:var(--fn-crema);font:600 10px var(--fn-mono);display:flex;align-items:center;justify-content:center;white-space:nowrap;z-index:2}
 .mx .d.at{box-shadow:0 0 0 2px var(--fn-crema),0 0 0 4px var(--fn-naranja)}
 .mx .q b{position:relative;z-index:1}
 .mx .ax{position:absolute;color:var(--fn-piedra-osc)}
@@ -164,24 +164,24 @@ function render() {
   /* 1) los promedios idénticos comparten una sola etiqueta («01·02»); 2) las etiquetas se separan entre sí;
      3) se reservan la esquina inferior derecha de «Hacer ya» (tirador) y la esquina superior izquierda de cada celda (nombre del cuadrante);
      4) cada etiqueta queda dentro de su celda según la MISMA función cuadrante() que cuenta y lista. */
-  const grp = {}; ev.forEach(g => { const k = g.esfuerzo_prom + ',' + g.impacto_prom; (grp[k] = grp[k] || []).push(g); });
-  const pts = Object.values(grp).map(arr => { const g0 = arr[0], nums = arr.map(g => NUM[g.id]).sort((a, b) => a - b).map(n => String(n).padStart(2, '0'));
-    const lab = nums.length <= 2 ? nums.join('·') : nums[0] + '·' + nums[1] + ' +' + (nums.length - 2);
-    const at = cuadrante(g0.esfuerzo_prom, g0.impacto_prom, max).key === 'descartar'; return { at, lab, w: Math.max(24, lab.length * 6.6 + 14), q: cuadrante(g0.esfuerzo_prom, g0.impacto_prom, max).key, x: (g0.esfuerzo_prom - lo) / span * MW, y: MH - (g0.impacto_prom - lo) / span * MH }; });
+  /* Un círculo por idea: el diámetro (22→44 px) crece con el área según cuántos la calificaron, como en el muro */
+  const maxN = Math.max(1, ...ev.map(g => g.conteo_eval || 0));
+  const pts = ev.map(g => { const q = cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key, w = Math.round(22 + 22 * Math.sqrt((g.conteo_eval || 0) / maxN));
+    return { at: q === 'descartar', lab: String(NUM[g.id]).padStart(2, '0'), w: Math.min(44, Math.max(22, w)), q, x: (g.esfuerzo_prom - lo) / span * MW, y: MH - (g.impacto_prom - lo) / span * MH }; });
   const celda = { quick: [0, HX, 0, HY], proyecto: [HX, MW, 0, HY], relleno: [0, HX, HY, MH], descartar: [HX, MW, HY, MH] };
   const vetos = [[0, 105, 0, 36], [HX, HX + 90, 0, 36], [0, 120, HY, HY + 36], [HX, HX + 100, HY, HY + 36], [HX - 30, HX + 8, HY - 34, HY + 8]]; /* etiquetas de cuadrante + tirador */
-  const situar = (p) => { const [x0, x1, y0, y1] = celda[p.q], hw = p.w / 2 + 3, hh = 15;
+  const situar = (p) => { const [x0, x1, y0, y1] = celda[p.q], hw = p.w / 2 + 3, hh = p.w / 2 + 3;
     p.x = Math.min(x1 - hw, Math.max(x0 + hw, p.x)); p.y = Math.min(y1 - hh, Math.max(y0 + hh, p.y));
-    vetos.forEach(([a, b, c, d]) => { if (p.x + p.w / 2 > a && p.x - p.w / 2 < b && p.y + 12 > c && p.y - 12 < d) { const dy = d + 12 - p.y, dx = b + p.w / 2 - p.x, mv = (p.y + dy + hh <= y1) && (dy <= dx || p.x + dx + hw > x1); if (mv) p.y += dy; else p.x = Math.min(x1 - hw, p.x + dx); } }); };
+    vetos.forEach(([a, b, c, d]) => { if (p.x + p.w / 2 > a && p.x - p.w / 2 < b && p.y + p.w / 2 > c && p.y - p.w / 2 < d) { const dy = d + p.w / 2 - p.y, dx = b + p.w / 2 - p.x, mv = (p.y + dy + hh <= y1) && (dy <= dx || p.x + dx + hw > x1); if (mv) p.y += dy; else p.x = Math.min(x1 - hw, p.x + dx); } }); };
   for (let it = 0; it < 120; it++) { let mv = false;
-    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) { const a = pts[i], b = pts[j], ox = (a.w + b.w) / 2 + 3 - Math.abs(b.x - a.x), oy = 27 - Math.abs(b.y - a.y);
-      if (ox > 0 && oy > 0) { mv = true; if (oy <= ox) { const k = (oy / 2 + .5) * (b.y >= a.y ? 1 : -1); a.y -= k; b.y += k; } else { const k = (ox / 2 + .5) * (b.x >= a.x ? 1 : -1); a.x -= k; b.x += k; } } }
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) { const a = pts[i], b = pts[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 0.01, min = (a.w + b.w) / 2 + 3;
+      if (d < min) { mv = true; const k = (min - d) / 2 + .5, ux = d < .02 ? Math.cos(j * 2.4) : dx / d, uy = d < .02 ? Math.sin(j * 2.4) : dy / d; a.x -= ux * k; a.y -= uy * k; b.x += ux * k; b.y += uy * k; } }
     pts.forEach(situar); if (!mv) break; }
-  h += `<section class="lamina">${top('Priorización')}<div class="hd"><h2>${nQuick} ideas para empezar ya.</h2><p class="sub">La matriz usa el promedio del equipo. El número de cada punto es su prioridad: impacto menos esfuerzo, ponderado por cuánta gente calificó.</p></div>
+  h += `<section class="lamina">${top('Priorización')}<div class="hd"><h2>${nQuick} ideas para empezar ya.</h2><p class="sub">La matriz usa el promedio del equipo. El tamaño de cada círculo muestra cuánta gente la calificó; el número es su prioridad.</p></div>
     <table class="rk" style="left:35px;top:308px;width:594px"><colgroup><col style="width:30px"><col style="width:324px"><col style="width:54px"><col style="width:54px"><col style="width:132px"></colgroup><tr><th class="mono s"></th><th class="mono">Idea consolidada</th><th class="mono r">Imp.</th><th class="mono r">Esf.</th><th class="mono">Prioridad</th></tr>
     ${top6.map(g => `<tr${NUM[g.id] === 1 ? ' class="sel"' : ''}><td class="n">${String(NUM[g.id]).padStart(2, '0')}</td><td class="wr${NUM[g.id] === 1 ? ' tsel' : ''}" title="${txt(g)}">${txt(g)}</td><td class="num">${f1(g.impacto_prom)}</td><td class="num">${f1(g.esfuerzo_prom)}</td><td class="${qk(g).key === 'quick' ? 'b' : ''}">${qk(g).label}</td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--fn-piedra-osc)">Aún no hay ideas calificadas.</td></tr>'}</table>
     <div class="mx"><div class="q q1"><b>Hacer ya</b></div><div class="q q2"><b>Planear</b></div><div class="q q3"><b>Tarea menor</b></div><div class="q q4"><b>Postergar</b></div>
-    ${pts.map(p => `<span class="d${p.at ? ' at' : ''}" style="left:${p.x.toFixed(0)}px;top:${p.y.toFixed(0)}px;width:${Math.round(p.w)}px">${p.lab}</span>`).join('')}
+    ${pts.map(p => `<span class="d${p.at ? ' at' : ''}" style="left:${p.x.toFixed(0)}px;top:${p.y.toFixed(0)}px;width:${p.w}px;height:${p.w}px">${p.lab}</span>`).join('')}
     <span class="ax mono" style="left:-50px;top:121px;transform:rotate(-90deg)">Impacto ↑</span><span class="ax mono" style="right:0;top:268px">Esfuerzo →</span></div>${nPost ? `<div class="mono" style="position:absolute;left:35px;top:630px;width:594px;color:var(--fn-naranja-texto);text-transform:none;letter-spacing:0;font-family:var(--fn-font);font-weight:700;font-size:12px">Atención: ${nPost === 1 ? 'una idea pide' : nPost + ' ideas piden'} mucho esfuerzo y ${nPost === 1 ? 'devuelve' : 'devuelven'} poco (${listaNum(ev.filter(g => qk(g).key === 'descartar').map(g => NUM[g.id]))}).</div>` : ''}
     ${pie(3)}</section>`;
   /* --- 4… · ranking completo, 9 filas por lámina --- */
