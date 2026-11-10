@@ -144,3 +144,4 @@ button[class*="hover:bg-red-"]:hover,button[class*="hover:bg-amber-"]:hover{back
 
 /* Chip o celda seleccionada pequeña (pestañas de pilar): borde naranja de 2 px sobre relleno suave, sin tirador */
 .fn-sel-s{background:var(--fn-naranja-tinte)!important;color:var(--fn-pizarra)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja)}
+input.border-2,textarea.border-2,select.border-2{border-color:var(--fn-regla-fuerte)!important}

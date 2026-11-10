@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
 <link href="vendor/fonts-mono.css" rel="stylesheet">
-<meta name="theme-color" content="#FCFFFF">
+<meta name="theme-color" content="#F4EFE6">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
@@ -24,7 +24,7 @@
   #qrBox{transition:opacity 180ms ease-out}#qrBox>div{transition:transform 200ms cubic-bezier(.23,1,.32,1)}
   #qrBox.off{opacity:0;pointer-events:none}#qrBox.off>div{transform:scale(.96)}
   @media (prefers-reduced-motion:reduce){#qrBox>div{transition:none}}
-  @media print{.no-print{display:none!important}body{background:#fff;color:#09318D}.card{break-inside:avoid}}
+  @media print{.no-print{display:none!important}body{background:#F4EFE6;color:#2C312E}.card{break-inside:avoid}}
 </style>
 <script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/acciones.js?v=20261110a"></script>
 </head>
@@ -126,7 +126,7 @@ function toggleQr() {
   box.classList.toggle('off', !abrir);
   if (!abrir) return;
   const sola = slug && JUNTA.mesas.some(m => m.slug === slug), url = sola ? urlMesa('mesa.html', slug) : urlVista('mesa.html');
-  if (qrHecho !== url) { $('qr').innerHTML = ''; new QRCode($('qr'), { text: url, width: 240, height: 240 }); qrHecho = url; }
+  if (qrHecho !== url) { $('qr').innerHTML = ''; new QRCode($('qr'), { colorDark: '#2C312E', colorLight: '#F4EFE6', text: url, width: 240, height: 240 }); qrHecho = url; }
   $('qrTit').textContent = sola ? mesaInfo(slug).nombre : 'Mesas de la junta';
   $('qrPie').textContent = sola ? 'Los miembros escanean para ver y descargar las acciones de esta mesa' : 'Cada miembro escanea, elige su mesa y descarga sus acciones';
 }

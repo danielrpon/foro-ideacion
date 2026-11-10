@@ -79,8 +79,8 @@ window.MeceUI = {
     const dup = (pv.duplicados || []);
     const nom = (id) => { const i = d.ideas.find(x => x.id === id) || {}; const p = d.pilares.find(x => x.id === i.pilar_id) || {}; return `<span class="font-mono text-gray-400">#${id}</span> <b>${esc(p.nombre || '')}</b>: ${esc(i.texto || '')}`; };
     let h = '';
-    if (fuertes) h += `<div class="mt-3 text-xs bg-red-50 border border-red-200 text-red-800 rounded p-2"><i class="fas fa-triangle-exclamation mr-1"></i><b>${fuertes} consolidada${fuertes === 1 ? '' : 's'} con alerta de fidelidad</b> (en rojo abajo): revisa que no digan algo que nadie escribió.</div>`;
-    if (dup.length) h += `<div class="mt-3 text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded p-2"><div class="font-bold mb-1"><i class="fas fa-clone mr-1"></i>Posibles repetidos entre pilares (${dup.length}). La IA no los movió: decide si marcas uno como repetido.</div>${dup.map(x => `<div class="mt-1 pl-2 border-l-2 border-amber-300">${x.ideas.map(nom).join('<br>')}<div class="text-[10px] text-amber-700 mt-0.5">${esc(x.motivo)}</div></div>`).join('')}</div>`;
+    if (fuertes) h += `<div class="mt-3 text-xs bg-red-50 border border-red-200 text-red-800 rounded p-2"><b>Atención:</b> <b>${fuertes} consolidada${fuertes === 1 ? '' : 's'} con alerta de fidelidad</b> (con borde naranja abajo): revisa que no digan algo que nadie escribió.</div>`;
+    if (dup.length) h += `<div class="mt-3 text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded p-2"><div class="font-bold mb-1"><i class="fas fa-clone mr-1"></i>Atención: posibles repetidos entre pilares (${dup.length}). La IA no los movió: decide si marcas uno como repetido.</div>${dup.map(x => `<div class="mt-1 pl-2 border-l-2 border-amber-300">${x.ideas.map(nom).join('<br>')}<div class="text-[10px] text-amber-700 mt-0.5">${esc(x.motivo)}</div></div>`).join('')}</div>`;
     return h;
   },
   notasGrupo(g) {

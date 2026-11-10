@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
 <link href="vendor/fonts-mono.css" rel="stylesheet">
-<meta name="theme-color" content="#FCFFFF">
+<meta name="theme-color" content="#F4EFE6">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
@@ -63,7 +63,7 @@ function elegirMesa(slug) {
   mesaSel = slug;
   document.querySelectorAll('.mesa-btn').forEach(b => {
     const on = b.dataset.mesa === slug;
-    b.classList.toggle('border-emerald-500', on); b.classList.toggle('bg-emerald-50', on); b.classList.toggle('border-gray-200', !on);
+    b.classList.toggle('fn-sel-s', on); b.classList.toggle('border-fn-regla', !on);
   });
   const r = mesaInfo(slug).relata; if (r && !$('nombre').value.trim()) $('nombre').value = r;
 }
@@ -111,12 +111,12 @@ function vistaMesa() {
       <p class="text-xs text-gray-500 mt-2">Puedes guardarla a medias y completarla después. Para marcarla como lista necesita ${obl.length ? esc(obl.join(', ').replace(/, ([^,]*)$/, ' y $1')) : 'solo la acción'}.</p>
     </div>
 
-    ${yo.admin ? `<div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 mt-4">
-      <div class="fn-mono text-[11px] uppercase tracking-widest text-amber-700 mb-2"><i class="fas fa-key mr-1"></i>Administrador</div>
+    ${yo.admin ? `<div class="bg-fn-crema-2 border border-fn-piedra p-3 mt-4">
+      <div class="fn-mono text-[11px] uppercase tracking-widest text-fn-piedra-osc mb-2"><i class="fas fa-key mr-1"></i>Administrador</div>
       <div class="flex flex-wrap items-center gap-2">
         <span class="text-xs font-bold text-gray-600">Ver y editar:</span>
-        ${JUNTA.mesas.map(x => `<button onclick="verMesa('${esc(x.slug)}')" class="press px-3 py-1.5 rounded-lg text-xs font-bold border-2 ${yo.mesa === x.slug ? 'border-amber-500 bg-white' : 'border-transparent bg-white/60 text-gray-600'}">${esc(x.nombre)}</button>`).join('')}
-        <a href="${urlVista('junta.html')}" class="ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-white border-2 border-amber-200 text-amber-800"><i class="fas fa-sliders mr-1"></i>Configurar la junta</a>
+        ${JUNTA.mesas.map(x => `<button onclick="verMesa('${esc(x.slug)}')" class="press px-3 py-1.5 rounded-lg text-xs font-bold border-2 ${yo.mesa === x.slug ? 'fn-sel-s border-transparent' : 'border-transparent bg-white text-gray-600'}">${esc(x.nombre)}</button>`).join('')}
+        <a href="${urlVista('junta.html')}" class="ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-fn-piedra text-fn-pizarra"><i class="fas fa-sliders mr-1"></i>Configurar la junta</a>
       </div>
     </div>` : ''}
 

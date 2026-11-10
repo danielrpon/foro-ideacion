@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
 <link href="vendor/fonts-mono.css" rel="stylesheet">
-<meta name="theme-color" content="#FCFFFF">
+<meta name="theme-color" content="#F4EFE6">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
@@ -21,18 +21,18 @@
 <script src="js/campo-puntos.js"></script>
 <style>
   [hidden]{display:none!important}
-  .inp{width:100%;border:1px solid #D8E0EE;border-radius:0;padding:.45rem .7rem;background:#fff;outline:none;transition:border-color 150ms ease}.inp:focus{border-color:#09318D}
-  .lab{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4B5C8C;margin-bottom:.25rem}
-  .sw{position:relative;width:40px;height:24px;border-radius:999px;background:#d1d5db;transition:background-color 160ms ease;flex-shrink:0}
-  .sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform 180ms cubic-bezier(.23,1,.32,1)}
-  .sw[aria-checked="true"]{background:#09318D}.sw[aria-checked="true"]::after{transform:translateX(16px)}
+  .inp{width:100%;border:1px solid rgba(101,106,102,.6);border-radius:0;padding:.45rem .7rem;background:#F4EFE6;outline:none;transition:border-color 150ms ease}.inp:focus{border-color:#2C312E}
+  .lab{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4A504C;margin-bottom:.25rem}
+  .sw{position:relative;width:40px;height:24px;border-radius:0;background:#CCCAC2;transition:background-color 160ms ease;flex-shrink:0}
+  .sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:0;background:#F4EFE6;transition:transform 180ms cubic-bezier(.23,1,.32,1)}
+  .sw[aria-checked="true"]{background:#2C312E}.sw[aria-checked="true"]::after{transform:translateX(16px)}
   .sw:disabled{opacity:.35;cursor:not-allowed}
   @media (prefers-reduced-motion:reduce){.sw::after{transition:none}}
   .qr-print{display:none}
   @media print{
     body.imprimir-qr > *:not(#qrPrint){display:none!important}
     body.imprimir-qr #qrPrint{display:block}
-    .qr-page{break-after:page;height:95vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#09318D}
+    .qr-page{break-after:page;height:95vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#2C312E}
   }
 </style>
 <script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/acciones.js?v=20261110a"></script>
@@ -89,7 +89,7 @@ function irSesion() { const id = $('sesId').value.trim(); if (!id) return; const
 function armazon() {
   const claveDefault = /^CAMBIAR/.test(DB.clave);
   $('app').innerHTML = `
-    ${claveDefault ? `<div class="bg-red-50 border-2 border-red-200 text-red-800 rounded-xl p-3 mb-4 text-sm"><i class="fas fa-triangle-exclamation mr-1"></i>La sesión todavía tiene las claves de ejemplo del SQL. Cámbialas antes de la junta: <span class="fn-mono">update sesiones set clave_admin = '…', clave_lider = '…' where id = '${esc(DB.SES)}';</span></div>` : ''}
+    ${claveDefault ? `<div class="bg-red-50 border-2 border-red-200 text-red-800 rounded-xl p-3 mb-4 text-sm"><i class="fas fa-triangle-exclamation mr-1"></i><b>Atención:</b> la sesión todavía tiene las claves de ejemplo del SQL. Cámbialas antes de la junta: <span class="fn-mono">update sesiones set clave_admin = '…', clave_lider = '…' where id = '${esc(DB.SES)}';</span></div>` : ''}
     <div class="flex flex-wrap justify-between items-end gap-3 mb-4">
       <div><div class="fn-mono text-[11px] uppercase tracking-widest text-gray-500">Junta asesora · sesión <span class="text-gray-700">${esc(DB.SES)}</span></div>
         <h1 id="tit" class="text-2xl font-black">${esc(ses.nombre)}</h1></div>
@@ -104,15 +104,15 @@ function armazon() {
   pintarTabs();
 }
 function pintarTabs() {
-  document.querySelectorAll('[data-tab]').forEach(b => { const on = b.dataset.tab === tab; b.setAttribute('aria-selected', on); b.className = 'px-4 py-2 text-sm font-bold border-b-2 ' + (on ? 'border-emerald-500 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-800'); });
+  document.querySelectorAll('[data-tab]').forEach(b => { const on = b.dataset.tab === tab; b.setAttribute('aria-selected', on); b.className = 'px-4 py-2 text-sm font-bold border-b-4 ' + (on ? 'border-fn-naranja text-fn-pizarra' : 'border-transparent text-gray-500 hover:text-gray-800'); });
   ({ mesas: pMesas, campos: pCampos, qr: pQr, acciones: pAcciones })[tab]();
 }
 function setTab(t) { tab = t; sessionStorage.setItem('junta_tab', t); pintarTabs(); }
 function marcarSucio(v = true) { sucio = v; const b = $('barraGuardar'); if (b) b.hidden = !v; }
 const barraGuardar = () => `<div id="barraGuardar" ${sucio ? '' : 'hidden'} class="sticky bottom-3 mt-4 bg-fn text-white rounded-xl shadow-lg p-3 flex items-center justify-between gap-3">
-  <span class="text-sm"><i class="fas fa-circle text-[8px] text-amber-400 mr-2 align-middle"></i>Cambios sin guardar</span>
+  <span class="text-sm"><i class="fas fa-circle text-[8px] text-fn-pizarra mr-2 align-middle"></i>Cambios sin guardar</span>
   <div class="flex gap-2"><button onclick="descartar()" class="press px-3 py-2 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20">Descartar</button>
-  <button onclick="guardarTodo()" class="press px-4 py-2 rounded-lg text-xs font-bold bg-emerald-400 text-black">Guardar</button></div></div>`;
+  <button onclick="guardarTodo()" class="press px-4 py-2 rounded-lg text-xs font-bold bg-fn">Guardar</button></div></div>`;
 
 /* ---------- MESAS ---------- */
 function pMesas() {
@@ -197,7 +197,7 @@ function pQr() {
   const g = JUNTA.mesas;   // lo guardado: los QR apuntan a mesas que ya existen
   const enlace = (href, ico, txt, osc) => `<a href="${href}" target="_blank" class="press flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold ${osc ? 'bg-fn text-emerald-400' : 'bg-gray-100 hover:bg-gray-200'}"><i class="fas ${ico} w-4"></i>${txt}</a>`;
   $('panel').innerHTML = `
-    ${sucio ? '<div class="bg-amber-50 border-2 border-amber-200 text-amber-800 rounded-xl p-3 mb-4 text-sm">Hay cambios sin guardar en mesas o campos: los QR muestran lo último guardado.</div>' : ''}
+    ${sucio ? '<div class="bg-amber-50 border-2 border-amber-200 text-amber-800 rounded-xl p-3 mb-4 text-sm"><b>Atención:</b> hay cambios sin guardar en mesas o campos: los QR muestran lo último guardado.</div>' : ''}
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
       <p class="text-sm text-gray-600 max-w-2xl">Cada mesa tiene un QR para sus miembros: ven en vivo lo que escribe el relator y descargan las acciones (CSV o PDF), sin clave. El relator entra desde el mismo QR con “Soy el relator” o por su enlace, con la clave de relator.</p>
       <button onclick="imprimirQr()" class="press bg-fn text-white px-4 py-2 rounded-lg text-sm font-bold"><i class="fas fa-print mr-2"></i>Imprimir QR (una hoja por mesa)</button>
@@ -226,19 +226,19 @@ function pQr() {
         </div>
       </div>
     </div>`;
-  document.querySelectorAll('#panel .qr').forEach(el => new QRCode(el, { text: el.dataset.url, width: 168, height: 168 }));
+  document.querySelectorAll('#panel .qr').forEach(el => new QRCode(el, { colorDark: '#2C312E', colorLight: '#F4EFE6', text: el.dataset.url, width: 168, height: 168 }));
 }
 function imprimirQr() {
   $('qrPrint').innerHTML = JUNTA.mesas.map(m => `<div class="qr-page">
-    <div style="font:700 14px ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;color:#4B5C8C">${esc(ses.nombre)}</div>
+    <div style="font:700 14px ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;color:#4A504C">${esc(ses.nombre)}</div>
     <div style="font:900 44px Montserrat,sans-serif;margin:12px 0 4px">${esc(m.nombre)}</div>
-    ${m.pregunta ? `<div style="font:500 18px Montserrat,sans-serif;max-width:640px;color:#09318D">${esc(m.pregunta)}</div>` : ''}
+    ${m.pregunta ? `<div style="font:500 18px Montserrat,sans-serif;max-width:640px;color:#2C312E">${esc(m.pregunta)}</div>` : ''}
     <div class="qp" data-url="${esc(urlMesa('mesa.html', m.slug))}" style="margin:28px 0"></div>
     <div style="font:600 18px Montserrat,sans-serif">Escanea para ver y descargar las acciones de esta mesa</div>
-    <div style="font:500 14px Montserrat,sans-serif;color:#4B5C8C;margin-top:6px">${[m.modera && 'Modera: ' + esc(m.modera), m.relata && 'Relata: ' + esc(m.relata)].filter(Boolean).join(' · ')}</div>
+    <div style="font:500 14px Montserrat,sans-serif;color:#4A504C;margin-top:6px">${[m.modera && 'Modera: ' + esc(m.modera), m.relata && 'Relata: ' + esc(m.relata)].filter(Boolean).join(' · ')}</div>
     <div style="font:700 13px Montserrat,sans-serif;margin-top:24px;letter-spacing:-.035em;font-weight:900">freaknerd</div>
   </div>`).join('');
-  document.querySelectorAll('#qrPrint .qp').forEach(el => new QRCode(el, { text: el.dataset.url, width: 360, height: 360 }));
+  document.querySelectorAll('#qrPrint .qp').forEach(el => new QRCode(el, { colorDark: '#2C312E', colorLight: '#F4EFE6', text: el.dataset.url, width: 360, height: 360 }));
   document.body.classList.add('imprimir-qr');
   setTimeout(() => { window.print(); document.body.classList.remove('imprimir-qr'); }, 300);
 }
@@ -264,7 +264,7 @@ function pAcciones() {
         <div class="bg-white rounded-xl shadow p-4"><h3 class="font-black mb-2">Para el acta</h3>
           <button onclick="filas.length ? descargarCsv(nombreArchivo(''), accionesCsv(filas)) : toast('No hay acciones', 'warn')" class="press w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg py-2 text-sm font-bold"><i class="fas fa-file-csv mr-1"></i>CSV de todas las mesas</button>
           <a href="${urlVista('acciones.html')}" target="_blank" class="press block text-center w-full bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-sm font-bold mt-2"><i class="fas fa-pen mr-1"></i>Editar acciones (entra con la clave de admin)</a></div>
-        <div class="bg-white rounded-xl shadow p-4"><h3 class="font-black mb-2 text-red-700"><i class="fas fa-triangle-exclamation mr-1"></i>Zona de riesgo</h3>
+        <div class="bg-white rounded-xl shadow p-4"><h3 class="font-black mb-2"><span class="fn-aten-et"></span> · zona de riesgo</h3>
           <button onclick="vaciar()" class="press w-full bg-red-50 hover:bg-red-100 text-red-700 border-2 border-red-200 rounded-lg py-2 text-sm font-bold"><i class="fas fa-trash mr-1"></i>Vaciar tablero (todas las mesas)</button>
           <p class="text-xs text-gray-500 mt-2">Úsalo después del ensayo. Descarga antes el CSV si quieres conservarlas.</p></div>
       </div>
