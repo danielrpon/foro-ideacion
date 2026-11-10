@@ -164,10 +164,10 @@ function render() {
   /* 1) los promedios idénticos comparten una sola etiqueta («01·02»); 2) las etiquetas se separan entre sí;
      3) se reservan la esquina inferior derecha de «Hacer ya» (tirador) y la esquina superior izquierda de cada celda (nombre del cuadrante);
      4) cada etiqueta queda dentro de su celda según la MISMA función cuadrante() que cuenta y lista. */
-  /* Un círculo por idea: el diámetro (22→44 px) crece con el área según cuántos la calificaron, como en el muro */
+  /* Un círculo por idea: el diámetro (20→36 px) crece con el área según cuántos la calificaron, como en el muro */
   const maxN = Math.max(1, ...ev.map(g => g.conteo_eval || 0));
-  const pts = ev.map(g => { const q = cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key, w = Math.round(22 + 22 * Math.sqrt((g.conteo_eval || 0) / maxN));
-    return { at: q === 'descartar', lab: String(NUM[g.id]).padStart(2, '0'), w: Math.min(44, Math.max(22, w)), q, x: (g.esfuerzo_prom - lo) / span * MW, y: MH - (g.impacto_prom - lo) / span * MH }; });
+  const pts = ev.map(g => { const q = cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key, w = Math.round(20 + 16 * Math.sqrt((g.conteo_eval || 0) / maxN));
+    return { at: q === 'descartar', lab: String(NUM[g.id]).padStart(2, '0'), w: Math.min(36, Math.max(20, w)), q, x: (g.esfuerzo_prom - lo) / span * MW, y: MH - (g.impacto_prom - lo) / span * MH }; });
   const celda = { quick: [0, HX, 0, HY], proyecto: [HX, MW, 0, HY], relleno: [0, HX, HY, MH], descartar: [HX, MW, HY, MH] };
   const vetos = [[0, 105, 0, 36], [HX, HX + 90, 0, 36], [0, 120, HY, HY + 36], [HX, HX + 100, HY, HY + 36], [HX - 30, HX + 8, HY - 34, HY + 8]]; /* etiquetas de cuadrante + tirador */
   const situar = (p) => { const [x0, x1, y0, y1] = celda[p.q], hw = p.w / 2 + 3, hh = p.w / 2 + 3;
