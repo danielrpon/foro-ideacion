@@ -28,7 +28,7 @@
 </style>
 <script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/acciones.js?v=20261110a"></script>
 </head>
-<body class="text-fn-azul min-h-screen flex flex-col">
+<body class="text-fn-pizarra min-h-screen flex flex-col">
 <nav data-nav class="bg-fn text-white p-3 flex justify-between items-center border-b border-emerald-500/30 no-print"></nav>
 <div id="errBanner" hidden class="bg-red-600 text-white text-xs text-center py-1"></div>
 
@@ -47,17 +47,17 @@
 <div id="aviso" class="px-4 sm:px-8 pb-3" hidden></div>
 <main id="mesas" class="flex-1 px-4 sm:px-8 pb-4 grid gap-5 content-start"></main>
 
-<footer class="px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 border-t border-fn-tinte no-print">
+<footer class="px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 border-t border-fn-regla no-print">
   <div id="vistas" class="flex flex-wrap items-center gap-1 text-xs font-bold"></div>
   <div class="flex items-center gap-2">
-    <button onclick="exportar()" class="press border border-fn-tinte hover:bg-fn-tinte px-3 py-1.5 h-11 text-xs font-bold"><i class="fas fa-file-csv mr-1"></i>CSV para el acta</button>
-    <button onclick="window.print()" class="press border border-fn-tinte hover:bg-fn-tinte px-3 py-1.5 h-11 text-xs font-bold"><i class="fas fa-print mr-1"></i>Imprimir</button>
-    <button onclick="toggleQr()" class="press border border-fn-tinte hover:bg-fn-tinte px-3 py-1.5 h-11 text-xs font-bold"><i class="fas fa-qrcode mr-1"></i>QR</button>
+    <button onclick="exportar()" class="press border border-fn-regla hover:bg-fn-crema-2 px-3 py-1.5 h-11 text-xs font-bold"><i class="fas fa-file-csv mr-1"></i>CSV para el acta</button>
+    <button onclick="window.print()" class="press border border-fn-regla hover:bg-fn-crema-2 px-3 py-1.5 h-11 text-xs font-bold"><i class="fas fa-print mr-1"></i>Imprimir</button>
+    <button onclick="toggleQr()" class="press border border-fn-regla hover:bg-fn-crema-2 px-3 py-1.5 h-11 text-xs font-bold"><i class="fas fa-qrcode mr-1"></i>QR</button>
   </div>
 </footer>
 
-<div id="qrBox" class="off fixed inset-0 bg-fn-blanco/95 z-50 flex flex-col items-center justify-center no-print" onclick="toggleQr()">
-  <div class="bg-white p-6 text-center border border-fn-tinte"><div id="qr"></div><p id="qrTit" class="font-black mt-3"></p></div>
+<div id="qrBox" class="off fixed inset-0 bg-fn-crema/95 z-50 flex flex-col items-center justify-center no-print" onclick="toggleQr()">
+  <div class="bg-white p-6 text-center border border-fn-regla"><div id="qr"></div><p id="qrTit" class="font-black mt-3"></p></div>
   <p id="qrPie" class="text-gray-300 text-sm mt-4 text-center max-w-sm"></p>
 </div>
 
@@ -71,7 +71,7 @@ renderNav('Tablero', '', { app: false });
 
 function columna(m, f, nv, sola) {
   return `<section>
-    ${sola ? '' : `<div class="flex items-baseline justify-between border-b border-fn-tinte pb-2 mb-3">
+    ${sola ? '' : `<div class="flex items-baseline justify-between border-b border-fn-regla pb-2 mb-3">
       <h2 class="text-xl font-black"><i class="fas ${esc(m.icono)} mr-2 fn-green"></i>${esc(m.nombre)}</h2>
       <span class="fn-mono text-xs text-gray-400">${f.length} ${f.length === 1 ? 'acción' : 'acciones'}</span>
     </div>`}
@@ -104,7 +104,7 @@ function render() {
   $('aviso').hidden = !inc;
   $('aviso').innerHTML = inc ? `<p class="fn-mono text-[12px] uppercase tracking-[.14em] text-fn-naranja-texto"><i class="fas fa-triangle-exclamation mr-2"></i>Atención: ${inc} ${inc === 1 ? 'acción' : 'acciones'} sin ${ob.join(' o ')}</p>` : '';
   $('kListasPie').title = 'Con todos los campos obligatorios: ' + JUNTA.campos.filter(c => c.obligatorio).map(c => c.etiqueta.toLowerCase()).join(', ');
-  const chip = (href, txt, on) => `<a href="${href}" class="px-2.5 py-1 rounded ${on ? 'bg-fn' : 'border border-fn-tinte hover:bg-fn-tinte'}">${esc(txt)}</a>`;
+  const chip = (href, txt, on) => `<a href="${href}" class="px-2.5 py-1 rounded ${on ? 'bg-fn' : 'border border-fn-regla hover:bg-fn-crema-2'}">${esc(txt)}</a>`;
   $('vistas').innerHTML = chip(urlVista('tablero.html'), 'General', !sola) + JUNTA.mesas.map(m => chip(urlMesa('tablero.html', m.slug), m.nombre, slug === m.slug)).join('');
   qrHecho = '';
 }

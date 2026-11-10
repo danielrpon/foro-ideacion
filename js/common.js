@@ -13,14 +13,14 @@ window.STAGES = [
   { key: 'resultados',                 n: '5',   label: 'Resultados de votación',        grupo: 'Votación (opcional)', opcional: true },
   { key: 'instrucciones_matriz',       n: '5.5', label: 'Instr. Matriz',                 grupo: 'Priorización' },
   { key: 'matriz',                     n: '6',   label: 'Calificación Esfuerzo · Impacto', grupo: 'Priorización', timer: 'minutos_matriz' },
-  { key: 'cierre',                     n: '7',   label: 'Matriz final · Quick wins',     grupo: 'Priorización' },
+  { key: 'cierre',                     n: '7',   label: 'Matriz final · Hacer ya',     grupo: 'Priorización' },
   { key: 'resumen',                    n: '7.5', label: 'Resumen del foro',              grupo: 'Cierre' },
   { key: 'reporte',                    n: '8',   label: 'Reporte final',                 grupo: 'Cierre' }
 ];
 window.stageInfo = (k) => STAGES.find(s => s.key === k) || { key: k, n: '?', label: k };
 
 /* Colores por pilar: en la identidad v1 todo es azul (el pilar se distingue por nombre e ícono; manual §3) */
-window.COLORS = (() => { const c = { bg: 'bg-fn-soft', text: 'text-fn-azul', border: 'border-fn-azul', solid: 'bg-fn-azul', hex: '#09318D', postit: 'bg-white' }; const o = {}; ['blue', 'green', 'purple', 'amber', 'rose', 'teal', 'indigo', 'orange', 'gray'].forEach(k => o[k] = c); return o; })();
+window.COLORS = (() => { const c = { bg: 'bg-fn-crema-2', text: 'text-fn-pizarra', border: 'border-fn-piedra', solid: 'bg-fn-pizarra', hex: "#2C312E", postit: 'bg-white' }; const o = {}; ['blue', 'green', 'purple', 'amber', 'rose', 'teal', 'indigo', 'orange', 'gray'].forEach(k => o[k] = c); return o; })();
 window.col = (c) => COLORS[c] || COLORS.gray;
 
 /* Orden aleatorio pero estable por participante: baraja con una semilla derivada del id del
@@ -106,7 +106,7 @@ window.aplicarMarca = (sesion) => {
 window.renderNav = (vista, extra = '', opts = {}) => {
   const nav = document.querySelector('nav[data-nav]'); if (!nav) return;
   nav.innerHTML = `
-    <div class="flex items-center gap-3 shrink-0"><span data-wordmark>${wordmark()}</span>${opts.app === false ? '' : `<span data-appname class="fn-mono text-[11px] uppercase tracking-[.14em] hidden sm:inline text-fn-texto2">${esc(opts.nombre || FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span>`}</div>
+    <div class="flex items-center gap-3 shrink-0"><span data-wordmark>${wordmark()}</span>${opts.app === false ? '' : `<span data-appname class="fn-mono text-[11px] uppercase tracking-[.14em] hidden sm:inline text-fn-piedra-osc">${esc(opts.nombre || FORO_CONFIG.APP_NAME || 'Foro de Ideación')}</span>`}</div>
     <div class="text-sm flex items-center gap-2 min-w-0">
       ${DB.archivo ? `<span class="fn-pill" title="Ejercicio guardado, cargado solo en este navegador. No toca la nube.">archivo · ${esc(new Date(DB.archivo.exportado).toLocaleDateString('es-CO'))}</span>` : DB.MODE === 'local' ? '<span class="fn-pill" title="Datos solo en este navegador. Configura Supabase en js/config.js para producción.">demo local</span>' : ''}
       <span id="navEtapa" class="fn-nav-et truncate max-w-[58vw] sm:max-w-none">${esc(vista)}</span>

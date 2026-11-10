@@ -49,7 +49,7 @@ window.MeceUI = {
   async generar() {
     const key = $('meceKey').value.trim(); if (!key) return toast('Pega tu API key de Anthropic', 'warn'); MECE.setKey(key);
     const d = this.datos(); if (!d.ideas.length) return toast('No hay ideas para consolidar', 'warn');
-    const btn = $('meceGen'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Consolidando ' + d.ideas.length + ' ideas…'; $('meceStatus').textContent = 'Llamando a ' + MECE.MODEL + ' (un pilar por llamada, en paralelo)…';
+    const btn = $('meceGen'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch mr-2"></i>Consolidando ' + d.ideas.length + ' ideas…'; $('meceStatus').textContent = 'Llamando a ' + MECE.MODEL + ' (un pilar por llamada, en paralelo)…';
     try { const r = await MECE.consolidar(d, key, (n, tot, nom) => { $('meceStatus').textContent = 'Pilares listos: ' + n + ' de ' + tot + ' (último: ' + nom + ')…'; }); const txt = r.txt; $('meceJson').value = txt; const obj = r.obj; this.preview = MECE.validate(obj, d); $('meceStatus').textContent = obj.rescatado ? 'La respuesta llegó incompleta: se rescataron ' + obj.grupos.length + ' grupos; las ideas que faltaron quedaron en "Otras ideas" de su pilar. Revisa y aplica, o vuelve a generar.' : 'Listo (' + MECE.MODEL + (MECE.ultimoUso ? ' · ' + MECE.ultimoUso.input_tokens + ' tokens de entrada, ' + MECE.ultimoUso.output_tokens + ' de salida' : '') + '): revisa las alertas y aplica.'; this.renderPreview(); }
     catch (e) { $('meceStatus').textContent = 'Error: ' + e.message; toast('Error IA: ' + e.message, 'err'); }
     finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-robot mr-2"></i>Generar consolidación con IA'; }

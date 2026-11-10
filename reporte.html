@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
 <link href="vendor/fonts-mono.css" rel="stylesheet">
-<meta name="theme-color" content="#FCFFFF">
+<meta name="theme-color" content="#F4EFE6">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
@@ -22,73 +22,76 @@
 <script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/plantilla-propiman.js?v=20261110a"></script><script src="js/plantilla-mp.js?v=20261110a"></script>
 <style>
 /* ===== Reporte final · láminas 1280×720 en retícula de 22 px (manual §11.2 y §11.6) ===== */
-body{background:var(--fn-blanco)}
+body{background:var(--fn-crema)}
 .pantalla{padding:22px 0 66px}
-.lamina{position:relative;width:1280px;height:720px;margin:0 auto 22px;background:var(--fn-blanco);overflow:hidden;outline:1px solid var(--fn-tinte);outline-offset:-1px;page-break-after:always;break-after:page;color:var(--fn-azul)}
-.lamina.azul{background:var(--fn-azul);color:var(--fn-blanco);outline:0}
+.lamina{position:relative;width:1280px;height:720px;margin:0 auto 22px;background:var(--fn-crema);overflow:hidden;outline:1px solid var(--fn-regla);outline-offset:-1px;page-break-after:always;break-after:page;color:var(--fn-pizarra)}
+.lamina.piedra{background:var(--fn-piedra);color:var(--fn-crema);outline:0}
 .lamina *{box-sizing:border-box}
 .top{position:absolute;left:35px;right:35px;top:33px;height:22px;display:flex;justify-content:space-between;align-items:center}
 .top .wm{font-size:22px}
 .mono{font-family:var(--fn-mono);font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:11px;line-height:22px}
-.t2{color:var(--fn-azul-texto2)} .tn{color:var(--fn-azul-nota)}
+.t2{color:var(--fn-piedra-osc)} .tn{color:var(--fn-piedra-osc)}
 .lamina .hd{position:absolute;left:35px;top:88px;width:594px}
 .lamina .hd h2{position:static;width:auto}
 .lamina .hd .sub{position:static;margin-top:22px}
 .lamina h2{position:absolute;left:35px;top:88px;width:594px;font:900 40px/44px var(--fn-font);letter-spacing:-.03em;text-wrap:balance}
-.lamina .sub{position:absolute;left:35px;top:198px;width:528px;font:500 16px/22px var(--fn-font);color:var(--fn-azul-texto2)}
-.foot{position:absolute;left:35px;right:35px;top:660px;display:flex;justify-content:space-between;gap:22px;color:var(--fn-azul-nota)}
+.lamina .sub{position:absolute;left:35px;top:198px;width:528px;font:500 16px/22px var(--fn-font);color:var(--fn-piedra-osc)}
+.foot{position:absolute;left:35px;right:35px;top:660px;display:flex;justify-content:space-between;gap:22px;color:var(--fn-piedra-osc)}
 .foot span:first-child{max-width:900px}
 /* tablas: encabezado mono 11 + filete azul 2 px; filas de 44 px con filete tinte; cifras mono a la derecha */
 table.rk{position:absolute;border-collapse:collapse;table-layout:fixed}
-table.rk th,table.rk td{height:44px;padding:0 8px;border-bottom:1px solid var(--fn-tinte);text-align:left;vertical-align:middle;overflow:hidden;white-space:nowrap}
+table.rk th,table.rk td{height:44px;padding:0 8px;border-bottom:1px solid var(--fn-regla);text-align:left;vertical-align:middle;overflow:hidden;white-space:nowrap}
 table.rk th{overflow:visible}
 /* el texto largo salta a 2 líneas dentro de la fila de 44 px; nunca se corta con «…» */
 table.rk td.wr{white-space:normal;line-height:20px;font-size:13px;overflow-wrap:anywhere}
-table.rk th{border-bottom:2px solid var(--fn-azul)!important;color:var(--fn-azul-texto2)!important;font-family:var(--fn-mono)!important}
-table.rk td{font:500 14px/22px var(--fn-font);color:var(--fn-azul)}
-table.rk td.n{font:500 11px var(--fn-mono);color:var(--fn-azul-nota)}
+table.rk th{border-bottom:2px solid var(--fn-pizarra)!important;color:var(--fn-piedra-osc)!important;font-family:var(--fn-mono)!important}
+table.rk td{font:500 14px/22px var(--fn-font);color:var(--fn-pizarra)}
+table.rk td.n{font:500 11px var(--fn-mono);color:var(--fn-piedra-osc)}
 table.rk td.num{font:500 13px var(--fn-mono);text-align:right}
 table.rk th.r{text-align:right}
 table.rk td.b{font-weight:900}
 table.rk td.tsel{font-weight:900}
-table.rk tr.sel td.tsel{position:relative;background:var(--fn-rosa);box-shadow:inset 0 0 0 4px var(--fn-azul);border-bottom-color:transparent}
-table.rk tr.sel td.tsel::after{content:"";position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:var(--fn-azul);box-shadow:0 0 0 2px var(--fn-blanco);z-index:3}
+table.rk tr.sel td.tsel{position:relative;background:var(--fn-naranja-tinte);box-shadow:inset 0 0 0 4px var(--fn-naranja);border-bottom-color:transparent}
+table.rk tr.sel td.tsel::after{content:"";position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:var(--fn-naranja);box-shadow:0 0 0 2px var(--fn-crema);z-index:3}
 table.rk td.tsel{overflow:visible}
-input.inl{border:0;border-bottom:1px solid var(--fn-azul-medio);background:transparent;width:100%;font:500 13px var(--fn-font);color:var(--fn-azul);height:22px;padding:0}
-input.inl:focus{outline:0;border-bottom:2px solid var(--fn-azul)}
+input.inl{border:0;border-bottom:1px solid var(--fn-piedra);background:transparent;width:100%;font:500 13px var(--fn-font);color:var(--fn-pizarra);height:22px;padding:0}
+input.inl:focus{outline:0;border-bottom:2px solid var(--fn-pizarra)}
 /* matriz impacto × esfuerzo (referencias/lamina.png) */
-.mx{position:absolute;left:651px;top:352px;width:594px;height:264px;border-left:2px solid var(--fn-azul);border-bottom:2px solid var(--fn-azul)}
-.mx .q{position:absolute;width:297px;height:132px;padding:0 11px;border:1px solid var(--fn-tinte)}
+.mx{position:absolute;left:651px;top:352px;width:594px;height:264px;border-left:2px solid var(--fn-pizarra);border-bottom:2px solid var(--fn-pizarra)}
+.mx .q{position:absolute;width:297px;height:132px;padding:0 11px;border:1px solid var(--fn-regla-fuerte)}
 .mx .q b{display:block;font:900 12px/33px var(--fn-font);letter-spacing:.04em;text-transform:uppercase}
-.mx .q1{left:0;top:0;background:var(--fn-rosa);box-shadow:inset 0 0 0 3px var(--fn-azul);border:0}
-.mx .q1::after{content:"";position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:var(--fn-azul);box-shadow:0 0 0 2px var(--fn-blanco);z-index:3}
+.mx .q1{left:0;top:0;background:var(--fn-naranja);border:0}
+.mx .q1::after{content:"";position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:var(--fn-pizarra);box-shadow:0 0 0 2px var(--fn-crema);z-index:3}
 .mx .q2{left:297px;top:0}.mx .q3{left:0;top:132px}.mx .q4{left:297px;top:132px}
-.mx .d{position:absolute;height:24px;transform:translate(-50%,-50%);border-radius:12px;background:var(--fn-azul);color:var(--fn-blanco);font:500 10px/24px var(--fn-mono);text-align:center;white-space:nowrap;z-index:2;box-shadow:0 0 0 2px var(--fn-blanco)}
+.mx .d{position:absolute;height:24px;transform:translate(-50%,-50%);background:var(--fn-pizarra);color:var(--fn-crema);font:500 10px/24px var(--fn-mono);text-align:center;white-space:nowrap;z-index:2}
+.mx .d.at{box-shadow:0 0 0 2px var(--fn-crema),0 0 0 4px var(--fn-naranja)}
 .mx .q b{position:relative;z-index:1}
-.mx .ax{position:absolute;color:var(--fn-azul-nota)}
+.mx .ax{position:absolute;color:var(--fn-piedra-osc)}
 /* cifras y barras */
-.kp{position:absolute;width:264px;height:132px;border-top:2px solid var(--fn-azul)}
+.kp{position:absolute;width:264px;height:132px;border-top:2px solid var(--fn-pizarra)}
 .kp .v{font:900 66px/66px var(--fn-font);letter-spacing:-.035em;margin-top:11px}
 .kp .l{margin-top:11px}
-.bar{position:absolute;left:651px;width:594px;height:44px;display:grid;grid-template-columns:232px 1fr 44px;align-items:center;gap:11px;border-bottom:1px solid var(--fn-tinte);font:500 14px/22px var(--fn-font)}
-.bar .tr{height:11px;background:var(--fn-tinte)} .bar .tr i{display:block;height:11px;background:var(--fn-azul)}
+.bar{position:absolute;left:651px;width:594px;height:44px;display:grid;grid-template-columns:232px 1fr 44px;align-items:center;gap:11px;border-bottom:1px solid var(--fn-regla);font:500 14px/22px var(--fn-font)}
+.bar .tr{height:11px;background:var(--fn-regla)} .bar .tr i{display:block;height:11px;background:var(--fn-pizarra)}
 .bar .c{text-align:right;font:500 13px var(--fn-mono)}
 /* portada */
-.lamina.azul .wm{color:var(--fn-blanco)}
-.portada .tt{position:absolute;left:35px;top:154px;width:700px}
-.portada h1{position:static;width:auto;font:900 var(--tt,76px)/var(--ttl,88px) var(--fn-font);letter-spacing:-.035em;color:var(--fn-blanco);text-wrap:balance}
-.portada .lead{margin-top:22px;width:594px;font:500 18px/33px var(--fn-font);color:var(--fn-tinte)}
-.portada canvas{position:absolute;right:0;top:0;width:520px;height:720px}
-.portada .cli{position:absolute;left:35px;bottom:33px;height:44px;filter:brightness(0) invert(1)}
+.lamina.piedra .wm{color:var(--fn-crema)}
+.portada .tt{position:absolute;left:88px;top:264px;width:700px}
+.portada h1{position:static;width:auto;font:900 var(--tt,76px)/var(--ttl,88px) var(--fn-font);letter-spacing:-.035em;color:var(--fn-crema);text-wrap:balance}
+.portada .lead{margin-top:22px;width:594px;font:500 18px/33px var(--fn-font);color:var(--fn-crema)}
+.portada canvas{position:absolute;left:0;top:0;width:1280px;height:720px}
+.portada .cel{position:absolute;width:88px;height:88px}
+.portada .cel.fn{background:none}
+.portada .cli{position:absolute;left:88px;bottom:88px;height:44px;filter:brightness(0) invert(95%) sepia(10%) saturate(300%) hue-rotate(335deg)}
 /* anexos: texto corrido, dos columnas */
 .anexo{page:anexo;width:1280px;margin:0 auto;padding:33px 35px 66px;columns:2;column-gap:22px;font-size:12px;line-height:22px}
 .anexo h2{position:static;width:auto;column-span:all;font:900 32px/44px var(--fn-font);margin:0 0 22px}
 .anexo h3{font:900 14px/22px var(--fn-font);margin:22px 0 0;break-after:avoid}
-.anexo .blq{break-inside:avoid;border-top:1px solid var(--fn-tinte);padding:11px 0}
-.anexo ul{margin:0;padding-left:16px;color:var(--fn-azul-texto2)} .anexo li{margin:0}
-.anexo .au{color:var(--fn-azul-nota)}
-.anexo.b ol{margin:0;padding-left:22px;color:var(--fn-azul-texto2)}
-.anexo .tach{text-decoration:line-through;color:var(--fn-azul-nota)}
+.anexo .blq{break-inside:avoid;border-top:1px solid var(--fn-regla);padding:11px 0}
+.anexo ul{margin:0;padding-left:16px;color:var(--fn-piedra-osc)} .anexo li{margin:0}
+.anexo .au{color:var(--fn-piedra-osc)}
+.anexo.b ol{margin:0;padding-left:22px;color:var(--fn-piedra-osc)}
+.anexo .tach{text-decoration:line-through;color:var(--fn-piedra-osc)}
 .barra-pantalla{max-width:1280px;margin:0 auto 22px;padding:0 22px;display:flex;justify-content:space-between;align-items:center;gap:22px}
 @page{size:1280px 720px;margin:0}
 @page anexo{size:1280px 720px;margin:33px 0 44px}
@@ -98,9 +101,9 @@ input.inl:focus{outline:0;border-bottom:2px solid var(--fn-azul)}
   .pantalla{padding:0;zoom:1!important}
   .lamina{margin:0;outline:0}
   .anexo{margin:0;padding:0 35px}
-  input.inl{border-bottom-color:var(--fn-tinte)}
-  .fn-rosa-print,.lamina .q1,table.rk tr.sel td.tsel{background:var(--fn-rosa-print)!important}
-  .mx .q1{background:var(--fn-rosa-print)}
+  input.inl{border-bottom-color:var(--fn-regla)}
+  table.rk tr.sel td.tsel{background:var(--fn-naranja-tinte)!important}
+  .mx .q1{background:var(--fn-naranja)!important}
 }
 </style>
 </head>
@@ -128,7 +131,7 @@ function render() {
   const NUM = {}; lista.filter(g => g.conteo_eval > 0).forEach((g, i) => NUM[g.id] = i + 1);
   const ev = lista.filter(g => g.conteo_eval > 0), qk = (g) => cuadrante(g.esfuerzo_prom, g.impacto_prom, max);
   const nCal = gs.reduce((a, g) => a + g.conteo_eval, 0), nAut = new Set(ideas.map(i => i.participante_nombre || i.participante_id)).size;
-  const nQuick = ev.filter(g => qk(g).key === 'quick').length;
+  const nQuick = ev.filter(g => qk(g).key === 'quick').length, nPost = ev.filter(g => qk(g).key === 'descartar').length;
   const demo = ideas.length && ideas.every(i => /^Demo · /.test(i.participante_nombre || ''));
   const quienRaw = s.empresa || s.nombre || '';
   const quien = esc(quienRaw);
@@ -139,19 +142,19 @@ function render() {
   const pie = (n, sec) => `<div class="foot mono"><span>${leyenda}</span><span>${String(n).padStart(2, '0')}</span></div>`;
   const top = (sec) => `<div class="top"><span class="wm">freaknerd<i></i></span><div class="mono t2">${titulo.length > 60 ? 'Reporte final' : titulo} · ${sec}</div></div>`;
   const txt = (g) => esc(g.titulo || g.texto);
-  const fila = (g, i0) => { const q = g.conteo_eval ? qk(g) : null; const a = g.conteo_eval > 0 && NUM[g.id] === 1; return `<tr${a ? ' class="sel"' : ''}><td class="n">${String(NUM[g.id] || '–').padStart(2, '0')}</td><td class="wr ${a ? 'tsel' : ''}" title="${txt(g)}">${txt(g)}</td><td class="num">${g.conteo_eval ? f1(g.impacto_prom) : '–'}</td><td class="num">${g.conteo_eval ? f1(g.esfuerzo_prom) : '–'}</td><td class="num">${g.conteo_eval ? f1(puntaje(g, nmax)) : '–'}</td><td class="${q && q.key === 'quick' ? 'b' : ''}">${q ? q.label : 'Sin calificar'}</td><td class="wr">${editable ? `<input class="inl" value="${esc(g.responsable || '')}" aria-label="Responsable" onchange="meta(${g.id},'responsable',this.value)">` : esc(g.responsable || '')}</td><td class="wr">${editable ? `<input class="inl" value="${esc(g.tiempo_ejecucion || '')}" aria-label="Tiempo" onchange="meta(${g.id},'tiempo_ejecucion',this.value)">` : esc(g.tiempo_ejecucion || '')}</td></tr>`; };
+  const fila = (g, i0) => { const q = g.conteo_eval ? qk(g) : null; const a = g.conteo_eval > 0 && NUM[g.id] === 1; return `<tr${a ? ' class="sel"' : ''}><td class="n">${String(NUM[g.id] || '–').padStart(2, '0')}</td><td class="wr ${a ? 'tsel' : ''}" title="${txt(g)}">${txt(g)}</td><td class="num">${g.conteo_eval ? f1(g.impacto_prom) : '–'}</td><td class="num">${g.conteo_eval ? f1(g.esfuerzo_prom) : '–'}</td><td class="num">${g.conteo_eval ? f1(puntaje(g, nmax)) : '–'}</td><td class="${q && q.key === 'quick' ? 'b' : ''}"${q && q.key === 'descartar' ? ' style="box-shadow:inset 0 0 0 2px var(--fn-naranja);color:var(--fn-naranja-texto);font-size:12px;line-height:15px;white-space:normal"' : ''}>${q && q.key === 'descartar' ? '<b>Atención</b><br>' : ''}${q ? q.label : 'Sin calificar'}</td><td class="wr">${editable ? `<input class="inl" value="${esc(g.responsable || '')}" aria-label="Responsable" onchange="meta(${g.id},'responsable',this.value)">` : esc(g.responsable || '')}</td><td class="wr">${editable ? `<input class="inl" value="${esc(g.tiempo_ejecucion || '')}" aria-label="Tiempo" onchange="meta(${g.id},'tiempo_ejecucion',this.value)">` : esc(g.tiempo_ejecucion || '')}</td></tr>`; };
   const cols = '<colgroup><col style="width:44px"><col style="width:572px"><col style="width:56px"><col style="width:56px"><col style="width:88px"><col style="width:124px"><col style="width:160px"><col style="width:110px"></colgroup>';
   const ths = '<tr><th class="mono"></th><th class="mono">Idea consolidada</th><th class="mono r">Imp.</th><th class="mono r">Esf.</th><th class="mono r">Puntaje</th><th class="mono">Prioridad</th><th class="mono">Responsable</th><th class="mono">Tiempo</th></tr>';
   /* --- 1 · portada --- */
   const logoCli = m ? (m.logo || '') : (logoEmpresa(s) || '');
-  let h = `<section class="lamina azul portada"><div class="top"><span class="wm">freaknerd<i></i></span><div class="mono" style="color:var(--fn-tinte)">Reporte final · ${fecha}</div></div><canvas data-fn-campo-blanco></canvas>
-    <div class="tt" style="${tituloRaw.length > 28 ? '--tt:40px;--ttl:44px' : ''}"><div class="mono" style="color:var(--fn-tinte);margin-bottom:11px">${esc(tituloEvento(s))} · ${quien}</div><h1>${titulo}</h1>
+  let h = `<section class="lamina piedra portada"><div class="top"><span class="wm">freaknerd<i></i></span><div class="mono" style="color:var(--fn-crema)">Reporte final · ${fecha}</div></div><canvas data-campo="h" data-amb="piedra" data-grid data-estatico data-desde=".5" data-seed="5"></canvas><span class="fn-icono en-piedra" style="--s:88px;position:absolute;left:88px;top:88px"><b>fn</b></span><span class="cel" style="left:176px;top:88px;box-shadow:inset 0 0 0 2px var(--fn-naranja)"></span><span class="cel" style="left:1056px;top:88px;box-shadow:inset 0 0 0 2px var(--fn-azul-claro)"></span><span class="cel" style="left:264px;top:528px;background:var(--fn-naranja)"></span>
+    <div class="tt" style="${tituloRaw.length > 28 ? '--tt:40px;--ttl:44px' : ''}"><div class="mono" style="color:var(--fn-crema);margin-bottom:11px">${esc(tituloEvento(s))} · ${quien}</div><h1>${titulo}</h1>
     <p class="lead">Facilitado por ${esc(s.facilitador || 'freaknerd')}</p></div>${logoCli ? `<img class="cli" src="${esc(logoCli)}" alt="${quien}" onerror="this.style.display='none'">` : ''}</section>`;
   /* --- 2 · resumen --- */
   const orig = ideas.length;
   h += `<section class="lamina">${top('Resumen')}<div class="hd"><h2>${gs.length} ideas consolidadas. ${nQuick} para empezar ya.</h2><p class="sub">${orig} ideas de ${nAut} participantes se agruparon sin perder ninguna y el equipo las calificó en esfuerzo e impacto.</p></div>
     <div class="kp" style="left:35px;top:286px"><div class="v">${orig}</div><div class="l mono t2">Ideas del foro</div></div><div class="kp" style="left:329px;top:286px"><div class="v">${gs.length}</div><div class="l mono t2">Consolidadas</div></div>
-    <div class="kp" style="left:35px;top:440px"><div class="v">${nCal}</div><div class="l mono t2">Calificaciones</div></div><div class="kp" style="left:329px;top:440px"><div class="v">${nQuick}</div><div class="l mono t2">Hacer ya</div></div>
+    <div class="kp" style="left:35px;top:440px"><div class="v">${nCal}</div><div class="l mono t2">Calificaciones</div></div><div class="kp fn-sel" style="left:329px;top:440px;border-top:0;padding:11px 0 0 11px"><div class="v">${nQuick}</div><div class="l mono t2">Hacer ya</div></div>
     <div class="mono tn" style="position:absolute;left:651px;top:242px;width:594px">Ideas por pilar · originales → consolidadas</div>
     ${snap.pilares.slice(0, 9).map((p, k) => { const n = ideas.filter(i => i.pilar_id === p.id).length, c = gs.filter(g => g.pilar_id === p.id).length, mx = Math.max(...snap.pilares.map(q => ideas.filter(i => i.pilar_id === q.id).length), 1); return `<div class="bar" style="top:${264 + 44 * k}px"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nombre)}</span><div class="tr"><i style="width:${pct(n, mx)}%"></i></div><span class="c">${n}→${c}</span></div>`; }).join('')}
     ${pie(2)}</section>`;
@@ -163,7 +166,7 @@ function render() {
   const grp = {}; ev.forEach(g => { const k = g.esfuerzo_prom + ',' + g.impacto_prom; (grp[k] = grp[k] || []).push(g); });
   const pts = Object.values(grp).map(arr => { const g0 = arr[0], nums = arr.map(g => NUM[g.id]).sort((a, b) => a - b).map(n => String(n).padStart(2, '0'));
     const lab = nums.length <= 2 ? nums.join('·') : nums[0] + '·' + nums[1] + ' +' + (nums.length - 2);
-    return { lab, w: Math.max(24, lab.length * 6.6 + 14), q: cuadrante(g0.esfuerzo_prom, g0.impacto_prom, max).key, x: (g0.esfuerzo_prom - lo) / span * MW, y: MH - (g0.impacto_prom - lo) / span * MH }; });
+    const at = cuadrante(g0.esfuerzo_prom, g0.impacto_prom, max).key === 'descartar'; return { at, lab, w: Math.max(24, lab.length * 6.6 + 14), q: cuadrante(g0.esfuerzo_prom, g0.impacto_prom, max).key, x: (g0.esfuerzo_prom - lo) / span * MW, y: MH - (g0.impacto_prom - lo) / span * MH }; });
   const celda = { quick: [0, HX, 0, HY], proyecto: [HX, MW, 0, HY], relleno: [0, HX, HY, MH], descartar: [HX, MW, HY, MH] };
   const vetos = [[0, 105, 0, 36], [HX, HX + 90, 0, 36], [0, 120, HY, HY + 36], [HX, HX + 100, HY, HY + 36], [HX - 30, HX + 8, HY - 34, HY + 8]]; /* etiquetas de cuadrante + tirador */
   const situar = (p) => { const [x0, x1, y0, y1] = celda[p.q], hw = p.w / 2 + 3, hh = 15;
@@ -175,30 +178,24 @@ function render() {
     pts.forEach(situar); if (!mv) break; }
   h += `<section class="lamina">${top('Priorización')}<div class="hd"><h2>${nQuick} ideas para empezar ya.</h2><p class="sub">La matriz usa el promedio del equipo. El número de cada punto es su prioridad: impacto menos esfuerzo, ponderado por cuánta gente calificó.</p></div>
     <table class="rk" style="left:35px;top:308px;width:594px"><colgroup><col style="width:30px"><col style="width:324px"><col style="width:54px"><col style="width:54px"><col style="width:132px"></colgroup><tr><th class="mono s"></th><th class="mono">Idea consolidada</th><th class="mono r">Imp.</th><th class="mono r">Esf.</th><th class="mono">Prioridad</th></tr>
-    ${top6.map(g => `<tr><td class="n">${String(NUM[g.id]).padStart(2, '0')}</td><td class="wr" title="${txt(g)}">${txt(g)}</td><td class="num">${f1(g.impacto_prom)}</td><td class="num">${f1(g.esfuerzo_prom)}</td><td class="${qk(g).key === 'quick' ? 'b' : ''}">${qk(g).label}</td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--fn-azul-nota)">Aún no hay ideas calificadas.</td></tr>'}</table>
+    ${top6.map(g => `<tr${NUM[g.id] === 1 ? ' class="sel"' : ''}><td class="n">${String(NUM[g.id]).padStart(2, '0')}</td><td class="wr${NUM[g.id] === 1 ? ' tsel' : ''}" title="${txt(g)}">${txt(g)}</td><td class="num">${f1(g.impacto_prom)}</td><td class="num">${f1(g.esfuerzo_prom)}</td><td class="${qk(g).key === 'quick' ? 'b' : ''}">${qk(g).label}</td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--fn-piedra-osc)">Aún no hay ideas calificadas.</td></tr>'}</table>
     <div class="mx"><div class="q q1"><b>Hacer ya</b></div><div class="q q2"><b>Planear</b></div><div class="q q3"><b>Tarea menor</b></div><div class="q q4"><b>Postergar</b></div>
-    ${pts.map(p => `<span class="d" style="left:${p.x.toFixed(0)}px;top:${p.y.toFixed(0)}px;width:${Math.round(p.w)}px">${p.lab}</span>`).join('')}
-    <span class="ax mono" style="left:-50px;top:121px;transform:rotate(-90deg)">Impacto ↑</span><span class="ax mono" style="right:0;top:268px">Esfuerzo →</span></div>
+    ${pts.map(p => `<span class="d${p.at ? ' at' : ''}" style="left:${p.x.toFixed(0)}px;top:${p.y.toFixed(0)}px;width:${Math.round(p.w)}px">${p.lab}</span>`).join('')}
+    <span class="ax mono" style="left:-50px;top:121px;transform:rotate(-90deg)">Impacto ↑</span><span class="ax mono" style="right:0;top:268px">Esfuerzo →</span></div>${nPost ? `<div class="mono" style="position:absolute;left:35px;top:630px;width:594px;color:var(--fn-naranja-texto)">Atención: ${nPost === 1 ? 'una idea pide' : nPost + ' ideas piden'} mucho esfuerzo y ${nPost === 1 ? 'devuelve' : 'devuelven'} poco (marco naranja).</div>` : ''}
     ${pie(3)}</section>`;
   /* --- 4… · ranking completo, 9 filas por lámina --- */
   const porPag = 9, pags = Math.max(1, Math.ceil(lista.length / porPag));
   for (let k = 0; k < pags; k++) {
     h += `<section class="lamina">${top('Ranking')}<h2 style="width:1000px;font-size:32px">Ranking completo${pags > 1 ? ` (${k + 1} de ${pags})` : ''}</h2>
-      <table class="rk" style="left:35px;top:154px;width:1210px">${cols}${ths}${lista.slice(k * porPag, (k + 1) * porPag).map(fila).join('') || '<tr><td colspan="8" style="color:var(--fn-azul-nota)">Aún no hay ideas consolidadas.</td></tr>'}</table>
+      <table class="rk" style="left:35px;top:154px;width:1210px">${cols}${ths}${lista.slice(k * porPag, (k + 1) * porPag).map(fila).join('') || '<tr><td colspan="8" style="color:var(--fn-piedra-osc)">Aún no hay ideas consolidadas.</td></tr>'}</table>
       <div class="foot mono"><span>${leyenda}</span><span>${String(4 + k).padStart(2, '0')}</span></div></section>`;
   }
   /* --- anexos --- */
   h += `<section class="anexo"><h2>Anexo A · ideas originales detrás de cada consolidada</h2>${lista.map(g => { const hs = ideas.filter(i => i.padre_id === g.id); return `<div class="blq"><div><span class="mono tn">${String(NUM[g.id] || '–').padStart(2, '0')} · ${esc(g.pilar_nombre || '')}</span></div><b>${txt(g)}</b>${g.descripcion_corta ? `<div class="t2">${esc(g.descripcion_corta)}</div>` : ''}${hs.length ? `<ul>${hs.map(x => `<li>${esc(x.texto)} <span class="au">· ${esc(x.participante_nombre || '')}</span></li>`).join('')}</ul>` : ''}</div>`; }).join('')}</section>`;
   h += `<section class="anexo b"><h2>Anexo B · todas las ideas del foro (${ideas.length})</h2>${snap.pilares.map(p => { const mi = ideas.filter(i => i.pilar_id === p.id); return `<h3>${esc(p.nombre)} (${mi.length})</h3><ol>${mi.map(i => `<li class="${i.estado === 'repetida' ? 'tach' : ''}">${esc(i.texto)} <span class="au">· ${esc(i.participante_nombre || '')}${i.subfrente ? ' · ' + esc(i.subfrente) : ''}</span></li>`).join('')}</ol>`; }).join('')}<p class="mono tn" style="margin-top:22px">${m ? esc(tituloEvento(s)) + ' · facilitado por freaknerd' : 'freaknerd · Foro de ideación'} · generado ${new Date().toLocaleString('es-CO')}</p></section>`;
-  $('app').innerHTML = `<div class="barra-pantalla noprint"><p class="text-xs text-fn-texto2">${editable ? 'Puedes escribir responsable y tiempo directamente en el ranking (se guardan al salir del campo).' : 'Para asignar responsables y tiempos, entra primero como administrador o líder.'}</p><button onclick="imprimir()" class="btn-fn">Imprimir / PDF ${CHEV}</button></div>${h}`;
-  const cv = document.querySelector('canvas[data-fn-campo-blanco]'); if (cv) puntosBlancos(cv);
+  $('app').innerHTML = `<div class="barra-pantalla noprint"><p class="text-xs text-fn-piedra-osc">${editable ? 'Puedes escribir responsable y tiempo directamente en el ranking (se guardan al salir del campo).' : 'Para asignar responsables y tiempos, entra primero como administrador o líder.'}</p><button onclick="imprimir()" class="btn-fn">Imprimir / PDF ${CHEV}</button></div>${h}`;
+  if (window.pintarCampos) pintarCampos();
   ajustar(); window.__reporteListo = true;
-}
-/* Campo de puntos sobre azul (portada): mismos puntos, en blanco, de disperso (izquierda) a ordenado (derecha) */
-function puntosBlancos(c) {
-  const w = 520, h = 720, dpr = 2; c.width = w * dpr; c.height = h * dpr; const x = c.getContext('2d'); x.scale(dpr, dpr);
-  let sd = 5; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647, G = 22;
-  for (let gx = 11; gx <= w; gx += G) for (let gy = 11; gy <= h; gy += G) { const t = Math.min(1, gx / (w * .85)), e = t * t * (3 - 2 * t), j = (1 - e) * 14; if (r() > .2 + .8 * e) continue; x.globalAlpha = .15 + .7 * e; x.fillStyle = '#FCFFFF'; x.beginPath(); x.arc(gx + (r() - .5) * 2 * j, gy + (r() - .5) * 2 * j, 1.2 + 1.1 * e, 0, 7); x.fill(); }
 }
 async function meta(id, campo, valor) { try { await DB.admin('editar_idea', { id, [campo]: valor }); toast('Guardado'); } catch (e) { toast(errMsg(e), 'err'); } }
 Poll.start(cargar, 15000);

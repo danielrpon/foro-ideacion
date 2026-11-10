@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link href="vendor/fonts.css" rel="stylesheet">
 <link href="vendor/fonts-mono.css" rel="stylesheet">
-<meta name="theme-color" content="#FCFFFF">
+<meta name="theme-color" content="#F4EFE6">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
@@ -21,7 +21,6 @@
 <script src="js/campo-puntos.js"></script>
 <script src="js/config.js?v=20261110a"></script><script src="js/db.js?v=20261110a"></script><script src="js/common.js?v=20261110a"></script><script src="js/plantilla-propiman.js?v=20261110a"></script><script src="js/plantilla-mp.js?v=20261110a"></script>
 <style>
-  .fade-in{animation:fadeIn .4s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .pick{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
   .sticky-top{position:sticky;top:56px;z-index:20}
   [id^=card]{scroll-margin-top:170px}
@@ -65,7 +64,7 @@ function pilarAfin() { const perfil = (yo && yo.perfil) || ''; const af = snap.s
 function pilaresOrdenados() { const afin = pilarAfin(); const resto = ordenPersonal(snap.pilares.filter(p => !afin || p.id !== afin.id), yo ? yo.id : ''); return afin ? [afin, ...resto] : resto; }
 function hijasHtml(g) { const h = snap.ideas.filter(i => i.tipo === 'idea' && i.padre_id === g.id); if (!h.length) return ''; return `<details class="mt-2"><summary class="cursor-pointer text-[11px] font-mono uppercase text-gray-500 select-none"><i class="fas fa-caret-right mr-1"></i>Integra ${h.length} idea(s) · ver</summary><ul class="mt-1 pl-3 border-l-2 border-gray-200 space-y-1">${h.map(i => `<li class="text-xs text-gray-700">${esc(i.texto)}</li>`).join('')}</ul></details>`; }
 function chipsPilares(activo, onclick) {
-  return `<div class="chips mb-3">${pilaresOrdenados().map(p => { const c = col(p.color); const on = p.id === activo; return `<button onclick="${onclick}(${p.id})" class="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold border ${on ? c.solid + ' text-white border-transparent' : 'bg-white ' + c.text + ' ' + c.border}"><i class="fas ${p.icono} mr-1"></i>${esc(p.nombre)}</button>`; }).join('')}</div>`;
+  return `<div class="chips mb-3">${pilaresOrdenados().map(p => { const c = col(p.color); const on = p.id === activo; return `<button onclick="${onclick}(${p.id})" class="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold border ${on ? 'fn-sel-s border-transparent' : 'bg-white ' + c.text + ' ' + c.border}"><i class="fas ${p.icono} mr-1"></i>${esc(p.nombre)}</button>`; }).join('')}</div>`;
 }
 function espera(titulo, texto, icono = 'fa-pause-circle') {
   return `<div class="flex flex-col items-center justify-center text-center text-gray-500 mt-16 fade-in"><i class="fas ${icono} text-5xl mb-4 text-gray-300"></i><h2 class="text-xl font-bold text-gray-700">${titulo}</h2><p class="mt-2 text-sm">${texto}</p></div>`;
@@ -78,14 +77,14 @@ function render() {
       <div class="bg-white rounded-xl shadow overflow-hidden mt-4 fade-in">
         <div class="px-[22px] pt-[22px]">
           ${m ? `<img src="${esc(m.logo_claro || m.logo)}" alt="${esc(m.nombre)}" class="h-11 w-auto mb-[22px]">` : ''}
-          <div class="fn-mono text-[11px] uppercase tracking-[.14em] text-fn-texto2 leading-[22px]">${esc(tituloEvento(s))} · ${esc(s.empresa || s.nombre)}</div>
+          <div class="fn-mono text-[11px] uppercase tracking-[.14em] text-fn-piedra-osc leading-[22px]">${esc(tituloEvento(s))} · ${esc(s.empresa || s.nombre)}</div>
           <h1 class="text-[40px] leading-[44px] font-black mt-[11px]">Regístrate para <span class="fn-sel-txt">participar</span></h1>
           ${!m && logoEmpresa(s) ? `<img src="${esc(logoEmpresa(s))}" class="logo-azul h-8 w-auto mt-[22px]" onerror="this.style.display='none'">` : ''}
           <div class="mt-[11px] h-[132px] -mx-[22px]"><canvas class="fn-campo" data-campo="v"></canvas></div>
           <div class="fn-leyenda"><span>↑ Así llega</span><span>Así queda ↓</span></div>
         </div>
         <div class="p-[22px]">
-        <p class="text-sm font-bold text-fn-texto2 mb-[22px]">Cuéntanos quién eres para empezar.</p>
+        <p class="text-sm font-bold text-fn-piedra-osc mb-[22px]">Cuéntanos quién eres para empezar.</p>
         <label class="block text-xs font-bold text-gray-600 mb-1">Tu nombre</label>
         <input id="regNombre" class="w-full p-3 border rounded-lg mb-3" placeholder="Nombre y apellido" autocomplete="name">
         <label class="block text-xs font-bold text-gray-600 mb-1">${s.config.perfiles ? 'Tu rol' : 'Tu perfil (para autosegmentarte)'}</label>
@@ -109,7 +108,7 @@ function render() {
       <p class="text-sm text-gray-600 mt-2">${esc(s.config.caso || '')}</p>
       <p class="text-[11px] font-mono uppercase tracking-widest text-gray-400 mt-4">Los pilares · toca uno para ver de qué se trata</p>
       <div class="mt-2 space-y-2">${snap.pilares.map(p => { const c = col(p.color); return `<details class="rounded-lg ${c.bg} overflow-hidden"><summary class="flex items-center gap-3 p-2.5 cursor-pointer"><i class="fas ${p.icono} ${c.text}"></i><span class="text-sm font-bold ${c.text} flex-1">${esc(p.nombre)}</span><i class="fas fa-chevron-down text-xs ${c.text} opacity-60"></i></summary><div class="px-3 pb-3 text-xs text-gray-700">${esc(p.enunciado || '')}${(p.subfrentes && p.subfrentes.length) ? `<div class="mt-2 flex flex-wrap gap-1">${p.subfrentes.map(f => `<span class="px-2 py-0.5 rounded-full bg-white/70 ${c.text} text-[10px] font-bold">${esc(f)}</span>`).join('')}</div>` : ''}</div></details>`; }).join('')}</div>
-      <div class="mt-6 text-center text-gray-400 text-sm"><i class="fas fa-circle-notch fa-spin mr-1"></i>Esperando a que el moderador abra la ideación…</div>
+      <div class="mt-6 text-center text-gray-400 text-sm"><i class="fas fa-circle-notch mr-1"></i>Esperando a que el moderador abra la ideación…</div>
       <button onclick="salir()" class="mt-4 text-[11px] text-gray-400 underline w-full text-center">No soy ${esc(yo.nombre)}</button>
     </div>`; return;
   }
@@ -120,7 +119,7 @@ function render() {
     const p = pilar(pilarSel), c = col(p.color), mias = misIdeas(pilarSel), total = misIdeas().length;
     if (full) {
       app.innerHTML = `<div class="fade-in">
-        <div class="flex justify-between items-center mb-2"><span class="text-xs font-mono uppercase tracking-widest text-gray-500">Etapa 1 · Ideación</span><span id="tmr" class="font-mono text-sm font-bold ${timerVencido(s) ? 'text-red-600' : 'text-gray-700'}">${timerText(s)}</span></div>
+        <div class="flex justify-between items-center mb-2"><span class="text-xs font-mono uppercase tracking-widest text-gray-500">Etapa 1 · Ideación</span><span id="tmr" class="font-mono text-sm font-bold ${timerVencido(s) ? 'text-fn-naranja-texto' : 'text-fn-pizarra'}">${timerVencido(s) ? 'Atención · ' : ''}${timerText(s)}</span></div>
         ${chipsPilares(pilarSel, 'setPilar')}
         <div class="bg-white rounded-xl shadow p-4 border-t-4 ${c.border}">
           <h2 class="font-black text-lg ${c.text}"><i class="fas ${p.icono} mr-1"></i>${esc(p.nombre)}</h2>
@@ -132,7 +131,7 @@ function render() {
         </div>
         <div class="mt-4"><div class="flex justify-between items-baseline"><h3 class="text-xs font-bold uppercase text-gray-500">Tus ideas en este pilar</h3><span id="cntTotal" class="text-[11px] text-gray-400">${total} en total</span></div><div id="misIdeas" class="mt-2 space-y-2"></div></div>
       </div>`;
-    } else { const t = $('tmr'); if (t) { t.textContent = timerText(s); t.className = 'font-mono text-sm font-bold ' + (timerVencido(s) ? 'text-red-600' : 'text-gray-700'); } const ct = $('cntTotal'); if (ct) ct.textContent = total + ' en total'; }
+    } else { const t = $('tmr'); if (t) { t.textContent = (timerVencido(s) ? 'Atención · ' : '') + timerText(s); t.className = 'font-mono text-sm font-bold ' + (timerVencido(s) ? 'text-fn-naranja-texto' : 'text-fn-pizarra'); } const ct = $('cntTotal'); if (ct) ct.textContent = total + ' en total'; }
     $('misIdeas').innerHTML = mias.length ? mias.slice().reverse().map(i => `<div class="postit p-3 rounded-lg ${c.postit} border ${c.border} text-sm">${i.subfrente ? `<span class="text-[10px] font-mono uppercase ${c.text}">${esc(i.subfrente)}</span><br>` : ''}${esc(i.texto)}<div class="text-[10px] text-gray-400 mt-1">${fmtHora(i.created_at)} · ${i.estado === 'agrupada' ? 'agrupada' : i.estado}</div></div>`).join('') : '<p class="text-xs text-gray-400">Aún no has enviado ideas en este pilar.</p>';
     return;
   }
@@ -158,9 +157,9 @@ function render() {
     const mios = ordenPersonal(gs.filter(g => g.pilar_id === pilarSel), yo.id);
     const usados = votosMios.filter(id => (gs.find(g => g.id === id) || {}).pilar_id === pilarSel).length;
     app.innerHTML = `<div class="fade-in">
-      <div class="flex justify-between items-center mb-2"><span class="text-xs font-mono uppercase tracking-widest text-gray-500">Etapa 4 · Votación</span><span class="text-xs font-bold ${usados >= max ? 'text-red-600' : 'text-emerald-700'}">Te quedan ${max - usados} de ${max} votos</span></div>
+      <div class="flex justify-between items-center mb-2"><span class="text-xs font-mono uppercase tracking-widest text-gray-500">Etapa 4 · Votación</span><span class="text-xs font-bold text-fn-pizarra">Te quedan ${max - usados} de ${max} votos</span></div>
       ${chipsPilares(pilarSel, 'setPilar')}
-      <div class="space-y-2">${mios.length ? mios.map(g => { const on = votosMios.includes(g.id); return `<div class="bg-white rounded-xl shadow p-4 border-l-4 ${c.border} ${on ? 'ring-2 ring-emerald-400' : ''}">
+      <div class="space-y-2">${mios.length ? mios.map(g => { const on = votosMios.includes(g.id); return `<div class="bg-white rounded-xl shadow p-4 border-l-4 ${c.border} ${on ? 'fn-sel' : ''}">
         <div class="font-bold">${esc(g.titulo || g.texto)}</div><p class="text-sm text-gray-600 mt-1">${esc(g.descripcion_corta || '')}</p>${hijasHtml(g)}
         <button onclick="toggleVoto(${g.id})" class="mt-2 w-full py-2 rounded-lg font-bold text-sm ${on ? 'bg-emerald-600 text-white' : (usados >= max ? 'bg-gray-200 text-gray-400' : 'bg-gray-100 text-gray-800')}"><i class="fas ${on ? 'fa-check' : 'fa-thumbs-up'} mr-1"></i>${on ? 'Votada · quitar voto' : 'Votar'}</button></div>`; }).join('') : '<p class="text-sm text-gray-400 text-center mt-6">Este pilar aún no tiene ideas consolidadas.</p>'}</div>
     </div>`; return;
@@ -189,7 +188,7 @@ function render() {
           ${s.modo_matriz === 'proyectada' && g.detalle ? `<p class="text-xs text-gray-500 mt-2">${esc(g.detalle)}</p>` : ''}${hijasHtml(g)}
           ${(!e && !quedan) ? `<div class="mt-3 text-xs text-center text-gray-500 bg-gray-50 rounded-lg p-3"><i class="fas fa-lock mr-1"></i>Ya usaste tus ${lim} calificaciones. Para calificar esta, quita una de las guardadas.</div>` : `${pickHtml(g.id, 'e', max, sel[g.id].e)}
           ${pickHtml(g.id, 'i', max, sel[g.id].i)}
-          <button id="btn${g.id}" onclick="guardarEval(${g.id})" class="pick mt-3 w-full py-3 rounded-lg font-bold text-sm ${e ? 'bg-emerald-600 text-white' : (sel[g.id].e && sel[g.id].i ? 'bg-gray-900 text-emerald-400' : 'bg-gray-200 text-gray-500')}">${e ? '<i class="fas fa-check mr-1"></i>Guardada · toca un número para cambiar' : 'Guardar calificación'}</button><div id="st${g.id}" class="text-[11px] text-center text-gray-400 mt-1">${e ? 'Puedes cambiar los números y volver a guardar' : 'Elige esfuerzo e impacto'}</div>${e ? `<button onclick="quitarEval(${g.id})" class="pick mt-1 w-full text-[11px] text-red-500 underline">Quitar calificación (libera una)</button>` : ''}`}
+          <button id="btn${g.id}" onclick="guardarEval(${g.id})" class="pick mt-3 w-full py-3 rounded-lg font-bold text-sm ${e ? 'bg-emerald-600 text-white' : (sel[g.id].e && sel[g.id].i ? 'bg-gray-900 text-emerald-400' : 'bg-gray-200 text-gray-500')}">${e ? '<i class="fas fa-check mr-1"></i>Guardada · toca un número para cambiar' : 'Guardar calificación'}</button><div id="st${g.id}" class="text-[11px] text-center text-gray-400 mt-1">${e ? 'Puedes cambiar los números y volver a guardar' : 'Elige esfuerzo e impacto'}</div>${e ? `<button onclick="quitarEval(${g.id})" class="pick mt-1 w-full text-[11px] text-fn-pizarra underline">Quitar calificación (libera una)</button>` : ''}`}
         </div>`; }).join('') : espera('Esperando la idea proyectada', 'El moderador va a proyectar una idea en el muro; tu celular vibrará.', 'fa-tv')}
       </div>`;
     } else { const t = $('tmr'); if (t) t.textContent = timerText(s); }
@@ -201,8 +200,8 @@ function render() {
     if (!full) return;
     const max = escalaMax(s);
     const nmax = Math.max(...gs.map(g => g.conteo_eval), 1); const qw = gs.filter(g => g.conteo_eval > 0 && cuadrante(g.esfuerzo_prom, g.impacto_prom, max).key === 'quick').sort((a, b) => puntaje(b, nmax) - puntaje(a, nmax));
-    app.innerHTML = `<div class="bg-white rounded-xl shadow p-6 mt-2 fade-in"><h2 class="text-xl font-black">¡Gracias, ${esc(yo.nombre.split(' ')[0])}!</h2><p class="text-sm text-gray-600 mt-1">Mira el muro: ahí está la matriz del foro. Quick wins identificados:</p>
-      <div class="mt-3 space-y-2">${qw.length ? qw.map(g => `<div class="p-3 rounded-lg bg-emerald-50 border border-emerald-300 text-sm"><b>${esc(g.titulo || g.texto)}</b><div class="text-[11px] text-gray-500 mt-1">Impacto ${g.impacto_prom} · Esfuerzo ${g.esfuerzo_prom} · ${g.conteo_eval} calificaciones</div></div>`).join('') : '<p class="text-xs text-gray-400">Todavía no hay quick wins calculados.</p>'}</div></div>`; return;
+    app.innerHTML = `<div class="bg-white rounded-xl shadow p-6 mt-2 fade-in"><h2 class="text-xl font-black">¡Gracias, ${esc(yo.nombre.split(' ')[0])}!</h2><p class="text-sm text-gray-600 mt-1">Mira el muro: ahí está la matriz del foro. Hacer ya, por prioridad:</p>
+      <div class="mt-3 space-y-2">${qw.length ? qw.map((g, i) => `<div class="p-3 text-sm ${i === 0 ? 'fn-sel' : 'bg-fn-crema-2'}"><b>${esc(g.titulo || g.texto)}</b><div class="text-[11px] text-gray-500 mt-1">${i === 0 ? 'Prioridad 1 · ' : ''}Impacto ${f1(g.impacto_prom)} · Esfuerzo ${f1(g.esfuerzo_prom)} · ${g.conteo_eval} calificaciones</div></div>`).join('') : '<p class="text-xs text-gray-400">Todavía no hay quick wins calculados.</p>'}</div></div>`; return;
   }
   if (full) app.innerHTML = espera('Esperando al moderador…', 'Mantén esta pantalla abierta.');
 }
@@ -211,7 +210,7 @@ async function registrar() {
   const nombre = $('regNombre').value.trim(), perfil = $('regPerfil').value;
   if (nombre.length < 2) return toast('Escribe tu nombre', 'warn');
   if (!perfil) { $('regPerfil').classList.add('border-red-400'); $('regPerfil').focus(); return toast(snap.sesion.config.perfiles ? 'Selecciona tu rol para entrar' : 'Selecciona tu área de expertiz para entrar', 'warn'); }
-  const b = document.querySelector('button[onclick="registrar()"]'); if (b) { if (b.disabled) return; b.disabled = true; b.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i>Entrando…'; }
+  const b = document.querySelector('button[onclick="registrar()"]'); if (b) { if (b.disabled) return; b.disabled = true; b.innerHTML = '<i class="fas fa-circle-notch mr-1"></i>Entrando…'; }
   try { yo = await DB.registrar(nombre, perfil); Yo.set(yo); yoVerificado = true; viewKey = ''; toast('¡Listo, ' + nombre.split(' ')[0] + '!'); await cargar(); } catch (e) { toast(errMsg(e), 'err'); if (b) { b.disabled = false; b.innerHTML = 'Entrar al foro <i class="fas fa-arrow-right ml-1"></i>'; } }
 }
 function salir() { if (confirm('¿Registrarte con otro nombre?')) { Yo.clear(); yo = null; viewKey = ''; render(); } }
@@ -243,14 +242,14 @@ async function guardarEval(id) {
   if (!esf || !imp) return toast(!esf && !imp ? 'Elige esfuerzo e impacto' : !esf ? 'Falta el esfuerzo' : 'Falta el impacto', 'warn');
   const gsAll = grupos(), lim = maxCalif(snap.sesion, gsAll.length), usadas = gsAll.filter(g => evalsMias[g.id]).length;
   if (!evalsMias[id] && usadas >= lim) return toast('Ya usaste tus ' + lim + ' calificaciones: quita una para calificar esta.', 'warn');
-  const btn = $('btn' + id); if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i>Guardando…'; }
+  const btn = $('btn' + id); if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch mr-1"></i>Guardando…'; }
   try { await DB.evaluar(id, yo.id, esf, imp); evalsMias[id] = { idea_id: id, esfuerzo: esf, impacto: imp };
     if (btn) { btn.className = 'pick mt-3 w-full py-3 rounded-lg font-bold text-sm bg-emerald-600 text-white'; btn.innerHTML = '<i class="fas fa-check mr-1"></i>Guardada · toca un número para cambiar'; } $('st' + id).textContent = 'Puedes cambiar los números y volver a guardar'; toast('Calificación guardada ✓'); vibrar(40);
     const n = gsAll.filter(g => evalsMias[g.id]).length; if (n >= lim) toast('Usaste tus ' + lim + ' calificaciones. ¡Gracias! 🎉'); viewKey = ''; render(); }
-  catch (e) { toast(errMsg(e), 'err'); if (btn) { btn.innerHTML = 'Reintentar guardar'; btn.className = 'pick mt-3 w-full py-3 rounded-lg font-bold text-sm bg-red-600 text-white'; } }
+  catch (e) { toast(errMsg(e), 'err'); if (btn) { btn.innerHTML = 'Reintentar guardar'; btn.className = 'pick mt-3 w-full py-3 rounded-lg font-bold text-sm bg-fn-crema text-fn-naranja-texto fn-aten'; } }
   finally { if (btn) btn.disabled = false; }
 }
-function irPendiente() { const g = ordenPersonal(grupos(), yo.id).find(x => !evalsMias[x.id]); const el = g && $('card' + g.id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.add('ring-2', 'ring-emerald-400'); setTimeout(() => el.classList.remove('ring-2', 'ring-emerald-400'), 1500); } }
+function irPendiente() { const g = ordenPersonal(grupos(), yo.id).find(x => !evalsMias[x.id]); const el = g && $('card' + g.id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.add('fn-sel'); setTimeout(() => el.classList.remove('fn-sel'), 1500); } }
 async function quitarEval(id) {
   if (!evalsMias[id]) return;
   try { await DB.quitarEvaluacion(id, yo.id); delete evalsMias[id]; sel[id] = { e: null, i: null }; toast('Calificación quitada: tienes una más disponible'); viewKey = ''; render(); } catch (e) { toast(errMsg(e), 'err'); }

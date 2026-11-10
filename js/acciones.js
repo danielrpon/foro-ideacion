@@ -137,7 +137,7 @@
   window.tarjetaAccion = (f, opts = {}) => {
     const osc = !!opts.oscuro, lista = f.estado === 'confirmada', faltan = JUNTA.faltan(f);
     const fondo = osc ? (lista ? 'bg-white/10' : 'bg-white/5') : 'bg-white shadow-sm';
-    const sub = osc ? 'text-gray-300' : 'text-gray-600', ico = 'text-gray-400', aviso = osc ? 'text-fn-tinte' : 'text-fn-nota';
+    const sub = osc ? 'text-gray-300' : 'text-gray-600', ico = 'text-gray-400', aviso = osc ? 'text-fn-crema' : 'text-fn-piedra-osc';
     const det = JUNTA.detalle().filter(c => c.tipo !== 'textarea');
     const largos = JUNTA.detalle().filter(c => c.tipo === 'textarea');
     return `<div class="card ${opts.nueva ? 'acc-in' : ''} rounded-xl ${fondo} p-3">

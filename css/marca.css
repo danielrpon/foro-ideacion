@@ -1,21 +1,27 @@
 /* ============================================================
-   Identidad Freaknerd v1 · plataforma de ideación (manual de marca §11.6)
-   Fuente: Manual de marca Freaknerd v1 (10-nov-2026). Módulo 22 px.
-   Reglas duras: sin fondo negro, sin verde, sin degradados ni neón; el naranja solo para error o atención
-   y siempre con palabra; una sola celda seleccionada por vista.
+   Identidad Freaknerd v2 · plataforma de ideación (manual de marca v2.1, §11.6 y lámina 22)
+   Dos ambientes: crema para leer y trabajar (toda la plataforma), piedra para mirar (portadas).
+   Reglas duras: sin negro, sin verde saturado, sin degradados ni neón, sin radios ni sombras, sin cursor «_».
+   El naranja es selección (máximo dos celdas rellenas por vista) y atención (borde naranja + palabra «Atención»).
+   El azul es un susurro: máximo dos acentos por vista, nunca botones ni fondos.
+   Módulo de 22 px; retícula de 88 px en web.
    ============================================================ */
 :root{
-  --fn-blanco:#FCFFFF; --fn-azul:#09318D; --fn-azul-texto2:#4B5C8C; --fn-azul-nota:#5A6B94;
-  --fn-azul-medio:#6F87BD; --fn-tinte:#D8E0EE; --fn-rosa:#EED2E2; --fn-rosa-print:#E8C4D8;
-  --fn-naranja:#FF4200; --fn-naranja-texto:#C23A00;
-  --fn-u:22px; --fn-font:"Montserrat",-apple-system,"Segoe UI",sans-serif;
+  --fn-piedra:#656A66; --fn-piedra-osc:#4A504C; --fn-pizarra:#2C312E;
+  --fn-crema:#F4EFE6; --fn-crema-2:#E9E3D7;
+  --fn-naranja:#FF4A1C; --fn-naranja-texto:#B83A12; --fn-naranja-tinte:#FBD9CC;
+  --fn-azul:#2E4FA6; --fn-azul-claro:#D3DCF0;
+  --fn-reticula-en-piedra:rgba(244,239,230,.20); --fn-reticula-en-crema:rgba(101,106,102,.12);
+  --fn-regla:rgba(101,106,102,.28); --fn-regla-fuerte:rgba(101,106,102,.6);
+  --fn-u:22px; --fn-celda-web:88px;
+  --fn-font:"Montserrat",-apple-system,"Segoe UI",sans-serif;
   --fn-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   --fn-sel-borde:4px; --fn-tirador:11px;
   --fn-ease:cubic-bezier(.2,.8,.2,1);
 }
-html{background:var(--fn-blanco)}
-body{background:var(--fn-blanco)!important;color:var(--fn-azul);font-family:var(--fn-font);font-weight:500;-webkit-font-smoothing:antialiased}
-body *::selection{background:var(--fn-rosa);color:var(--fn-azul)}
+html{background:var(--fn-crema)}
+body{background:var(--fn-crema)!important;color:var(--fn-pizarra);font-family:var(--fn-font);font-weight:500;-webkit-font-smoothing:antialiased}
+body *::selection{background:var(--fn-naranja-tinte);color:var(--fn-pizarra)}
 h1,h2,h3{letter-spacing:-.02em;text-wrap:balance}
 h1{letter-spacing:-.035em}
 .font-black,.font-bold{font-weight:900}
@@ -26,91 +32,115 @@ a{text-underline-offset:3px}
 button,input,select,textarea{font-family:inherit}
 [hidden]{display:none!important}
 
-/* --- Wordmark (§2.1): freaknerd + tirador de 0,20 em --- */
-.wm{font:900 1em/1 var(--fn-font);letter-spacing:-.035em;display:inline-flex;align-items:baseline;white-space:nowrap;color:var(--fn-azul)}
-.wm i{display:inline-block;width:.2em;height:.2em;background:currentColor;margin-left:.06em}
+/* --- Wordmark (§3.2): freaknerd + tirador naranja de 0,20 em, pizarra sobre crema, crema sobre piedra --- */
+.wm{font:900 1em/1 var(--fn-font);letter-spacing:-.035em;display:inline-flex;align-items:baseline;white-space:nowrap;color:var(--fn-pizarra)}
+.wm i{display:inline-block;width:.2em;height:.2em;background:var(--fn-naranja);margin-left:.06em}
 
-/* --- Celda seleccionada (§7): una sola por vista --- */
-.fn-sel{position:relative;background:var(--fn-rosa)!important;color:var(--fn-azul)!important;box-shadow:inset 0 0 0 var(--fn-sel-borde) var(--fn-azul)!important;outline:0!important}
-.fn-sel::after{content:"";position:absolute;right:-6px;bottom:-6px;width:var(--fn-tirador);height:var(--fn-tirador);background:var(--fn-azul);box-shadow:0 0 0 2px var(--fn-blanco);z-index:3;pointer-events:none}
-.fn-sel-txt{display:inline-block;position:relative;background:var(--fn-rosa);padding:0 .14em;box-shadow:inset 0 0 0 4px var(--fn-azul);white-space:nowrap;color:var(--fn-azul)}
-.fn-sel-txt::after{content:"";position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:var(--fn-azul);box-shadow:0 0 0 2px var(--fn-blanco)}
-.fn-resalte{background:var(--fn-rosa);color:var(--fn-azul);padding:0 .2em}
+/* --- Ícono fn (§3.1): celda naranja, fn crema, tirador. Tamaño con --s --- */
+.fn-icono{position:relative;display:inline-grid;place-items:center;flex:none;width:var(--s,44px);height:var(--s,44px);background:var(--fn-naranja)}
+.fn-icono b{font:900 calc(var(--s,44px)*.54)/1 var(--fn-font);letter-spacing:-.05em;color:var(--fn-crema);transform:translateY(calc(var(--s,44px)*-.03));display:block}
+.fn-icono::after{content:"";position:absolute;right:calc(var(--s,44px)*-.06);bottom:calc(var(--s,44px)*-.06);width:calc(var(--s,44px)*.11);height:calc(var(--s,44px)*.11);background:var(--fn-pizarra);outline:calc(var(--s,44px)*.025) solid var(--fn-crema)}
+.fn-piedra .fn-icono::after,.fn-icono.en-piedra::after{background:var(--fn-crema);outline-color:var(--fn-piedra)}
 
-/* --- Flecha ›  (§8) --- */
+/* --- Celda seleccionada (§7): relleno naranja suave, borde naranja de 4 px y tirador. Máximo una o dos por vista --- */
+.fn-sel{position:relative;background:var(--fn-naranja-tinte)!important;color:var(--fn-pizarra)!important;box-shadow:inset 0 0 0 var(--fn-sel-borde) var(--fn-naranja)!important;outline:0!important}
+.fn-sel::after{content:"";position:absolute;right:-6px;bottom:-6px;width:var(--fn-tirador);height:var(--fn-tirador);background:var(--fn-naranja);box-shadow:0 0 0 2px var(--fn-crema);z-index:3;pointer-events:none}
+.fn-sel-txt{display:inline-block;position:relative;background:var(--fn-naranja-tinte);padding:0 .14em;box-shadow:inset 0 0 0 4px var(--fn-naranja);white-space:nowrap;color:var(--fn-pizarra)}
+.fn-sel-txt::after{content:"";position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:var(--fn-naranja);box-shadow:0 0 0 2px var(--fn-crema)}
+.fn-resalte{background:var(--fn-naranja-tinte);color:var(--fn-pizarra);padding:0 .2em}
+/* Celda rellena naranja (la del fn o la prioridad de una cifra): el texto va en pizarra */
+.fn-celda{background:var(--fn-naranja);color:var(--fn-pizarra)}
+
+/* --- Atención (§4 regla 3): borde naranja de 2 px + la palabra «Atención» en naranja texto. Nunca solo color --- */
+.fn-aten{box-shadow:inset 0 0 0 2px var(--fn-naranja)!important}
+.fn-aten-et{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:var(--fn-naranja-texto)}
+.fn-aten-et::before{content:"Atención"}
+.fn-aten-et.con-texto::before{content:"Atención: "}
+
+/* --- Flecha ›  (§7.7) --- */
 .chev{width:12px;height:16px;fill:currentColor;flex:none;display:inline-block;vertical-align:-2px}
 
+/* --- Retícula visible tenue (§6): solo donde suma. Celdas de 88 px, líneas de 1 px --- */
+.fn-ret{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88'%3E%3Cpath d='M.5 0V88M0 .5H88' fill='none' stroke='%23656A66' stroke-opacity='.12'/%3E%3C/svg%3E");background-size:88px 88px}
+.fn-ret-p{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88'%3E%3Cpath d='M.5 0V88M0 .5H88' fill='none' stroke='%23F4EFE6' stroke-opacity='.2'/%3E%3C/svg%3E");background-size:88px 88px}
+
 /* --- Navegación superior --- */
-nav[data-nav],nav.fn-nav{background:var(--fn-blanco)!important;color:var(--fn-azul)!important;border-bottom:1px solid var(--fn-tinte)!important;min-height:66px}
+nav[data-nav],nav.fn-nav{background:var(--fn-crema)!important;color:var(--fn-pizarra)!important;border-bottom:1px solid var(--fn-regla)!important;min-height:66px}
 nav[data-nav] .wm,nav.fn-nav .wm{font-size:22px}
-.fn-nav-et{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--fn-azul);border-bottom:2px solid var(--fn-rosa);padding:0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fn-nav-btn{height:44px;width:44px;display:inline-flex;align-items:center;justify-content:center;color:var(--fn-azul);border:1px solid var(--fn-tinte);background:var(--fn-blanco)}
-.fn-nav-btn:hover{background:var(--fn-tinte)}
-.fn-pill{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--fn-azul);color:var(--fn-azul);padding:0 8px;white-space:nowrap}
+.fn-nav-et{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--fn-pizarra);border-bottom:4px solid var(--fn-naranja);padding:0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fn-nav-btn{height:44px;width:44px;display:inline-flex;align-items:center;justify-content:center;color:var(--fn-pizarra);border:1px solid var(--fn-regla);background:var(--fn-crema)}
+.fn-nav-btn:hover{background:var(--fn-crema-2)}
+.fn-pill{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--fn-piedra);color:var(--fn-piedra-osc);padding:0 8px;white-space:nowrap}
 
-/* --- Botones (§8): 44 px, azul, texto blanco 900, sin radio --- */
-.bg-fn{background:var(--fn-azul)!important;color:var(--fn-blanco)}
-button.bg-fn,a.bg-fn,.btn-fn{font-weight:900;min-height:44px;color:var(--fn-blanco)!important}
-button.bg-fn:hover,a.bg-fn:hover,.btn-fn:hover{background:#0B3FAE!important}
-.btn-fn{display:inline-flex;gap:14px;align-items:center;justify-content:center;height:44px;padding:0 20px;background:var(--fn-azul);font:900 15px var(--fn-font);cursor:pointer}
-.btn-fn .chev{color:var(--fn-rosa)}
-.btn-fn-2{font:700 15px var(--fn-font);color:var(--fn-azul);border-bottom:2px solid var(--fn-rosa);padding-bottom:3px;background:none;cursor:pointer}
+/* --- Botones (§7.9): 44 px, sin radio. Primario: pizarra con texto crema y flecha naranja --- */
+.bg-fn{background:var(--fn-pizarra)!important;color:var(--fn-crema)}
+button.bg-fn,a.bg-fn,.btn-fn{font-weight:900;min-height:44px;color:var(--fn-crema)!important}
+button.bg-fn:hover,a.bg-fn:hover,.btn-fn:hover{background:var(--fn-piedra-osc)!important}
+button.bg-fn:active,a.bg-fn:active,.btn-fn:active{transform:scale(.98)}
+.btn-fn{display:inline-flex;gap:14px;align-items:center;justify-content:center;height:44px;padding:0 20px;background:var(--fn-pizarra);font:900 15px var(--fn-font);cursor:pointer;transition:transform 140ms var(--fn-ease),background-color 120ms ease}
+.btn-fn .chev{color:var(--fn-naranja)}
+.btn-fn-2{font:700 15px var(--fn-font);color:var(--fn-pizarra);border-bottom:2px solid var(--fn-pizarra);padding-bottom:3px;background:none;cursor:pointer}
 button:disabled{opacity:.5;cursor:not-allowed}
-:focus-visible{outline:2px solid var(--fn-azul);outline-offset:2px}
+:focus-visible{outline:2px solid var(--fn-pizarra);outline-offset:2px}
 
-/* --- Tarjetas: fondo blanco, filete tinte, sin sombra --- */
-.bg-white.rounded-xl,.bg-white.rounded-lg,.bg-white.rounded,.bg-white.rounded-2xl,.card{outline:1px solid var(--fn-tinte);outline-offset:-1px}
-.bg-white.border,.bg-white.border-t-4{outline:0}
-.bg-white{background:var(--fn-blanco)!important}
-.bg-gray-50,.bg-gray-100{background:#EEF2F9}
-input,select,textarea{border-color:var(--fn-tinte);color:var(--fn-azul);background:var(--fn-blanco)}
-input::placeholder,textarea::placeholder{color:var(--fn-azul-nota)}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--fn-azul)!important;outline-offset:0;border-color:var(--fn-azul)}
-input.border,select.border,textarea.border,.border.p-3{border-width:1px;border-color:var(--fn-azul-medio)}
+/* --- Tarjetas: fondo crema, filete piedra, sin sombra ni radio --- */
+.bg-white.rounded-xl,.bg-white.rounded-lg,.bg-white.rounded,.bg-white.rounded-2xl,.card{outline:1px solid var(--fn-regla);outline-offset:-1px}
+.bg-white.border,.bg-white.border-t-4,.bg-white.border-t-8{outline:0}
+.bg-white{background:var(--fn-crema)!important}
+.bg-gray-50,.bg-gray-100{background:var(--fn-crema-2)}
+input,select,textarea{border-color:var(--fn-regla-fuerte);color:var(--fn-pizarra);background:var(--fn-crema)}
+input::placeholder,textarea::placeholder{color:var(--fn-piedra-osc);opacity:.8}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--fn-pizarra)!important;outline-offset:0;border-color:var(--fn-pizarra)}
+input.border,select.border,textarea.border,.border.p-3{border-width:1px;border-color:var(--fn-regla-fuerte)}
+input[type=checkbox],input[type=radio],input[type=range]{accent-color:var(--fn-pizarra)}
 
-/* --- Tablas (§8): encabezado mono 11 + filete azul de 2 px; filas de 44 px, filete tinte --- */
-thead,thead.bg-gray-800,thead.bg-gray-100,thead.bg-gray-50{background:transparent!important;color:var(--fn-azul-texto2)!important}
-thead th{font-family:var(--fn-mono)!important;font-weight:500!important;font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;border-bottom:2px solid var(--fn-azul)!important;background:transparent!important;color:var(--fn-azul-texto2)!important}
-tbody tr{border-bottom:1px solid var(--fn-tinte)}
-tbody td{border-bottom:1px solid var(--fn-tinte)}
+/* --- Tablas (§5): encabezado mono 11 + filete pizarra de 2 px; filas de 44 px con filete piedra --- */
+thead,thead.bg-gray-800,thead.bg-gray-100,thead.bg-gray-50{background:transparent!important;color:var(--fn-piedra-osc)!important}
+thead th{font-family:var(--fn-mono)!important;font-weight:500!important;font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;border-bottom:2px solid var(--fn-pizarra)!important;background:transparent!important;color:var(--fn-piedra-osc)!important}
+tbody tr{border-bottom:1px solid var(--fn-regla)}
+tbody td{border-bottom:1px solid var(--fn-regla)}
 tbody tr:last-child td{border-bottom:0}
-table tr.border-b,table tr.border-t,table tr.divide-y>*{border-color:var(--fn-tinte)}
+table tr.border-b,table tr.border-t,table tr.divide-y>*{border-color:var(--fn-regla)}
 td.font-mono,td .font-mono,td.num{font-variant-numeric:tabular-nums}
 
-/* --- Estados (§11.6): éxito en azul con ✓; error o alerta en naranja texto con palabra --- */
-#errBanner{background:var(--fn-blanco)!important;color:var(--fn-naranja-texto)!important;border-bottom:1px solid var(--fn-naranja-texto);font-weight:900;font-size:12px;line-height:22px;padding:11px 22px!important}
+/* --- Estados (§4 regla 3): éxito en pizarra con ✓; error o alerta con borde naranja + palabra --- */
+#errBanner{background:var(--fn-crema)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja);font-weight:900;font-size:12px;line-height:22px;padding:11px 22px!important}
 #errBanner::before{content:"Atención: ";font-family:var(--fn-mono);text-transform:uppercase;letter-spacing:.14em;font-size:11px}
-#toast{background:var(--fn-azul)!important;color:var(--fn-blanco)!important;border-radius:0;box-shadow:none;font-size:14px!important;line-height:22px}
-#toast.t-err{background:var(--fn-blanco)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja-texto)}
-#toast.t-warn{background:var(--fn-blanco)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja-texto)}
+#toast{background:var(--fn-pizarra)!important;color:var(--fn-crema)!important;border-radius:0;box-shadow:none;font-size:14px!important;line-height:22px}
+#toast.t-err,#toast.t-warn{background:var(--fn-crema)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja)}
 #toast.t-ok::before{content:"✓ ";font-weight:900}
-#toast.t-err::before{content:"Error: ";font-family:var(--fn-mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px}
+#toast.t-err::before{content:"Atención · error: ";font-family:var(--fn-mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px}
 #toast.t-warn::before{content:"Atención: ";font-family:var(--fn-mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px}
 .text-red-600,.text-red-700,.text-red-500,.text-red-800,.text-amber-700,.text-amber-600,.text-amber-800{color:var(--fn-naranja-texto)}
-.bg-red-600:not(button),.bg-red-500:not(button){background:var(--fn-blanco)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja-texto)}
-.bg-amber-500:not(button),.bg-amber-400:not(button){background:var(--fn-blanco)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja-texto)}
+.bg-red-600:not(button),.bg-red-500:not(button),.bg-amber-500:not(button),.bg-amber-400:not(button){background:var(--fn-crema)!important;color:var(--fn-naranja-texto)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja)}
+.bg-red-50,.bg-red-100,.bg-amber-50,.bg-amber-100,.bg-yellow-50,.bg-orange-50{box-shadow:inset 0 0 0 2px var(--fn-naranja)}
 
-/* --- Sobre fondo azul (botones, paneles) los grises claros pasan a blanco translúcido --- */
-.bg-fn .text-gray-300,.bg-fn .text-gray-400,.bg-fn .text-gray-500,.bg-fn.text-gray-400{color:rgba(252,255,255,.82)}
+/* --- Sobre pizarra (botones, paneles) los grises claros pasan a crema --- */
+.bg-fn .text-gray-300,.bg-fn .text-gray-400,.bg-fn .text-gray-500,.bg-fn.text-gray-400,.bg-gray-800 .text-gray-300,.bg-gray-800 .text-gray-400{color:rgba(244,239,230,.82)}
 .bg-fn .fn-green,.fn-green{color:inherit}
 
-/* --- Campo de puntos (§6) --- */
+/* --- Campo de puntos (§7.6): puntos ordenados en los vértices de la retícula --- */
 .dotgrid{background-image:none!important}
 canvas.fn-campo{display:block;width:100%;height:100%;pointer-events:none}
-.fn-leyenda{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--fn-azul-nota);display:flex;justify-content:space-between}
+.fn-leyenda{font-family:var(--fn-mono);font-size:11px;line-height:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--fn-piedra-osc);display:flex;justify-content:space-between}
 
 /* --- Misceláneos --- */
-.fade-in{animation:fadeIn .4s var(--fn-ease)}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn 360ms var(--fn-ease)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--fn-azul-medio);border-radius:0}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--fn-piedra);border-radius:0}
 details>summary{list-style:none}
 details>summary::-webkit-details-marker{display:none}
 
-/* Botones solo de ícono o de acción destructiva: azul (el naranja queda para mensajes de atención con palabra) */
-button[class*="text-red-"],button[class*="text-amber-"],a[class*="text-red-"][class*="font-bold"]{color:var(--fn-azul)!important}
-button[class*="bg-red-"],button[class*="bg-amber-"]{background:var(--fn-blanco)!important;box-shadow:inset 0 0 0 1px var(--fn-tinte)!important}
-button[class*="hover:bg-red-"]:hover,button[class*="hover:bg-amber-"]:hover{background:var(--fn-tinte)!important;color:var(--fn-azul)!important}
+/* Botones solo de ícono o de acción destructiva: pizarra (el naranja queda para atención con palabra) */
+button[class*="text-red-"],button[class*="text-amber-"],a[class*="text-red-"][class*="font-bold"]{color:var(--fn-pizarra)!important}
+button[class*="bg-red-"],button[class*="bg-amber-"]{background:var(--fn-crema)!important;box-shadow:inset 0 0 0 1px var(--fn-regla-fuerte)!important}
+button[class*="hover:bg-red-"]:hover,button[class*="hover:bg-amber-"]:hover{background:var(--fn-crema-2)!important;color:var(--fn-pizarra)!important}
 
-/* Logos de clientes en una tinta azul (manual §11.1): los claros pensados para fondo oscuro se tiñen a azul de marca */
-.logo-azul{filter:brightness(0) invert(14%) sepia(95%) saturate(4400%) hue-rotate(218deg) brightness(.92)}
+/* Logos de clientes en una tinta pizarra (manual §11.5): los claros pensados para fondo oscuro se tiñen */
+.logo-tinta{filter:brightness(0) invert(17%) sepia(8%) saturate(500%) hue-rotate(95deg) brightness(.95)}
+.logo-azul{filter:brightness(0) invert(17%) sepia(8%) saturate(500%) hue-rotate(95deg) brightness(.95)}
+.logo-crema{filter:brightness(0) invert(95%) sepia(10%) saturate(300%) hue-rotate(335deg)}
+
+/* Chip o celda seleccionada pequeña (pestañas de pilar): borde naranja de 2 px sobre relleno suave, sin tirador */
+.fn-sel-s{background:var(--fn-naranja-tinte)!important;color:var(--fn-pizarra)!important;box-shadow:inset 0 0 0 2px var(--fn-naranja)}
