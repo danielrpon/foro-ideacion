@@ -17,7 +17,7 @@
       titulo_evento: 'Backlog de ideación',
       logo_empresa: 'img/grupomp_logo.png',  /* logo claro para fondo oscuro; si el archivo no está, se muestra el nombre en texto */
       sin_lider: true,  /* sin líderes de pilar: la depuración la hace la consolidación MECE con revisión del facilitador */
-      titulo_reporte: 'Backlog priorizado de automatización · Grupo MP',
+      titulo_reporte: 'Backlog priorizado de automatización',
       votos_por_pilar: 3, minutos_ideacion: 10, minutos_matriz: 12, minutos_pausa: 5, escala_max: 5, max_calificaciones: 12,
       caso: 'Después de cuatro niveles de IA-abilities, la gerencia y los directores deciden qué se automatiza primero. Escriba síntomas: tareas manuales que le duelen a usted o a su equipo. Un buen síntoma dice qué tarea, cada cuánto y cuánto tiempo toma. Ejemplo: Cada lunes armo a mano el resumen de pedidos por zona para el comité: 3 horas. Un síntoma por tarjeta. Con lo que salga armamos el backlog: la lista de automatizaciones ordenada por prioridad.',
       restricciones: [

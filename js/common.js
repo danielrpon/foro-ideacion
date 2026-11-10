@@ -170,13 +170,18 @@ window.Yo = {
 };
 
 /* Cuadrante de la matriz esfuerzo-impacto */
+window.umbralMedio = (max = 5) => max / 2 + 0.5; // 3 en escala 1-5, 5.5 en 1-10
+/* Umbral inclusivo: «Hacer ya» = impacto ≥ medio y esfuerzo ≤ medio. Es la ÚNICA función que clasifica:
+   muro, reporte, ranking y el dibujo de la matriz la usan, así que los conteos siempre coinciden. */
 window.cuadrante = (esf, imp, max = 5) => {
-  const mid = max / 2 + 0.5; // 3 en escala 1-5, 5.5 en 1-10
-  if (imp >= mid && esf < mid) return { key: 'quick', label: 'Hacer ya', color: 'blue' };
-  if (imp >= mid && esf >= mid) return { key: 'proyecto', label: 'Planear', color: 'blue' };
-  if (imp < mid && esf < mid) return { key: 'relleno', label: 'Tarea menor', color: 'blue' };
+  const mid = umbralMedio(max), altoImp = imp >= mid, bajoEsf = esf <= mid;
+  if (altoImp && bajoEsf) return { key: 'quick', label: 'Hacer ya', color: 'blue' };
+  if (altoImp) return { key: 'proyecto', label: 'Planear', color: 'blue' };
+  if (bajoEsf) return { key: 'relleno', label: 'Tarea menor', color: 'blue' };
   return { key: 'descartar', label: 'Postergar', color: 'gray' };
 };
+/* Cifras con una decimal y coma (4,6 · 1,2 · 2,0) */
+window.f1 = (v) => Number(v).toLocaleString('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 /* Puntaje tridimensional para priorizar (impacto, esfuerzo y cuánta gente calificó).
    1) Promedios ponderados por participación: cada promedio se mezcla con el punto neutro (3) como si hubiera

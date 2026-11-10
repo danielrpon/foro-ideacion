@@ -136,18 +136,17 @@
   /* Tarjeta de acción reutilizable (tema claro u oscuro). opts.acciones = html de botones a la derecha */
   window.tarjetaAccion = (f, opts = {}) => {
     const osc = !!opts.oscuro, lista = f.estado === 'confirmada', faltan = JUNTA.faltan(f);
-    const borde = lista ? (osc ? 'border-emerald-400' : 'border-emerald-500') : faltan.length ? 'border-amber-400' : (osc ? 'border-white/25' : 'border-gray-300');
     const fondo = osc ? (lista ? 'bg-white/10' : 'bg-white/5') : 'bg-white shadow-sm';
-    const sub = osc ? 'text-gray-300' : 'text-gray-600', ico = 'text-gray-400', aviso = osc ? 'text-amber-300' : 'text-amber-600';
+    const sub = osc ? 'text-gray-300' : 'text-gray-600', ico = 'text-gray-400', aviso = osc ? 'text-fn-tinte' : 'text-fn-nota';
     const det = JUNTA.detalle().filter(c => c.tipo !== 'textarea');
     const largos = JUNTA.detalle().filter(c => c.tipo === 'textarea');
-    return `<div class="card ${opts.nueva ? 'acc-in' : ''} rounded-xl border-l-4 ${borde} ${fondo} p-3">
+    return `<div class="card ${opts.nueva ? 'acc-in' : ''} rounded-xl ${fondo} p-3">
       <div class="flex justify-between gap-3">
         <p class="font-bold leading-snug ${opts.grande ? 'text-[17px]' : ''}">${opts.num ? `<span class="fn-mono ${ico} mr-1">${opts.num}.</span>` : ''}${esc(f.titulo)}</p>
         ${opts.acciones || (lista ? `<i class="fas fa-circle-check text-emerald-500 mt-1" title="Lista"></i>` : '')}
       </div>
       <div class="text-[13px] ${sub} mt-2 flex flex-wrap gap-x-4 gap-y-1">
-        ${det.map(c => { const v = JUNTA.val(f, c.k); return v ? `<span><i class="fas ${c.icono || 'fa-circle'} mr-1 ${ico}"></i>${esc(v)}</span>` : (c.obligatorio ? `<span class="${aviso}"><i class="fas ${c.icono || 'fa-circle'} mr-1"></i>falta ${esc(c.etiqueta.toLowerCase())}</span>` : ''); }).join('')}
+        ${det.map(c => { const v = JUNTA.val(f, c.k); return v ? `<span><i class="fas ${c.icono || 'fa-circle'} mr-1 ${ico}"></i>${esc(v)}</span>` : (c.obligatorio ? `<span class="${aviso}"><i class="far fa-circle mr-1"></i>falta ${esc(c.etiqueta.toLowerCase())}</span>` : ''); }).join('')}
       </div>
       ${largos.map(c => { const v = JUNTA.val(f, c.k); return v ? `<p class="text-[12px] ${ico} mt-1 whitespace-pre-line"><i class="fas ${c.icono} mr-1"></i>${esc(v)}</p>` : ''; }).join('')}
     </div>`;
